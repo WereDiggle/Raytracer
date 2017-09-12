@@ -170,11 +170,31 @@ void A0::uploadUniformsToShader()
  */
 void A0::appLogic()
 {
+    static float redInc = 0.01f;
+    static float greenInc = 0.01f;
+    static float blueInc = 0.01f;
 	// Place per frame, application logic here ...
+    if (autoTriangle) {
+        m_shape_color.r+=redInc;
+        m_shape_color.g+=greenInc;
+        m_shape_color.b+=blueInc;
 
+        if (m_shape_color.r >= 1.0f || m_shape_color.r <= 0.0f) {
+            redInc *= -1; 
+        }
+        if (m_shape_color.g >= 1.0f || m_shape_color.g <= 0.0f) {
+            greenInc *= -1; 
+        }
+        if (m_shape_color.b >= 1.0f || m_shape_color.b <= 0.0f) {
+            blueInc *= -1; 
+        }
+    }
 
 	// Clamp shape size to be within a reasonable range
 	m_shape_size = glm::clamp(m_shape_size, 0.0f, 10.0f);
+	m_shape_color.r = glm::clamp(m_shape_color.r, 0.0f, 1.0f);
+	m_shape_color.g = glm::clamp(m_shape_color.g, 0.0f, 1.0f);
+	m_shape_color.b = glm::clamp(m_shape_color.b, 0.0f, 1.0f);
 
 	uploadUniformsToShader();
 }
@@ -185,6 +205,7 @@ void A0::resetTriangle()
 	m_shape_rotation = 0.0f;
 	m_shape_size = 1.0f;
 	m_shape_translation = vec2(0.0f);
+    autoTriangle = false;
 }
 
 //----------------------------------------------------------------------------------------
@@ -213,6 +234,11 @@ void A0::guiLogic()
 
 		if( ImGui::Button( "Reset" ) ) {
 			resetTriangle();
+		}
+
+        // color demo
+		if( ImGui::Button( "Auto" ) ) {
+            autoTriangle = !autoTriangle;
 		}
 
 		// Retrieve red color component from slider and store in the first element of

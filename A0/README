@@ -1,0 +1,16 @@
+Compilation
+###########
+
+Compiling and running is program is default.
+
+premake4 gmake
+make
+./A0
+
+compiled on gl11.student.cs
+
+Manual
+######
+
+There is an "auto" button which will set the colors of the triangle to change smoothly every frame.
+You can still interact with the color sliders.

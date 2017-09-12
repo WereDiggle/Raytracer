@@ -45,6 +45,8 @@ protected:
 	// vec3.r, vec3.g, vec3.b
 	glm::vec3 m_shape_color;
 
+    bool autoTriangle;
+
 	// Shape rotation angle in radians.
 	float m_shape_rotation;
 
