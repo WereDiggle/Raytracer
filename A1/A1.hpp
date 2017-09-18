@@ -41,6 +41,9 @@ private:
 	GLuint m_grid_vao; // Vertex Array Object
 	GLuint m_grid_vbo; // Vertex Buffer Object
 
+    // TODO: fields for our triangle, soon to be a rectangle maybe
+    GLuint m_test_vbo;
+
 	// Matrices controlling the camera and projection.
 	glm::mat4 proj;
 	glm::mat4 view;

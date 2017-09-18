@@ -12,6 +12,44 @@ using namespace glm;
 using namespace std;
 
 static const size_t DIM = 16;
+static const GLfloat g_test_buffer_data[] = {
+    -1.0f,-1.0f,-1.0f, // triangle 1 : begin
+    -1.0f,-1.0f, 1.0f,
+    -1.0f, 1.0f, 1.0f, // triangle 1 : end
+    1.0f, 1.0f,-1.0f, // triangle 2 : begin
+    -1.0f,-1.0f,-1.0f,
+    -1.0f, 1.0f,-1.0f, // triangle 2 : end
+    1.0f,-1.0f, 1.0f,
+    -1.0f,-1.0f,-1.0f,
+    1.0f,-1.0f,-1.0f,
+    1.0f, 1.0f,-1.0f,
+    1.0f,-1.0f,-1.0f,
+    -1.0f,-1.0f,-1.0f,
+    -1.0f,-1.0f,-1.0f,
+    -1.0f, 1.0f, 1.0f,
+    -1.0f, 1.0f,-1.0f,
+    1.0f,-1.0f, 1.0f,
+    -1.0f,-1.0f, 1.0f,
+    -1.0f,-1.0f,-1.0f,
+    -1.0f, 1.0f, 1.0f,
+    -1.0f,-1.0f, 1.0f,
+    1.0f,-1.0f, 1.0f,
+    1.0f, 1.0f, 1.0f,
+    1.0f,-1.0f,-1.0f,
+    1.0f, 1.0f,-1.0f,
+    1.0f,-1.0f,-1.0f,
+    1.0f, 1.0f, 1.0f,
+    1.0f,-1.0f, 1.0f,
+    1.0f, 1.0f, 1.0f,
+    1.0f, 1.0f,-1.0f,
+    -1.0f, 1.0f,-1.0f,
+    1.0f, 1.0f, 1.0f,
+    -1.0f, 1.0f,-1.0f,
+    -1.0f, 1.0f, 1.0f,
+    1.0f, 1.0f, 1.0f,
+    -1.0f, 1.0f, 1.0f,
+    1.0f,-1.0f, 1.0f
+};
 
 //----------------------------------------------------------------------------------------
 // Constructor
@@ -94,11 +132,16 @@ void A1::initGrid()
 	glGenVertexArrays( 1, &m_grid_vao );
 	glBindVertexArray( m_grid_vao );
 
+    // TODO: testing a triangle
+    glGenBuffers(1, &m_test_vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, m_test_vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(g_test_buffer_data), g_test_buffer_data, GL_STATIC_DRAW);
+
 	// Create the cube vertex buffer
 	glGenBuffers( 1, &m_grid_vbo );
 	glBindBuffer( GL_ARRAY_BUFFER, m_grid_vbo );
 	glBufferData( GL_ARRAY_BUFFER, sz*sizeof(float),
-		verts, GL_STATIC_DRAW );
+	verts, GL_STATIC_DRAW );
 
 	// Specify the means of extracting the position values properly.
 	GLint posAttrib = m_shader.getAttribLocation( "position" );
@@ -207,6 +250,14 @@ void A1::draw()
 		glDrawArrays( GL_LINES, 0, (3+DIM)*4 );
 
 		// Draw the cubes
+        
+        glEnableVertexAttribArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, m_test_vbo);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+        //glDrawArrays(GL_TRIANGLES, 0, 12*3);
+        //glDisableVertexAttribArray(0);
+        
 		// Highlight the active square.
 	m_shader.disable();
 
@@ -305,6 +356,9 @@ bool A1::keyInputEvent(int key, int action, int mods) {
 	// Fill in with event handling code...
 	if( action == GLFW_PRESS ) {
 		// Respond to some key events.
+		if (key == GLFW_KEY_Q) {
+			glfwSetWindowShouldClose(m_window, GL_TRUE);
+		}
 	}
 
 	return eventHandled;
