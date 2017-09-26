@@ -8,10 +8,49 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#define MAX_HEIGHT 10
+
 using namespace glm;
 using namespace std;
 
 static const size_t DIM = 16;
+static const GLfloat wireframe_cube[] = {
+	0.0f, 0.0f, 0.0f,
+	1.0f, 0.0f, 0.0f,
+
+	0.0f, 0.0f, 0.0f,
+	0.0f, 1.0f, 0.0f,
+
+	0.0f, 0.0f, 0.0f,
+	0.0f, 0.0f, 1.0f,
+
+	0.0f, 1.0f, 1.0f,
+	1.0f, 1.0f, 1.0f,
+
+	0.0f, 1.0f, 1.0f,
+	0.0f, 0.0f, 1.0f,
+
+	0.0f, 1.0f, 1.0f,
+	0.0f, 1.0f, 0.0f,
+
+	1.0f, 1.0f, 0.0f,
+	0.0f, 1.0f, 0.0f,
+
+	1.0f, 1.0f, 0.0f,
+	1.0f, 0.0f, 0.0f,
+
+	1.0f, 1.0f, 0.0f,
+	1.0f, 1.0f, 1.0f,
+
+	1.0f, 0.0f, 1.0f,
+	0.0f, 0.0f, 1.0f,
+
+	1.0f, 0.0f, 1.0f,
+	1.0f, 1.0f, 1.0f,
+
+	1.0f, 0.0f, 1.0f,
+	1.0f, 0.0f, 0.0f,
+};
 static const GLfloat g_test_buffer_data[] = {
 	// Bottom face
 	0.0f, 0.0f, 0.0f,
@@ -66,55 +105,6 @@ static const GLfloat g_test_buffer_data[] = {
 	1.0f, 1.0f, 0.0f,
 	1.0f, 0.0f, 1.0f,
 	1.0f, 1.0f, 1.0f,
-	/*
-    -1.0f,-1.0f,-1.0f, // triangle 1 : begin
-    -1.0f,-1.0f, 1.0f,
-	-1.0f, 1.0f, 1.0f, // triangle 1 : end
-
-    1.0f, 1.0f,-1.0f, // triangle 2 : begin
-    -1.0f,-1.0f,-1.0f,
-	-1.0f, 1.0f,-1.0f, // triangle 2 : end
-
-    1.0f,-1.0f, 1.0f,
-    -1.0f,-1.0f,-1.0f,
-	1.0f,-1.0f,-1.0f,
-
-    1.0f, 1.0f,-1.0f,
-    1.0f,-1.0f,-1.0f,
-	-1.0f,-1.0f,-1.0f,
-
-    -1.0f,-1.0f,-1.0f,
-    -1.0f, 1.0f, 1.0f,
-	-1.0f, 1.0f,-1.0f,
-
-    1.0f,-1.0f, 1.0f,
-    -1.0f,-1.0f, 1.0f,
-	-1.0f,-1.0f,-1.0f,
-
-    -1.0f, 1.0f, 1.0f,
-    -1.0f,-1.0f, 1.0f,
-	1.0f,-1.0f, 1.0f,
-
-    1.0f, 1.0f, 1.0f,
-    1.0f,-1.0f,-1.0f,
-	1.0f, 1.0f,-1.0f,
-
-    1.0f,-1.0f,-1.0f,
-    1.0f, 1.0f, 1.0f,
-	1.0f,-1.0f, 1.0f,
-
-    1.0f, 1.0f, 1.0f,
-    1.0f, 1.0f,-1.0f,
-	-1.0f, 1.0f,-1.0f,
-
-    1.0f, 1.0f, 1.0f,
-    -1.0f, 1.0f,-1.0f,
-	-1.0f, 1.0f, 1.0f,
-
-    1.0f, 1.0f, 1.0f,
-    -1.0f, 1.0f, 1.0f,
-	1.0f,-1.0f, 1.0f
-	*/
 };
 
 //----------------------------------------------------------------------------------------
@@ -157,6 +147,7 @@ void A1::init()
 
 	initGrid();
 	initCube();
+	initWireCube();
 
 	// Set up initial view and projection matrices (need to do this here,
 	// since it depends on the GLFW window being set up correctly).
@@ -169,6 +160,35 @@ void A1::init()
 		glm::radians( 45.0f ),
 		float( m_framebufferWidth ) / float( m_framebufferHeight ),
 		1.0f, 1000.0f );
+	
+	activeCell = vec2(0,0);
+}
+
+void A1::initWireCube()
+{
+	// Create the vertex array to record buffer assignments.
+	glGenVertexArrays( 1, &m_wire_cube_vao );
+	glBindVertexArray( m_wire_cube_vao );
+
+	// Create the cube vertex buffer
+	glGenBuffers( 1, &m_wire_cube_vbo );
+	glBindBuffer( GL_ARRAY_BUFFER, m_wire_cube_vbo );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(wireframe_cube),
+	wireframe_cube, GL_STATIC_DRAW );
+
+	// Specify the means of extracting the position values properly.
+	GLint posAttrib = m_shader.getAttribLocation( "position" );
+	glEnableVertexAttribArray( posAttrib );
+	glVertexAttribPointer( posAttrib, 3, GL_FLOAT, GL_FALSE, 0, nullptr );
+
+	// Reset state to prevent rogue code from messing with *my* 
+	// stuff!
+	glBindVertexArray( 0 );
+	glBindBuffer( GL_ARRAY_BUFFER, 0 );
+	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
+
+	// OpenGL has the buffer now, there's no need for us to keep a copy.
+	CHECK_GL_ERRORS;
 }
 
 void A1::initCube()
@@ -341,19 +361,36 @@ void A1::draw()
 
 		// Draw the cubes
 		glBindVertexArray( m_cube_vao);
+		//glBindVertexArray( m_wire_cube_vao);
 
 		// cube transformations
 		mat4 cubeTrans;
-		cubeTrans = glm::translate(cubeTrans, vec3(-2.0f,0,0.0f));
+		/*
+		cubeTrans = glm::translate(cubeTrans, vec3(-6,0,0));
 		glUniformMatrix4fv( M_uni, 1, GL_FALSE, value_ptr(cubeTrans));
-
-		glDrawArrays(GL_TRIANGLES, 0, 12*3);
-
-		cubeTrans = glm::translate(cubeTrans, vec3(-4.0f,0,0.0f));
+		glDrawArrays( GL_TRIANGLES, 0, 12*3);
+		cubeTrans = glm::translate(cubeTrans, vec3(0,1,0));
 		glUniformMatrix4fv( M_uni, 1, GL_FALSE, value_ptr(cubeTrans));
+		glDrawArrays( GL_TRIANGLES, 0, 12*3);
+		*/
+		
+		for (int i=0; i<testStackHeight; i++) {
+			cubeTrans = glm::translate(glm::mat4(1.0f), vec3(activeCell.x, i, activeCell.y));
+			glUniformMatrix4fv( M_uni, 1, GL_FALSE, value_ptr(cubeTrans));
+			glDrawArrays( GL_TRIANGLES, 0, 12*3);
+		}
 
-        glDrawArrays(GL_TRIANGLES, 0, 12*3);
-        
+		// draw wire cube indicator on top of everything else
+		glDisable( GL_DEPTH_TEST );
+		glBindVertexArray(m_wire_cube_vao);
+		glUniform3f(col_uni, 0, 0, 0);
+
+		for (int i=0; i <= std::min(testStackHeight, MAX_HEIGHT-1); i++) {
+			cubeTrans = glm::translate(glm::mat4(1.0f), vec3(activeCell.x, i, activeCell.y));
+			glUniformMatrix4fv( M_uni, 1, GL_FALSE, value_ptr(cubeTrans));
+			glDrawArrays(GL_LINES, 0, 12*2);
+		}
+
 		// Highlight the active square.
 	m_shader.disable();
 
@@ -454,6 +491,24 @@ bool A1::keyInputEvent(int key, int action, int mods) {
 		// Respond to some key events.
 		if (key == GLFW_KEY_Q) {
 			glfwSetWindowShouldClose(m_window, GL_TRUE);
+		}
+		else if (key == GLFW_KEY_SPACE) {
+			testStackHeight = std::min(MAX_HEIGHT, testStackHeight+1);
+		}
+		else if (key == GLFW_KEY_BACKSPACE) {
+			testStackHeight = std::max(0, testStackHeight-1);
+		}
+		else if (key == GLFW_KEY_UP) {
+			activeCell += glm::vec2(0,-1); 
+		}
+		else if (key == GLFW_KEY_DOWN) {
+			activeCell += glm::vec2(0,1); 
+		}
+		else if (key == GLFW_KEY_LEFT) {
+			activeCell += glm::vec2(-1,0); 
+		}
+		else if (key == GLFW_KEY_RIGHT) {
+			activeCell += glm::vec2(1,0); 
 		}
 	}
 

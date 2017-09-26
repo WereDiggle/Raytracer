@@ -30,6 +30,7 @@ protected:
 private:
 	void initGrid();
 	void initCube();
+	void initWireCube();
 
 	// Fields related to the shader and uniforms.
 	ShaderProgram m_shader;
@@ -42,14 +43,26 @@ private:
 	GLuint m_grid_vao; // Vertex Array Object
 	GLuint m_grid_vbo; // Vertex Buffer Object
 
-	// Fields related to grid geometry.
+	// Fields related to cube geometry.
 	GLuint m_cube_vao; // Vertex Array Object
 	GLuint m_cube_vbo; // Vertex Buffer Object
+
+	// Fields related to wire cube geometry.
+	GLuint m_wire_cube_vao; // Vertex Array Object
+	GLuint m_wire_cube_vbo; // Vertex Buffer Object
+
+	// TODO: test stack height
+	int testStackHeight = 0;
+
+	// Active cell
+	glm::vec2 activeCell;
+
+	// Cells
 
     // TODO: fields for our triangle, soon to be a rectangle maybe
     GLuint m_test_vbo;
 
-	// Matrices controlling the camera and projection.
+	// Matrices controlling the camera and projection
 	glm::mat4 proj;
 	glm::mat4 view;
 
