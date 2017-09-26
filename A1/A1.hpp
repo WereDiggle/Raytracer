@@ -29,6 +29,7 @@ protected:
 
 private:
 	void initGrid();
+	void initCube();
 
 	// Fields related to the shader and uniforms.
 	ShaderProgram m_shader;
@@ -40,6 +41,10 @@ private:
 	// Fields related to grid geometry.
 	GLuint m_grid_vao; // Vertex Array Object
 	GLuint m_grid_vbo; // Vertex Buffer Object
+
+	// Fields related to grid geometry.
+	GLuint m_cube_vao; // Vertex Array Object
+	GLuint m_cube_vbo; // Vertex Buffer Object
 
     // TODO: fields for our triangle, soon to be a rectangle maybe
     GLuint m_test_vbo;

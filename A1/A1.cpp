@@ -13,42 +13,108 @@ using namespace std;
 
 static const size_t DIM = 16;
 static const GLfloat g_test_buffer_data[] = {
+	// Bottom face
+	0.0f, 0.0f, 0.0f,
+	1.0f, 0.0f, 0.0f,
+	0.0f, 0.0f, 1.0f,
+
+	1.0f, 0.0f, 0.0f,
+	0.0f, 0.0f, 1.0f,
+	1.0f, 0.0f, 1.0f,
+	
+	// Back face
+	0.0f, 0.0f, 0.0f,
+	1.0f, 0.0f, 0.0f,
+	0.0f, 1.0f, 0.0f,
+
+	1.0f, 1.0f, 0.0f,
+	1.0f, 0.0f, 0.0f,
+	0.0f, 1.0f, 0.0f,
+
+	// Left face
+	0.0f, 0.0f, 0.0f,
+	0.0f, 1.0f, 0.0f,
+	0.0f, 0.0f, 1.0f,
+
+	0.0f, 1.0f, 0.0f,
+	0.0f, 0.0f, 1.0f,
+	0.0f, 1.0f, 1.0f,
+
+	// Top face
+	0.0f, 1.0f, 0.0f,
+	1.0f, 1.0f, 0.0f,
+	0.0f, 1.0f, 1.0f,
+
+	1.0f, 1.0f, 0.0f,
+	0.0f, 1.0f, 1.0f,
+	1.0f, 1.0f, 1.0f,
+	
+	// Front face
+	0.0f, 0.0f, 1.0f,
+	1.0f, 0.0f, 1.0f,
+	0.0f, 1.0f, 1.0f,
+
+	1.0f, 1.0f, 1.0f,
+	1.0f, 0.0f, 1.0f,
+	0.0f, 1.0f, 1.0f,
+
+	// Right face
+	1.0f, 0.0f, 0.0f,
+	1.0f, 1.0f, 0.0f,
+	1.0f, 0.0f, 1.0f,
+
+	1.0f, 1.0f, 0.0f,
+	1.0f, 0.0f, 1.0f,
+	1.0f, 1.0f, 1.0f,
+	/*
     -1.0f,-1.0f,-1.0f, // triangle 1 : begin
     -1.0f,-1.0f, 1.0f,
-    -1.0f, 1.0f, 1.0f, // triangle 1 : end
+	-1.0f, 1.0f, 1.0f, // triangle 1 : end
+
     1.0f, 1.0f,-1.0f, // triangle 2 : begin
     -1.0f,-1.0f,-1.0f,
-    -1.0f, 1.0f,-1.0f, // triangle 2 : end
+	-1.0f, 1.0f,-1.0f, // triangle 2 : end
+
     1.0f,-1.0f, 1.0f,
     -1.0f,-1.0f,-1.0f,
-    1.0f,-1.0f,-1.0f,
+	1.0f,-1.0f,-1.0f,
+
     1.0f, 1.0f,-1.0f,
     1.0f,-1.0f,-1.0f,
-    -1.0f,-1.0f,-1.0f,
+	-1.0f,-1.0f,-1.0f,
+
     -1.0f,-1.0f,-1.0f,
     -1.0f, 1.0f, 1.0f,
-    -1.0f, 1.0f,-1.0f,
+	-1.0f, 1.0f,-1.0f,
+
     1.0f,-1.0f, 1.0f,
     -1.0f,-1.0f, 1.0f,
-    -1.0f,-1.0f,-1.0f,
+	-1.0f,-1.0f,-1.0f,
+
     -1.0f, 1.0f, 1.0f,
     -1.0f,-1.0f, 1.0f,
-    1.0f,-1.0f, 1.0f,
+	1.0f,-1.0f, 1.0f,
+
     1.0f, 1.0f, 1.0f,
     1.0f,-1.0f,-1.0f,
-    1.0f, 1.0f,-1.0f,
+	1.0f, 1.0f,-1.0f,
+
     1.0f,-1.0f,-1.0f,
     1.0f, 1.0f, 1.0f,
-    1.0f,-1.0f, 1.0f,
+	1.0f,-1.0f, 1.0f,
+
     1.0f, 1.0f, 1.0f,
     1.0f, 1.0f,-1.0f,
-    -1.0f, 1.0f,-1.0f,
+	-1.0f, 1.0f,-1.0f,
+
     1.0f, 1.0f, 1.0f,
     -1.0f, 1.0f,-1.0f,
-    -1.0f, 1.0f, 1.0f,
+	-1.0f, 1.0f, 1.0f,
+
     1.0f, 1.0f, 1.0f,
     -1.0f, 1.0f, 1.0f,
-    1.0f,-1.0f, 1.0f
+	1.0f,-1.0f, 1.0f
+	*/
 };
 
 //----------------------------------------------------------------------------------------
@@ -80,7 +146,7 @@ void A1::init()
 	m_shader.attachVertexShader(
 		getAssetFilePath( "VertexShader.vs" ).c_str() );
 	m_shader.attachFragmentShader(
-		getAssetFilePath( "FragmentShader.fs" ).c_str() );
+	getAssetFilePath( "FragmentShader.fs" ).c_str() );
 	m_shader.link();
 
 	// Set up the uniforms
@@ -90,6 +156,7 @@ void A1::init()
 	col_uni = m_shader.getUniformLocation( "colour" );
 
 	initGrid();
+	initCube();
 
 	// Set up initial view and projection matrices (need to do this here,
 	// since it depends on the GLFW window being set up correctly).
@@ -102,6 +169,33 @@ void A1::init()
 		glm::radians( 45.0f ),
 		float( m_framebufferWidth ) / float( m_framebufferHeight ),
 		1.0f, 1000.0f );
+}
+
+void A1::initCube()
+{
+	// Create the vertex array to record buffer assignments.
+	glGenVertexArrays( 1, &m_cube_vao );
+	glBindVertexArray( m_cube_vao );
+
+	// Create the cube vertex buffer
+	glGenBuffers( 1, &m_cube_vbo );
+	glBindBuffer( GL_ARRAY_BUFFER, m_cube_vbo );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(g_test_buffer_data),
+	g_test_buffer_data, GL_STATIC_DRAW );
+
+	// Specify the means of extracting the position values properly.
+	GLint posAttrib = m_shader.getAttribLocation( "position" );
+	glEnableVertexAttribArray( posAttrib );
+	glVertexAttribPointer( posAttrib, 3, GL_FLOAT, GL_FALSE, 0, nullptr );
+
+	// Reset state to prevent rogue code from messing with *my* 
+	// stuff!
+	glBindVertexArray( 0 );
+	glBindBuffer( GL_ARRAY_BUFFER, 0 );
+	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
+
+	// OpenGL has the buffer now, there's no need for us to keep a copy.
+	CHECK_GL_ERRORS;
 }
 
 void A1::initGrid()
@@ -131,11 +225,6 @@ void A1::initGrid()
 	// Create the vertex array to record buffer assignments.
 	glGenVertexArrays( 1, &m_grid_vao );
 	glBindVertexArray( m_grid_vao );
-
-    // TODO: testing a triangle
-    glGenBuffers(1, &m_test_vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, m_test_vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(g_test_buffer_data), g_test_buffer_data, GL_STATIC_DRAW);
 
 	// Create the cube vertex buffer
 	glGenBuffers( 1, &m_grid_vbo );
@@ -244,19 +333,26 @@ void A1::draw()
 		glUniformMatrix4fv( V_uni, 1, GL_FALSE, value_ptr( view ) );
 		glUniformMatrix4fv( M_uni, 1, GL_FALSE, value_ptr( W ) );
 
-		// Just draw the grid for now.
+		// Just draw the grid
 		glBindVertexArray( m_grid_vao );
+		// This is for colour, not columns, whatever that would mean
 		glUniform3f( col_uni, 1, 1, 1 );
 		glDrawArrays( GL_LINES, 0, (3+DIM)*4 );
 
 		// Draw the cubes
-        
-        glEnableVertexAttribArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, m_test_vbo);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		glBindVertexArray( m_cube_vao);
 
-        //glDrawArrays(GL_TRIANGLES, 0, 12*3);
-        //glDisableVertexAttribArray(0);
+		// cube transformations
+		mat4 cubeTrans;
+		cubeTrans = glm::translate(cubeTrans, vec3(-2.0f,0,0.0f));
+		glUniformMatrix4fv( M_uni, 1, GL_FALSE, value_ptr(cubeTrans));
+
+		glDrawArrays(GL_TRIANGLES, 0, 12*3);
+
+		cubeTrans = glm::translate(cubeTrans, vec3(-4.0f,0,0.0f));
+		glUniformMatrix4fv( M_uni, 1, GL_FALSE, value_ptr(cubeTrans));
+
+        glDrawArrays(GL_TRIANGLES, 0, 12*3);
         
 		// Highlight the active square.
 	m_shader.disable();
