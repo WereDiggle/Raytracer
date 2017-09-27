@@ -365,6 +365,10 @@ void A1::guiLogic()
 			glfwSetWindowShouldClose(m_window, GL_TRUE);
 		}
 
+		if( ImGui::Button( "Reset" ) ) {
+			reset();
+		}
+
 		// Eventually you'll create multiple colour widgets with
 		// radio buttons.  If you use PushID/PopID to give them all
 		// unique IDs, then ImGui will be able to keep them separate.
