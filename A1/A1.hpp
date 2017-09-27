@@ -8,6 +8,19 @@
 
 #include "grid.hpp"
 
+struct cell
+{
+	int height;
+	glm::vec3 colour;	
+
+	cell() : 
+	height(0), colour(glm::vec3(1,1,1))
+	{
+
+	}
+
+};
+
 class A1 : public CS488Window {
 public:
 	A1();
@@ -51,16 +64,15 @@ private:
 	GLuint m_wire_cube_vao; // Vertex Array Object
 	GLuint m_wire_cube_vbo; // Vertex Buffer Object
 
-	// TODO: test stack height
-	int testStackHeight = 0;
-
 	// Active cell
-	glm::vec2 activeCell;
+	int activeX;
+	int activeY;
 
 	// Cells
+	cell** cells;
 
-    // TODO: fields for our triangle, soon to be a rectangle maybe
-    GLuint m_test_vbo;
+	// for handling holding shift
+	int shiftDown = 0;
 
 	// Matrices controlling the camera and projection
 	glm::mat4 proj;

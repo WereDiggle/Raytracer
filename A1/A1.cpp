@@ -2,13 +2,14 @@
 #include "cs488-framework/GlErrorCheck.hpp"
 
 #include <iostream>
+#include <ctime>
 
 #include <imgui/imgui.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#define MAX_HEIGHT 10
+#define MAX_HEIGHT 15
 
 using namespace glm;
 using namespace std;
@@ -161,7 +162,12 @@ void A1::init()
 		float( m_framebufferWidth ) / float( m_framebufferHeight ),
 		1.0f, 1000.0f );
 	
-	activeCell = vec2(0,0);
+	// setup the cells
+	cells = new cell*[DIM];
+	for (int i=0; i < DIM; i++) {
+		cells[i] = new cell[DIM];
+	}
+	activeX = activeY = 0;
 }
 
 void A1::initWireCube()
@@ -344,7 +350,8 @@ void A1::draw()
 {
 	// Create a global transformation for the model (centre it).
 	mat4 W;
-	W = glm::translate( W, vec3( -float(DIM)/2.0f, 0, -float(DIM)/2.0f ) );
+	float worldOffset = -float(DIM)/2.0f;
+	W = glm::translate( W, vec3( worldOffset, 0, worldOffset ) );
 
 	m_shader.enable();
 		glEnable( GL_DEPTH_TEST );
@@ -365,28 +372,29 @@ void A1::draw()
 
 		// cube transformations
 		mat4 cubeTrans;
-		/*
-		cubeTrans = glm::translate(cubeTrans, vec3(-6,0,0));
-		glUniformMatrix4fv( M_uni, 1, GL_FALSE, value_ptr(cubeTrans));
-		glDrawArrays( GL_TRIANGLES, 0, 12*3);
-		cubeTrans = glm::translate(cubeTrans, vec3(0,1,0));
-		glUniformMatrix4fv( M_uni, 1, GL_FALSE, value_ptr(cubeTrans));
-		glDrawArrays( GL_TRIANGLES, 0, 12*3);
-		*/
 		
-		for (int i=0; i<testStackHeight; i++) {
-			cubeTrans = glm::translate(glm::mat4(1.0f), vec3(activeCell.x, i, activeCell.y));
-			glUniformMatrix4fv( M_uni, 1, GL_FALSE, value_ptr(cubeTrans));
-			glDrawArrays( GL_TRIANGLES, 0, 12*3);
+		// draw all the cubes
+		for (int i=0; i<DIM; i++) {
+			for (int j=0; j<DIM; j++) {
+				for (int k=0; k<cells[i][j].height; k++) {
+					cubeTrans = glm::translate(glm::mat4(1.0f), vec3(i + worldOffset, k, j + worldOffset));
+					glUniformMatrix4fv( M_uni, 1, GL_FALSE, value_ptr(cubeTrans));
+					glDrawArrays( GL_TRIANGLES, 0, 12*3);
+				}
+			}
 		}
 
 		// draw wire cube indicator on top of everything else
 		glDisable( GL_DEPTH_TEST );
 		glBindVertexArray(m_wire_cube_vao);
-		glUniform3f(col_uni, 0, 0, 0);
 
-		for (int i=0; i <= std::min(testStackHeight, MAX_HEIGHT-1); i++) {
-			cubeTrans = glm::translate(glm::mat4(1.0f), vec3(activeCell.x, i, activeCell.y));
+		// set highliht to be a flashing wire frame. Flash every second
+		time_t timer;
+		time(&timer);
+		glUniform3f(col_uni, timer%3, (timer+1)%3, (timer+2)%3);
+
+		for (int i=0; i <= std::min(cells[activeX][activeY].height, MAX_HEIGHT-1); i++) {
+			cubeTrans = glm::translate(glm::mat4(1.0f), vec3(activeX + worldOffset, i, activeY + worldOffset));
 			glUniformMatrix4fv( M_uni, 1, GL_FALSE, value_ptr(cubeTrans));
 			glDrawArrays(GL_LINES, 0, 12*2);
 		}
@@ -405,7 +413,12 @@ void A1::draw()
  * Called once, after program is signaled to terminate.
  */
 void A1::cleanup()
-{}
+{
+	for (int i=0; i < DIM; i++) {
+		delete [] cells[i];
+	}
+	delete [] cells;
+}
 
 //----------------------------------------------------------------------------------------
 /*
@@ -493,22 +506,46 @@ bool A1::keyInputEvent(int key, int action, int mods) {
 			glfwSetWindowShouldClose(m_window, GL_TRUE);
 		}
 		else if (key == GLFW_KEY_SPACE) {
-			testStackHeight = std::min(MAX_HEIGHT, testStackHeight+1);
+			cells[activeX][activeY].height = std::min(MAX_HEIGHT, cells[activeX][activeY].height+1);
 		}
 		else if (key == GLFW_KEY_BACKSPACE) {
-			testStackHeight = std::max(0, testStackHeight-1);
+			cells[activeX][activeY].height = std::max(0, cells[activeX][activeY].height-1);
 		}
 		else if (key == GLFW_KEY_UP) {
-			activeCell += glm::vec2(0,-1); 
+			int prevY = activeY;
+			activeY = std::max(activeY-1, 0);
+			if (shiftDown) {
+				cells[activeX][activeY] = cells[activeX][prevY];	
+			}
 		}
 		else if (key == GLFW_KEY_DOWN) {
-			activeCell += glm::vec2(0,1); 
+			int prevY = activeY;
+			activeY = std::min(activeY+1, 15);
+			if (shiftDown) {
+				cells[activeX][activeY] = cells[activeX][prevY];	
+			}
 		}
 		else if (key == GLFW_KEY_LEFT) {
-			activeCell += glm::vec2(-1,0); 
+			int prevX = activeX;
+			activeX = std::max(activeX-1, 0);
+			if (shiftDown) {
+				cells[activeX][activeY] = cells[prevX][activeY];	
+			}
 		}
 		else if (key == GLFW_KEY_RIGHT) {
-			activeCell += glm::vec2(1,0); 
+			int prevX = activeX;
+			activeX = std::min(activeX+1, 15);
+			if (shiftDown) {
+				cells[activeX][activeY] = cells[prevX][activeY];	
+			}
+		}
+		else if (key == GLFW_KEY_LEFT_SHIFT || key == GLFW_KEY_RIGHT_SHIFT) {
+			shiftDown = std::min(shiftDown+1, 2);
+		}
+	}
+	else if (action == GLFW_RELEASE) {
+		if (key == GLFW_KEY_LEFT_SHIFT || key == GLFW_KEY_RIGHT_SHIFT) {
+			shiftDown = std::max(shiftDown-1, 0);
 		}
 	}
 
