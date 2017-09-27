@@ -11,10 +11,10 @@
 struct cell
 {
 	int height;
-	glm::vec3 colour;	
+	int colour;	
 
 	cell() : 
-	height(0), colour(glm::vec3(1,1,1))
+	height(0), colour(0)
 	{
 
 	}
@@ -45,6 +45,10 @@ private:
 	void initCube();
 	void initWireCube();
 
+	void resetColours();
+	void resetCells();
+	void reset();
+
 	// Fields related to the shader and uniforms.
 	ShaderProgram m_shader;
 	GLint P_uni; // Uniform location for Projection matrix.
@@ -74,10 +78,19 @@ private:
 	// for handling holding shift
 	int shiftDown = 0;
 
+	// mouse input
+	int dragging = 0;
+	float lastX = 0;
+	float rotateX = 0;
+	float rotateFactor = 0.005;
+	
+	float scale = 1;
+	float scaleFactor = 0.1;
+
 	// Matrices controlling the camera and projection
 	glm::mat4 proj;
 	glm::mat4 view;
 
-	float colour[3];
+	float colours[8][3];
 	int current_col;
 };

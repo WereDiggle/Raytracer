@@ -10,6 +10,8 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #define MAX_HEIGHT 15
+#define MAX_SCALE 3.0f
+#define MIN_SCALE 0.2f
 
 using namespace glm;
 using namespace std;
@@ -113,15 +115,72 @@ static const GLfloat g_test_buffer_data[] = {
 A1::A1()
 	: current_col( 0 )
 {
-	colour[0] = 0.0f;
-	colour[1] = 0.0f;
-	colour[2] = 0.0f;
+	resetColours();
 }
 
 //----------------------------------------------------------------------------------------
 // Destructor
 A1::~A1()
 {}
+
+void A1::resetColours()
+{
+	// colours r, g, b
+	colours[0][0] = 1; // white
+	colours[0][1] = 1;
+	colours[0][2] = 1;
+
+	colours[1][0] = 0; // black
+	colours[1][1] = 0;
+	colours[1][2] = 0;
+
+	colours[2][0] = 1; // red
+	colours[2][1] = 0;
+	colours[2][2] = 0;
+
+	colours[3][0] = 0; // green
+	colours[3][1] = 1;
+	colours[3][2] = 0;
+
+	colours[4][0] = 0; // blue
+	colours[4][1] = 0;
+	colours[4][2] = 1;
+
+	colours[5][0] = 1; 
+	colours[5][1] = 1;
+	colours[5][2] = 0;
+
+	colours[6][0] = 1; 
+	colours[6][1] = 0;
+	colours[6][2] = 1;
+
+	colours[7][0] = 0; 
+	colours[7][1] = 1;
+	colours[7][2] = 1;
+}
+
+void A1::resetCells()
+{
+	for (int i=0; i<DIM; i++) {
+		for (int j=0; j<DIM; j++) {
+			cells[i][j] = cell();
+		}
+	}
+}
+
+void A1::reset()
+{
+	activeX = 0;
+	activeY = 0;
+
+	resetColours();
+	current_col = 0;
+
+	resetCells();
+
+	rotateX = 0;
+	scale = 1;
+}
 
 //----------------------------------------------------------------------------------------
 /*
@@ -315,14 +374,19 @@ void A1::guiLogic()
 		// Prefixing a widget name with "##" keeps it from being
 		// displayed.
 
-		ImGui::PushID( 0 );
-		ImGui::ColorEdit3( "##Colour", colour );
-		ImGui::SameLine();
-		if( ImGui::RadioButton( "##Col", &current_col, 0 ) ) {
-			// Select this colour.
+		// Display eight colours
+		for (int i=0; i<8; i++) {
+			ImGui::PushID( i );
+			if (ImGui::ColorEdit3( "##Colour", colours[i] )) {
+				ImGui::SetKeyboardFocusHere(1);
+			};
+			ImGui::SameLine();
+			if( ImGui::RadioButton( "##Col", &current_col, i ) ) {
+				// change colour of active cell
+				cells[activeX][activeY].colour = current_col;
+			}
+			ImGui::PopID();
 		}
-		ImGui::PopID();
-
 /*
 		// For convenience, you can uncomment this to show ImGui's massive
 		// demonstration window right in your application.  Very handy for
@@ -351,6 +415,8 @@ void A1::draw()
 	// Create a global transformation for the model (centre it).
 	mat4 W;
 	float worldOffset = -float(DIM)/2.0f;
+	W = glm::scale(W, vec3(scale, scale, scale));
+	W = glm::rotate(W , rotateX*rotateFactor, vec3(0.0,1.0,0.0));
 	W = glm::translate( W, vec3( worldOffset, 0, worldOffset ) );
 
 	m_shader.enable();
@@ -376,8 +442,11 @@ void A1::draw()
 		// draw all the cubes
 		for (int i=0; i<DIM; i++) {
 			for (int j=0; j<DIM; j++) {
+				int colourIndex = cells[i][j].colour;
+				glUniform3f( col_uni, colours[colourIndex][0], colours[colourIndex][1], colours[colourIndex][2] );
 				for (int k=0; k<cells[i][j].height; k++) {
-					cubeTrans = glm::translate(glm::mat4(1.0f), vec3(i + worldOffset, k, j + worldOffset));
+					//cubeTrasn = glm::rotate(W , rotateX*rotateFactor, vec3(0.0,1.0,0.0));
+					cubeTrans = glm::translate(W, vec3(i, k, j));
 					glUniformMatrix4fv( M_uni, 1, GL_FALSE, value_ptr(cubeTrans));
 					glDrawArrays( GL_TRIANGLES, 0, 12*3);
 				}
@@ -394,7 +463,7 @@ void A1::draw()
 		glUniform3f(col_uni, timer%3, (timer+1)%3, (timer+2)%3);
 
 		for (int i=0; i <= std::min(cells[activeX][activeY].height, MAX_HEIGHT-1); i++) {
-			cubeTrans = glm::translate(glm::mat4(1.0f), vec3(activeX + worldOffset, i, activeY + worldOffset));
+			cubeTrans = glm::translate(W, vec3(activeX, i, activeY));
 			glUniformMatrix4fv( M_uni, 1, GL_FALSE, value_ptr(cubeTrans));
 			glDrawArrays(GL_LINES, 0, 12*2);
 		}
@@ -448,6 +517,14 @@ bool A1::mouseMoveEvent(double xPos, double yPos)
 		// Probably need some instance variables to track the current
 		// rotation amount, and maybe the previous X position (so 
 		// that you can rotate relative to the *change* in X.
+		if (dragging) {
+			if (dragging == 1) {
+				lastX = xPos;
+				dragging = 2;
+			}
+			rotateX += xPos - lastX;
+			lastX = xPos;
+		}
 	}
 
 	return eventHandled;
@@ -463,6 +540,13 @@ bool A1::mouseButtonInputEvent(int button, int actions, int mods) {
 	if (!ImGui::IsMouseHoveringAnyWindow()) {
 		// The user clicked in the window.  If it's the left
 		// mouse button, initiate a rotation.
+		if (button == GLFW_MOUSE_BUTTON_LEFT && actions == GLFW_PRESS) {
+			dragging = 1;
+		}
+	}
+
+	if (button == GLFW_MOUSE_BUTTON_LEFT && actions == GLFW_RELEASE) {
+		dragging = 0;
 	}
 
 	return eventHandled;
@@ -476,6 +560,9 @@ bool A1::mouseScrollEvent(double xOffSet, double yOffSet) {
 	bool eventHandled(false);
 
 	// Zoom in or out.
+	scale = scale + yOffSet * scaleFactor;
+	scale = std::max(MIN_SCALE, scale);
+	scale = std::min(MAX_SCALE, scale);
 
 	return eventHandled;
 }
@@ -500,16 +587,25 @@ bool A1::keyInputEvent(int key, int action, int mods) {
 	bool eventHandled(false);
 
 	// Fill in with event handling code...
+	eventHandled = true;
 	if( action == GLFW_PRESS ) {
 		// Respond to some key events.
 		if (key == GLFW_KEY_Q) {
 			glfwSetWindowShouldClose(m_window, GL_TRUE);
 		}
+		else if (key == GLFW_KEY_R) {
+			reset();
+		}
 		else if (key == GLFW_KEY_SPACE) {
 			cells[activeX][activeY].height = std::min(MAX_HEIGHT, cells[activeX][activeY].height+1);
+			cells[activeX][activeY].colour = current_col;
 		}
 		else if (key == GLFW_KEY_BACKSPACE) {
 			cells[activeX][activeY].height = std::max(0, cells[activeX][activeY].height-1);
+			cells[activeX][activeY].colour = current_col;
+		}
+		else if (key == GLFW_KEY_C) {
+			cells[activeX][activeY].colour = current_col;
 		}
 		else if (key == GLFW_KEY_UP) {
 			int prevY = activeY;
@@ -542,11 +638,20 @@ bool A1::keyInputEvent(int key, int action, int mods) {
 		else if (key == GLFW_KEY_LEFT_SHIFT || key == GLFW_KEY_RIGHT_SHIFT) {
 			shiftDown = std::min(shiftDown+1, 2);
 		}
+		else {
+			eventHandled = false;
+		}
 	}
 	else if (action == GLFW_RELEASE) {
 		if (key == GLFW_KEY_LEFT_SHIFT || key == GLFW_KEY_RIGHT_SHIFT) {
 			shiftDown = std::max(shiftDown-1, 0);
 		}
+		else {
+			eventHandled = false;
+		}
+	}
+	else {
+		eventHandled = false;
 	}
 
 	return eventHandled;
