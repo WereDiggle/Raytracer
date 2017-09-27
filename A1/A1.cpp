@@ -10,8 +10,8 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #define MAX_HEIGHT 15
-#define MAX_SCALE 3.0f
-#define MIN_SCALE 0.2f
+#define MAX_SCALE 3.0f 
+#define MIN_SCALE 0.2f 
 
 using namespace glm;
 using namespace std;
@@ -22,9 +22,7 @@ static const GLfloat wireframe_cube[] = {
 	1.0f, 0.0f, 0.0f,
 
 	0.0f, 0.0f, 0.0f,
-	0.0f, 1.0f, 0.0f,
-
-	0.0f, 0.0f, 0.0f,
+	0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
 	0.0f, 0.0f, 1.0f,
 
 	0.0f, 1.0f, 1.0f,
@@ -381,9 +379,7 @@ void A1::guiLogic()
 		// Display eight colours
 		for (int i=0; i<8; i++) {
 			ImGui::PushID( i );
-			if (ImGui::ColorEdit3( "##Colour", colours[i] )) {
-				ImGui::SetKeyboardFocusHere(1);
-			};
+			ImGui::ColorEdit3( "##Colour", colours[i] );
 			ImGui::SameLine();
 			if( ImGui::RadioButton( "##Col", &current_col, i ) ) {
 				// change colour of active cell
@@ -590,73 +586,73 @@ bool A1::windowResizeEvent(int width, int height) {
 bool A1::keyInputEvent(int key, int action, int mods) {
 	bool eventHandled(false);
 
-	// Fill in with event handling code...
-	eventHandled = true;
-	if( action == GLFW_PRESS ) {
-		// Respond to some key events.
-		if (key == GLFW_KEY_Q) {
-			glfwSetWindowShouldClose(m_window, GL_TRUE);
-		}
-		else if (key == GLFW_KEY_R) {
-			reset();
-		}
-		else if (key == GLFW_KEY_SPACE) {
-			cells[activeX][activeY].height = std::min(MAX_HEIGHT, cells[activeX][activeY].height+1);
-			cells[activeX][activeY].colour = current_col;
-		}
-		else if (key == GLFW_KEY_BACKSPACE) {
-			cells[activeX][activeY].height = std::max(0, cells[activeX][activeY].height-1);
-			cells[activeX][activeY].colour = current_col;
-		}
-		else if (key == GLFW_KEY_C) {
-			cells[activeX][activeY].colour = current_col;
-		}
-		else if (key == GLFW_KEY_UP) {
-			int prevY = activeY;
-			activeY = std::max(activeY-1, 0);
-			if (shiftDown) {
-				cells[activeX][activeY] = cells[activeX][prevY];	
-			}
-		}
-		else if (key == GLFW_KEY_DOWN) {
-			int prevY = activeY;
-			activeY = std::min(activeY+1, 15);
-			if (shiftDown) {
-				cells[activeX][activeY] = cells[activeX][prevY];	
-			}
-		}
-		else if (key == GLFW_KEY_LEFT) {
-			int prevX = activeX;
-			activeX = std::max(activeX-1, 0);
-			if (shiftDown) {
-				cells[activeX][activeY] = cells[prevX][activeY];	
-			}
-		}
-		else if (key == GLFW_KEY_RIGHT) {
-			int prevX = activeX;
-			activeX = std::min(activeX+1, 15);
-			if (shiftDown) {
-				cells[activeX][activeY] = cells[prevX][activeY];	
-			}
-		}
-		else if (key == GLFW_KEY_LEFT_SHIFT || key == GLFW_KEY_RIGHT_SHIFT) {
-			shiftDown = std::min(shiftDown+1, 2);
-		}
-		else {
-			eventHandled = false;
-		}
-	}
-	else if (action == GLFW_RELEASE) {
-		if (key == GLFW_KEY_LEFT_SHIFT || key == GLFW_KEY_RIGHT_SHIFT) {
-			shiftDown = std::max(shiftDown-1, 0);
-		}
-		else {
-			eventHandled = false;
-		}
-	}
-	else {
-		eventHandled = false;
-	}
+    ImGuiIO& io = ImGui::GetIO();
+
+    if (io.WantCaptureKeyboard) {
+        if (action == GLFW_PRESS) {
+            io.AddInputCharacter(key);   
+        }
+    }
+    else {
+        // Fill in with event handling code...
+        if( action == GLFW_PRESS ) {
+            // Respond to some key events.
+            if (key == GLFW_KEY_Q) {
+                glfwSetWindowShouldClose(m_window, GL_TRUE);
+            }
+            else if (key == GLFW_KEY_R) {
+                reset();
+            }
+            else if (key == GLFW_KEY_SPACE) {
+                cells[activeX][activeY].height = std::min(MAX_HEIGHT, cells[activeX][activeY].height+1);
+                cells[activeX][activeY].colour = current_col;
+            }
+            else if (key == GLFW_KEY_BACKSPACE) {
+                cells[activeX][activeY].height = std::max(0, cells[activeX][activeY].height-1);
+                cells[activeX][activeY].colour = current_col;
+            }
+            else if (key == GLFW_KEY_C) {
+                cells[activeX][activeY].colour = current_col;
+            }
+            else if (key == GLFW_KEY_UP) {
+                int prevY = activeY;
+                activeY = std::max(activeY-1, 0);
+                if (shiftDown) {
+                    cells[activeX][activeY] = cells[activeX][prevY];	
+                }
+            }
+            else if (key == GLFW_KEY_DOWN) {
+                int prevY = activeY;
+                activeY = std::min(activeY+1, 15);
+                if (shiftDown) {
+                    cells[activeX][activeY] = cells[activeX][prevY];	
+                }
+            }
+            else if (key == GLFW_KEY_LEFT) {
+                int prevX = activeX;
+                activeX = std::max(activeX-1, 0);
+                if (shiftDown) {
+                    cells[activeX][activeY] = cells[prevX][activeY];	
+                }
+            }
+            else if (key == GLFW_KEY_RIGHT) {
+                int prevX = activeX;
+                activeX = std::min(activeX+1, 15);
+                if (shiftDown) {
+                    cells[activeX][activeY] = cells[prevX][activeY];	
+                }
+            }
+            else if (key == GLFW_KEY_LEFT_SHIFT || key == GLFW_KEY_RIGHT_SHIFT) {
+                shiftDown = std::min(shiftDown+1, 2);
+            }
+        }
+        else if (action == GLFW_RELEASE) {
+            if (key == GLFW_KEY_LEFT_SHIFT || key == GLFW_KEY_RIGHT_SHIFT) {
+                shiftDown = std::max(shiftDown-1, 0);
+            }
+        }
+    }
+
 
 	return eventHandled;
 }
