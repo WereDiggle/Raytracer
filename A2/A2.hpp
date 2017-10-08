@@ -55,10 +55,37 @@ protected:
 
 	void setLineColour(const glm::vec3 & colour);
 
+	void initCube();
+
+	void drawCube(const glm::mat4 & M);
+
+	glm::vec2 removeZ(glm::vec3);
+	glm::vec4 point(glm::vec3 v);
+
 	void drawLine (
 			const glm::vec2 & v0,
 			const glm::vec2 & v1
 	);
+
+	void drawLine (
+			const glm::vec3 & v0,
+			const glm::vec3 & v1
+	);
+
+	void drawLine (
+			const glm::vec4 & v0,
+			const glm::vec4 & v1
+	);
+
+	glm::mat4 makeScaleMat4(float x, float y, float z);
+	glm::mat4 makeTranslateMat4(float x, float y, float z);
+	glm::mat4 makeRotateXMat4(float theta);
+	glm::mat4 makeRotateYMat4(float theta);
+	glm::mat4 makeRotateZMat4(float theta);
+
+	void applyTransformationChanges();
+
+	glm::mat4 multAllMat();
 
 	ShaderProgram m_shader;
 
@@ -70,4 +97,35 @@ protected:
 
 	glm::vec3 m_currentLineColour;
 
+	// Model transformation matrices
+	glm::mat4 modelTranslation;
+	glm::mat4 modelRotation;
+	glm::mat4 modelScale;
+
+	// World transformation matrices
+	glm::mat4 worldTranslation;
+	glm::mat4 worldRotation;
+	glm::mat4 worldScale;
+
+	// View transformation matrices
+	glm::mat4 viewTranslation;
+	glm::mat4 viewRotation;
+
+	// Projection matrices
+	glm::mat4 projectionMatrix;
+
+	// Cube coordinates
+	glm::vec3 cubeCoords[8];
+
+	double lastX;
+	double lastY;
+
+	// Mouse variables
+	int leftMouseDown = 0;
+	int middleMouseDown = 0;
+	int rightMouseDown = 0;
+
+	double leftMouseXChange;
+	double middleMouseXChange;
+	double rightMouseXChange;
 };

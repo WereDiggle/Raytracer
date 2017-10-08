@@ -9,6 +9,7 @@ using namespace std;
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/io.hpp>
+#include <glm/ext.hpp>
 using namespace glm;
 
 //----------------------------------------------------------------------------------------
@@ -55,6 +56,195 @@ void A2::init()
 	generateVertexBuffers();
 
 	mapVboDataToVertexAttributeLocation();
+
+	initCube();
+}
+
+//----------------------------------------------------------------------------------------
+/*
+ * Multiplies all matrices together and returns the result
+ */
+glm::mat4 A2::multAllMat()
+{
+	return modelScale * modelRotation * modelTranslation;
+}
+
+//----------------------------------------------------------------------------------------
+/*
+ * Makes a scale transformation matrix
+ */
+glm::mat4 A2::makeScaleMat4(float x, float y, float z)
+{
+	float m[16] = {
+		x, 0, 0, 0,
+		0, y, 0, 0,
+		0, 0, z, 0,
+		0, 0, 0, 1
+	};
+	return glm::make_mat4(m);
+}
+
+//----------------------------------------------------------------------------------------
+/*
+ * Makes a translation transformation matrix
+ */
+glm::mat4 A2::makeTranslateMat4(float x, float y, float z)
+{
+	float m[16] = {
+		1, 0, 0, x,
+		0, 1, 0, y,
+		0, 0, 1, z,
+		0, 0, 0, 1
+	};
+	return glm::make_mat4(m);
+}
+
+
+//----------------------------------------------------------------------------------------
+/*
+ * Makes a rotation transformation matrix about axis X. Takes degrees.
+ */
+glm::mat4 A2::makeRotateXMat4(float theta)
+{
+	float thetaRad = glm::radians(theta);
+	float m[16] = {
+		1, 0, 0, 0,
+		0, glm::cos(thetaRad), -1*glm::sin(thetaRad), 0,
+		0, glm::sin(thetaRad), glm::cos(thetaRad), 0,
+		0, 0, 0, 1
+	};
+	return glm::make_mat4(m);
+}
+
+//----------------------------------------------------------------------------------------
+/*
+ * Makes a rotation transformation matrix about axis Y. Takes degrees.
+ */
+glm::mat4 A2::makeRotateYMat4(float theta)
+{
+	float thetaRad = glm::radians(theta);
+	float m[16] = {
+		glm::cos(thetaRad), 0, glm::sin(thetaRad), 0,
+		0, 1, 0, 0,
+		-1*glm::sin(thetaRad), 0, glm::cos(thetaRad), 0,
+		0, 0, 0, 1
+	};
+	return glm::make_mat4(m);
+}
+
+//----------------------------------------------------------------------------------------
+/*
+ * Makes a rotation transformation matrix about axis Z. Takes degrees.
+ */
+glm::mat4 A2::makeRotateZMat4(float theta)
+{
+	float thetaRad = glm::radians(theta);
+	float m[16] = {
+		glm::cos(thetaRad), -1*glm::sin(thetaRad), 0, 0,
+		glm::sin(thetaRad), glm::cos(thetaRad), 0, 0,
+		0, 0, 1, 0,
+		0, 0, 0, 1
+	};
+	return glm::make_mat4(m);
+}
+//----------------------------------------------------------------------------------------
+/*
+ * Used to initialize Cube coordinates. and model matrices
+ */
+void A2::initCube()
+{
+	cubeCoords[0] = glm::vec3(-1,-1,-1);
+	cubeCoords[1] = glm::vec3(-1,-1,1);
+	cubeCoords[2] = glm::vec3(-1,1,-1);
+	cubeCoords[3] = glm::vec3(-1,1,1);
+	cubeCoords[4] = glm::vec3(1,-1,-1);
+	cubeCoords[5] = glm::vec3(1,-1,1);
+	cubeCoords[6] = glm::vec3(1,1,-1);
+	cubeCoords[7] = glm::vec3(1,1,1);
+
+	//printf("Draw CUBE: \n");
+	//for (int i=0; i<8; i++) {
+	//	printf("%s\n", glm::to_string(cubeCoords[i]).c_str());
+	//}
+	modelScale = makeScaleMat4(0.1,0.1,0.1);
+	modelRotation = makeRotateXMat4(30);
+	modelTranslation = makeTranslateMat4(0.1,0.1,0.1);
+}
+
+//----------------------------------------------------------------------------------------
+/*
+ * Used to draw the cube using the current combined matrix
+ */
+void A2::drawCube(const glm::mat4 & M)
+{
+	glm::vec4 newCubeCoords[8] = {
+		M * point(cubeCoords[0]),	
+		M * point(cubeCoords[1]),	
+		M * point(cubeCoords[2]),	
+		M * point(cubeCoords[3]),	
+		M * point(cubeCoords[4]),	
+		M * point(cubeCoords[5]),	
+		M * point(cubeCoords[6]),	
+		M * point(cubeCoords[7]),	
+	};
+
+	//printf("Draw CUBE: \n");
+	//for (int i=0; i<8; i++) {
+	//	printf("%s\n", glm::to_string(newCubeCoords[i]).c_str());
+	//}
+
+	drawLine(newCubeCoords[0], newCubeCoords[1]);
+	drawLine(newCubeCoords[0], newCubeCoords[2]);
+	drawLine(newCubeCoords[0], newCubeCoords[4]);
+	drawLine(newCubeCoords[1], newCubeCoords[3]);
+	drawLine(newCubeCoords[1], newCubeCoords[5]);
+	drawLine(newCubeCoords[2], newCubeCoords[3]);
+	drawLine(newCubeCoords[2], newCubeCoords[6]);
+	drawLine(newCubeCoords[3], newCubeCoords[7]);
+	drawLine(newCubeCoords[4], newCubeCoords[5]);
+	drawLine(newCubeCoords[4], newCubeCoords[6]);
+	drawLine(newCubeCoords[5], newCubeCoords[7]);
+	drawLine(newCubeCoords[6], newCubeCoords[7]);
+}
+
+//----------------------------------------------------------------------------------------
+/*
+ * Turns a vec3 coordinate into a vec4 with a 1 at the end for point representation
+ */
+glm::vec4 A2::point(glm::vec3 v)
+{
+	return glm::vec4(v.x, v.y, v.z, 1);
+}
+
+//----------------------------------------------------------------------------------------
+/*
+ * transforms vec3 to vec2 by removing the z coordinate
+ */
+glm::vec2 A2::removeZ(glm::vec3 v)
+{
+	return glm::vec2(v.x, v.y);
+}
+
+//----------------------------------------------------------------------------------------
+/*
+ * Wrapper for drawLine. Takes vec4, but ignores the z and the point 1
+ */
+void A2::drawLine(
+		const glm::vec4 & v0,   // Line Start (NDC coordinate)
+		const glm::vec4 & v1    // Line End (NDC coordinate)
+) {
+	drawLine(removeZ(vec3(v0)), removeZ(vec3(v1)));
+}
+
+//----------------------------------------------------------------------------------------
+/*
+ * Wrapper for drawLine. Takes vec3, but ignores the z
+ */
+void A2::drawLine(
+		const glm::vec3 & v0,   // Line Start (NDC coordinate)
+		const glm::vec3 & v1    // Line End (NDC coordinate)
+) {
+	drawLine(removeZ(v0), removeZ(v1));
 }
 
 //----------------------------------------------------------------------------------------
@@ -189,6 +379,11 @@ void A2::appLogic()
 	// Call at the beginning of frame, before drawing lines:
 	initLineData();
 
+	glm::mat4 M = multAllMat();
+
+	setLineColour(vec3(1.0f, 0.7f, 0.8f));
+	drawCube(M);
+
 	// Draw outer square:
 	setLineColour(vec3(1.0f, 0.7f, 0.8f));
 	drawLine(vec2(-0.5f, -0.5f), vec2(0.5f, -0.5f));
@@ -316,8 +511,42 @@ bool A2::mouseMoveEvent (
 	bool eventHandled(false);
 
 	// Fill in with event handling code...
+	//modelRotation = makeRotateXMat4((float)xPos);
+	//modelRotation = modelRotation * makeRotateYMat4((float)yPos);
+
+	if (leftMouseDown) {
+		leftMouseXChange = xPos - lastX;
+	}
+	
+	if (rightMouseDown) {
+		rightMouseXChange = xPos - lastX;
+	}
+
+	if (middleMouseDown) {
+		middleMouseXChange = xPos - lastX;
+	}
+
+	applyTransformationChanges();
+
+	lastX = xPos;
+	lastY = yPos;
+
+	eventHandled = true;
 
 	return eventHandled;
+}
+
+void A2::applyTransformationChanges() {
+	// TODO: for now just handle model rotation
+	if (leftMouseDown) {
+		modelRotation = modelRotation * makeRotateXMat4((float)leftMouseXChange);	
+	}
+	if (middleMouseDown) {
+		modelRotation = modelRotation * makeRotateYMat4((float)middleMouseXChange);	
+	}
+	if (rightMouseDown) {
+		modelRotation = modelRotation * makeRotateZMat4((float)rightMouseXChange);	
+	}
 }
 
 //----------------------------------------------------------------------------------------
@@ -332,6 +561,33 @@ bool A2::mouseButtonInputEvent (
 	bool eventHandled(false);
 
 	// Fill in with event handling code...
+	if (button == GLFW_MOUSE_BUTTON_LEFT) {
+		if (actions == GLFW_PRESS && !ImGui::IsMouseHoveringAnyWindow()) {
+			leftMouseDown = 1;
+		}
+		else if (actions == GLFW_RELEASE) {
+			leftMouseDown = 0;
+			leftMouseXChange = 0;
+		}
+	}
+	else if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+		if (actions == GLFW_PRESS && !ImGui::IsMouseHoveringAnyWindow()) {
+			rightMouseDown = 1;
+		}
+		else if (actions == GLFW_RELEASE) {
+			rightMouseDown = 0;
+			rightMouseXChange = 0;
+		}
+	}
+	else if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
+		if (actions == GLFW_PRESS && !ImGui::IsMouseHoveringAnyWindow()) {
+			middleMouseDown = 1;
+		}
+		else if (actions == GLFW_RELEASE) {
+			middleMouseDown = 0;
+			middleMouseXChange = 0;
+		}
+	}
 
 	return eventHandled;
 }
