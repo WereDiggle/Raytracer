@@ -58,6 +58,8 @@ void A2::init()
 	mapVboDataToVertexAttributeLocation();
 
 	initCube();
+	initModelMatrices();
+	initGnomon();
 
 	float m[16] = {
 		0.001, 0, 0, 0,
@@ -179,7 +181,6 @@ glm::mat4 A2::makeTranslateMat4(float x, float y, float z)
 	return glm::make_mat4(m);
 }
 
-
 //----------------------------------------------------------------------------------------
 /*
  * Makes a rotation transformation matrix about axis X. Takes degrees.
@@ -227,6 +228,29 @@ glm::mat4 A2::makeRotateZMat4(float theta)
 	};
 	return glm::make_mat4(m);
 }
+
+//----------------------------------------------------------------------------------------
+/*
+ * Used to initialize Gnomon coordinates
+ */
+void A2::initGnomon()
+{
+	gnomonCoords[0] = glm::vec3(0,0,0);
+	gnomonCoords[1] = glm::vec3(0.1f,0,0);
+	gnomonCoords[2] = glm::vec3(0,0.1f,0);
+	gnomonCoords[3] = glm::vec3(0,0,0.1f);
+}
+
+//----------------------------------------------------------------------------------------
+/*
+ * Used to initialize model matrices
+ */
+void A2::initModelMatrices() {
+	modelScale = makeScaleMat4(0.1,0.1,0.1);
+	modelRotation = makeRotateXMat4(30);
+	modelTranslation = makeTranslateMat4(0,0,0);
+}
+
 //----------------------------------------------------------------------------------------
 /*
  * Used to initialize Cube coordinates. and model matrices
@@ -242,13 +266,32 @@ void A2::initCube()
 	cubeCoords[6] = glm::vec3(1,1,-1);
 	cubeCoords[7] = glm::vec3(1,1,1);
 
-	//printf("Draw CUBE: \n");
-	//for (int i=0; i<8; i++) {
-	//	printf("%s\n", glm::to_string(cubeCoords[i]).c_str());
-	//}
-	modelScale = makeScaleMat4(0.1,0.1,0.1);
-	modelRotation = makeRotateXMat4(30);
-	modelTranslation = makeTranslateMat4(0,0,0);
+}
+
+//----------------------------------------------------------------------------------------
+/*
+ * Draw a Gnomon using the given a transformation matrix
+ */
+void A2::drawGnomon(const glm::mat4 & M)
+{
+	glm::vec4 newGnomonCoords[4] = {
+		M * point(gnomonCoords[0]),
+		M * point(gnomonCoords[1]),
+		M * point(gnomonCoords[2]),
+		M * point(gnomonCoords[3])
+	};
+
+	// red X axis
+	setLineColour(vec3(1.0f, 0, 0));
+	drawLine(newGnomonCoords[0], newGnomonCoords[1]);
+
+	// green Y axis
+	setLineColour(vec3(0, 1.0f, 0));
+	drawLine(newGnomonCoords[0], newGnomonCoords[2]);
+
+	// blue Z axis
+	setLineColour(vec3(0, 0, 1.0f));
+	drawLine(newGnomonCoords[0], newGnomonCoords[3]);
 }
 
 //----------------------------------------------------------------------------------------
@@ -459,9 +502,11 @@ void A2::appLogic()
 	// Call at the beginning of frame, before drawing lines:
 	initLineData();
 
-	glm::mat4 M = multAllMat();
+	glm::mat4 M = modelTranslation * modelRotation;
+	drawGnomon(M);
 
-	setLineColour(vec3(1.0f, 0.7f, 0.8f));
+	M = M * modelScale;
+	setLineColour(vec3(1.0f, 1.0f, 1.0f));
 	drawCube(M);
 
 	//// Draw outer square:

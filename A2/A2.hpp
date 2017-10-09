@@ -56,9 +56,12 @@ protected:
 
 	void setLineColour(const glm::vec3 & colour);
 
+	void initModelMatrices();
 	void initCube();
+	void initGnomon();
 
 	void drawCube(const glm::mat4 & M);
+	void drawGnomon(const glm::mat4 & M);
 
 	glm::vec2 removeZ(glm::vec3);
 	glm::vec4 point(glm::vec3 v);
@@ -128,6 +131,9 @@ protected:
 
 	// Cube coordinates
 	glm::vec3 cubeCoords[8];
+
+	// Gnomon coordinates
+	glm::vec3 gnomonCoords[4];
 
 	double lastX;
 	double lastY;
