@@ -25,6 +25,7 @@ public:
 	GLsizei numVertices;
 };
 
+enum Mode { ModelRotation = 0, ModelTranslation, ModelScale};
 
 class A2 : public CS488Window {
 public:
@@ -65,8 +66,7 @@ protected:
 	void drawLine (
 			const glm::vec2 & v0,
 			const glm::vec2 & v1
-	);
-
+	); 
 	void drawLine (
 			const glm::vec3 & v0,
 			const glm::vec3 & v1
@@ -83,6 +83,10 @@ protected:
 	glm::mat4 makeRotateYMat4(float theta);
 	glm::mat4 makeRotateZMat4(float theta);
 
+	glm::mat4 addToScaleMat4(const glm::mat4 & mat, float dx, float dy, float dz);
+	glm::mat4 reverseTranslationMat4(const glm::mat4 & mat);
+	glm::mat4 makeAxisTranslationMat4(const glm::mat4 & mat, const glm::mat4 & axis);
+
 	void applyTransformationChanges();
 
 	glm::mat4 multAllMat();
@@ -96,6 +100,14 @@ protected:
 	VertexData m_vertexData;
 
 	glm::vec3 m_currentLineColour;
+
+	int currentMode = Mode::ModelRotation;
+
+	double modelScaleFactor = 0.001;
+	double modelRotationFactor = 0.5;
+	double modelTranslationFactor = 0.01;
+
+	float minModelScale = 0.001f;
 
 	// Model transformation matrices
 	glm::mat4 modelTranslation;

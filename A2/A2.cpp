@@ -58,6 +58,14 @@ void A2::init()
 	mapVboDataToVertexAttributeLocation();
 
 	initCube();
+
+	float m[16] = {
+		0.001, 0, 0, 0,
+		0, 0.001, 0, 0,
+		0, 0, 0.001, 0,
+		0, 0, 0, 1
+	};
+
 }
 
 //----------------------------------------------------------------------------------------
@@ -66,7 +74,78 @@ void A2::init()
  */
 glm::mat4 A2::multAllMat()
 {
-	return modelScale * modelRotation * modelTranslation;
+	// Need to translate back to the origin first
+	return 	//reverseTranslationMat4(modelTranslation) * 
+			modelTranslation *
+			modelRotation * 
+			modelScale; 
+}
+
+//----------------------------------------------------------------------------------------
+/*
+ * Given a translation matrix and a rotation matrix, translate along the rotational axis.
+ */
+glm::mat4 A2::makeAxisTranslationMat4(const glm::mat4 & mat, const glm::mat4 & axis)
+{
+	glm::mat4 retMat = axis * mat;
+
+	// Set the non-translation parts of the matrix to be standard translation
+	for (int i=0; i<3; i++) {
+		for (int j=0; j<4; j++) {
+			if (i == j) {
+				retMat[i][j] = 1;
+			}
+			else {
+				retMat[i][j] = 0;
+			}
+		}
+	}
+
+	//printf("retMat: %s\n", glm::to_string(retMat).c_str());
+	//printf("mat: %s\n", glm::to_string(mat).c_str());
+
+	return retMat;
+}
+
+//----------------------------------------------------------------------------------------
+/*
+ * Given a translation matrix, reverses it.
+ */
+glm::mat4 A2::reverseTranslationMat4(const glm::mat4 & mat)
+{
+	glm::mat4 retMat = glm::mat4(mat);
+
+	// negate each translation
+	for (int i=0; i<3; i++) {
+		retMat[3][i] = -1 * retMat[3][i];
+	}
+
+	printf("retMat: %s\n", glm::to_string(retMat).c_str());
+	printf("mat: %s\n", glm::to_string(mat).c_str());
+
+	return retMat;
+}
+
+//----------------------------------------------------------------------------------------
+/*
+ * Given a scale matrix, adds to the scale factor. Won't add past a minimum
+ */
+glm::mat4 A2::addToScaleMat4(const glm::mat4 & mat, float dx, float dy, float dz)
+{
+	float m[16] = {
+		dx, 0, 0, 0,
+		0, dy, 0, 0,
+		0, 0, dz, 0,
+		0, 0, 0,  0
+	};
+	glm::mat4 retMat = mat + glm::make_mat4(m);
+
+	// Bind each value to a min
+	for (int i=0; i<3; i++) {
+		retMat[i][i] = glm::max(retMat[i][i], minModelScale);
+	}
+
+	return retMat;
 }
 
 //----------------------------------------------------------------------------------------
@@ -90,11 +169,12 @@ glm::mat4 A2::makeScaleMat4(float x, float y, float z)
  */
 glm::mat4 A2::makeTranslateMat4(float x, float y, float z)
 {
+	// it's actually the transpose of this
 	float m[16] = {
-		1, 0, 0, x,
-		0, 1, 0, y,
-		0, 0, 1, z,
-		0, 0, 0, 1
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		x, y, z, 1
 	};
 	return glm::make_mat4(m);
 }
@@ -109,8 +189,8 @@ glm::mat4 A2::makeRotateXMat4(float theta)
 	float thetaRad = glm::radians(theta);
 	float m[16] = {
 		1, 0, 0, 0,
-		0, glm::cos(thetaRad), -1*glm::sin(thetaRad), 0,
-		0, glm::sin(thetaRad), glm::cos(thetaRad), 0,
+		0, glm::cos(thetaRad), glm::sin(thetaRad), 0,
+		0, -1*glm::sin(thetaRad), glm::cos(thetaRad), 0,
 		0, 0, 0, 1
 	};
 	return glm::make_mat4(m);
@@ -124,9 +204,9 @@ glm::mat4 A2::makeRotateYMat4(float theta)
 {
 	float thetaRad = glm::radians(theta);
 	float m[16] = {
-		glm::cos(thetaRad), 0, glm::sin(thetaRad), 0,
+		glm::cos(thetaRad), 0, -1*glm::sin(thetaRad), 0,
 		0, 1, 0, 0,
-		-1*glm::sin(thetaRad), 0, glm::cos(thetaRad), 0,
+		glm::sin(thetaRad), 0, glm::cos(thetaRad), 0,
 		0, 0, 0, 1
 	};
 	return glm::make_mat4(m);
@@ -140,8 +220,8 @@ glm::mat4 A2::makeRotateZMat4(float theta)
 {
 	float thetaRad = glm::radians(theta);
 	float m[16] = {
-		glm::cos(thetaRad), -1*glm::sin(thetaRad), 0, 0,
-		glm::sin(thetaRad), glm::cos(thetaRad), 0, 0,
+		glm::cos(thetaRad), glm::sin(thetaRad), 0, 0,
+		-1*glm::sin(thetaRad), glm::cos(thetaRad), 0, 0,
 		0, 0, 1, 0,
 		0, 0, 0, 1
 	};
@@ -168,7 +248,7 @@ void A2::initCube()
 	//}
 	modelScale = makeScaleMat4(0.1,0.1,0.1);
 	modelRotation = makeRotateXMat4(30);
-	modelTranslation = makeTranslateMat4(0.1,0.1,0.1);
+	modelTranslation = makeTranslateMat4(0,0,0);
 }
 
 //----------------------------------------------------------------------------------------
@@ -384,20 +464,20 @@ void A2::appLogic()
 	setLineColour(vec3(1.0f, 0.7f, 0.8f));
 	drawCube(M);
 
-	// Draw outer square:
-	setLineColour(vec3(1.0f, 0.7f, 0.8f));
-	drawLine(vec2(-0.5f, -0.5f), vec2(0.5f, -0.5f));
-	drawLine(vec2(0.5f, -0.5f), vec2(0.5f, 0.5f));
-	drawLine(vec2(0.5f, 0.5f), vec2(-0.5f, 0.5f));
-	drawLine(vec2(-0.5f, 0.5f), vec2(-0.5f, -0.5f));
+	//// Draw outer square:
+	//setLineColour(vec3(1.0f, 0.7f, 0.8f));
+	//drawLine(vec2(-0.5f, -0.5f), vec2(0.5f, -0.5f));
+	//drawLine(vec2(0.5f, -0.5f), vec2(0.5f, 0.5f));
+	//drawLine(vec2(0.5f, 0.5f), vec2(-0.5f, 0.5f));
+	//drawLine(vec2(-0.5f, 0.5f), vec2(-0.5f, -0.5f));
 
 
-	// Draw inner square:
-	setLineColour(vec3(0.2f, 1.0f, 1.0f));
-	drawLine(vec2(-0.25f, -0.25f), vec2(0.25f, -0.25f));
-	drawLine(vec2(0.25f, -0.25f), vec2(0.25f, 0.25f));
-	drawLine(vec2(0.25f, 0.25f), vec2(-0.25f, 0.25f));
-	drawLine(vec2(-0.25f, 0.25f), vec2(-0.25f, -0.25f));
+	//// Draw inner square:
+	//setLineColour(vec3(0.2f, 1.0f, 1.0f));
+	//drawLine(vec2(-0.25f, -0.25f), vec2(0.25f, -0.25f));
+	//drawLine(vec2(0.25f, -0.25f), vec2(0.25f, 0.25f));
+	//drawLine(vec2(0.25f, 0.25f), vec2(-0.25f, 0.25f));
+	//drawLine(vec2(-0.25f, 0.25f), vec2(-0.25f, -0.25f));
 }
 
 //----------------------------------------------------------------------------------------
@@ -427,6 +507,9 @@ void A2::guiLogic()
 		if( ImGui::Button( "Quit Application" ) ) {
 			glfwSetWindowShouldClose(m_window, GL_TRUE);
 		}
+		ImGui::RadioButton("Model Rotation", &currentMode, Mode::ModelRotation);
+		ImGui::RadioButton("Model Scale", &currentMode, Mode::ModelScale);
+		ImGui::RadioButton("Model Translation", &currentMode, Mode::ModelTranslation);
 
 		ImGui::Text( "Framerate: %.1f FPS", ImGui::GetIO().Framerate );
 
@@ -537,15 +620,43 @@ bool A2::mouseMoveEvent (
 }
 
 void A2::applyTransformationChanges() {
-	// TODO: for now just handle model rotation
-	if (leftMouseDown) {
-		modelRotation = modelRotation * makeRotateXMat4((float)leftMouseXChange);	
-	}
-	if (middleMouseDown) {
-		modelRotation = modelRotation * makeRotateYMat4((float)middleMouseXChange);	
-	}
-	if (rightMouseDown) {
-		modelRotation = modelRotation * makeRotateZMat4((float)rightMouseXChange);	
+	switch (currentMode) {
+		case Mode::ModelRotation: 
+			if (leftMouseDown) {
+				modelRotation = modelRotation * makeRotateXMat4((float) (leftMouseXChange * modelRotationFactor));	
+			}
+			if (middleMouseDown) {
+				modelRotation = modelRotation * makeRotateYMat4((float) (middleMouseXChange * modelRotationFactor));	
+			}
+			if (rightMouseDown) {
+				modelRotation = modelRotation * makeRotateZMat4((float) (rightMouseXChange * modelRotationFactor));	
+			}
+			break;
+		case Mode::ModelScale: 
+			if (leftMouseDown) {
+				modelScale = addToScaleMat4(modelScale, (float) (leftMouseXChange * modelScaleFactor), 0, 0);	
+				//printf("%s\n", glm::to_string(modelScale).c_str());
+			}
+			if (middleMouseDown) {
+				modelScale = addToScaleMat4(modelScale, 0, (float) (middleMouseXChange * modelScaleFactor), 0);	
+			}
+			if (rightMouseDown) {
+				modelScale = addToScaleMat4(modelScale, 0, 0, (float) (rightMouseXChange * modelScaleFactor));	
+			}
+			break;
+		case Mode::ModelTranslation: 
+			if (leftMouseDown) {
+				modelTranslation = modelTranslation * makeAxisTranslationMat4(makeTranslateMat4((float) (leftMouseXChange * modelTranslationFactor), 0, 0), modelRotation);	
+			}
+			if (middleMouseDown) {
+				modelTranslation = modelTranslation * makeAxisTranslationMat4(makeTranslateMat4(0, (float) (middleMouseXChange * modelTranslationFactor), 0), modelRotation);	
+			}
+			if (rightMouseDown) {
+				modelTranslation = modelTranslation * makeAxisTranslationMat4(makeTranslateMat4(0, 0, (float) (rightMouseXChange * modelTranslationFactor)), modelRotation);	
+			}
+			break;
+		default:
+			break;
 	}
 }
 
@@ -634,6 +745,20 @@ bool A2::keyInputEvent (
 	bool eventHandled(false);
 
 	// Fill in with event handling code...
+	if (action == GLFW_PRESS) {
+		if (key == GLFW_KEY_Q) {
+			glfwSetWindowShouldClose(m_window, GL_TRUE);
+		}
+		else if (key == GLFW_KEY_R) {
+			currentMode = Mode::ModelRotation;
+		}
+		else if (key == GLFW_KEY_T) {
+			currentMode = Mode::ModelTranslation;
+		}
+		else if (key == GLFW_KEY_S) {
+			currentMode = Mode::ModelScale;
+		}
+	}
 
 	return eventHandled;
 }
