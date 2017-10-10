@@ -1,0 +1,59 @@
+Compilation
+###########
+
+Compiling and running is program is default.
+
+premake4 gmake
+make
+./A0
+
+Manual
+######
+
+Rotate View Mode:
+	
+	Left mouse rotates view about the X axis
+	Middle mouse rotates view about the Y axis
+	Right mouse rotates view about the Z axis 
+
+Translate View Mode:
+	
+	Left mouse translates view about the X axis
+	Middle mouse translates view about the Y axis
+	Right mouse translates view about the Z axis 
+
+Perspective Mode:
+	
+	Left mouse changes field of view
+	Middle mouse changes the far clipping plane
+	Right mouse changes the near clipping plane
+
+	The far clipping plane will always be further than the near plane 
+	far clipping plane changes at at faster rate than the near clipping plane.
+
+Rotate Model Mode:
+	
+	Left mouse rotates model about the X axis
+	Middle mouse rotates model about the Y axis
+	Right mouse rotates model about the Z axis 
+
+Translate Model Mode:
+	
+	Left mouse translates model about the X axis
+	Middle mouse translates model about the Y axis
+	Right mouse translates model about the Z axis 
+
+Scale Model Mode:
+	
+	Left mouse scales model about the X axis
+	Middle mouse scales model about the Y axis
+	Right mouse scales model about the Z axis 
+
+Viewport Mode:
+	
+	Click and drag to create a new view port.
+
+Notes:
+
+Streching the OS window will stretch everything except the UI window.
+I clip the far and near plane before applying perspective
