@@ -25,7 +25,7 @@ public:
 	GLsizei numVertices;
 };
 
-enum Mode { ModelRotation = 0, ModelTranslation, ModelScale};
+enum Mode { ModelRotation = 0, ModelTranslation, ModelScale, ViewRotation, ViewTranslation, ViewPort};
 
 class A2 : public CS488Window {
 public:
@@ -57,11 +57,16 @@ protected:
 	void setLineColour(const glm::vec3 & colour);
 
 	void initModelMatrices();
+	void initViewMatrices();
 	void initCube();
 	void initGnomon();
+	void initViewPort();
 
-	void drawCube(const glm::mat4 & M);
+	glm::vec2 mapWindowToViewPort(const glm::vec2 & point);
+
+	void drawViewPort();
 	void drawGnomon(const glm::mat4 & M);
+	void drawCube(const glm::mat4 & M);
 
 	glm::vec2 removeZ(glm::vec3);
 	glm::vec4 point(glm::vec3 v);
@@ -90,7 +95,7 @@ protected:
 	glm::mat4 reverseTranslationMat4(const glm::mat4 & mat);
 	glm::mat4 makeAxisTranslationMat4(const glm::mat4 & mat, const glm::mat4 & axis);
 
-	void applyTransformationChanges();
+	void applyTransformationChanges(double xPos, double yPos, double xDiff, double yDiff);
 
 	glm::mat4 multAllMat();
 
@@ -110,7 +115,20 @@ protected:
 	double modelRotationFactor = 0.5;
 	double modelTranslationFactor = 0.01;
 
+	double viewRotationFactor = 0.5;
+	double viewTranslationFactor = 0.01;
+
 	float minModelScale = 0.001f;
+
+	int windowHeight;
+	int windowWidth;
+
+	// view port coordinates
+	// X1 is not necessarily greater than X2 or vice versa
+	float viewPortX1;
+	float viewPortX2;
+	float viewPortY1;
+	float viewPortY2;
 
 	// Model transformation matrices
 	glm::mat4 modelTranslation;
@@ -146,4 +164,11 @@ protected:
 	double leftMouseXChange;
 	double middleMouseXChange;
 	double rightMouseXChange;
+
+	double leftMouseYChange;
+	double middleMouseYChange;
+	double rightMouseYChange;
+
+	double leftMouseXAnchor;
+	double leftMouseYAnchor;
 };

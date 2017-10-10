@@ -59,7 +59,10 @@ void A2::init()
 
 	initCube();
 	initModelMatrices();
+	initViewMatrices();
 	initGnomon();
+
+	initViewPort();
 
 	float m[16] = {
 		0.001, 0, 0, 0,
@@ -83,7 +86,7 @@ glm::mat4 A2::multAllMat()
 			modelScale; 
 }
 
-//----------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------
 /*
  * Given a translation matrix and a rotation matrix, translate along the rotational axis.
  */
@@ -231,6 +234,19 @@ glm::mat4 A2::makeRotateZMat4(float theta)
 
 //----------------------------------------------------------------------------------------
 /*
+ * Used to initialize view port size
+ */
+void A2::initViewPort()
+{
+	glfwGetWindowSize(m_window, &windowWidth, &windowHeight);
+	viewPortX1 = -0.95f;
+	viewPortY1 = -0.95f;
+	viewPortX2 = 0.95f;
+	viewPortY2 = 0.95f;
+}
+
+//----------------------------------------------------------------------------------------
+/*
  * Used to initialize Gnomon coordinates
  */
 void A2::initGnomon()
@@ -239,6 +255,15 @@ void A2::initGnomon()
 	gnomonCoords[1] = glm::vec3(0.1f,0,0);
 	gnomonCoords[2] = glm::vec3(0,0.1f,0);
 	gnomonCoords[3] = glm::vec3(0,0,0.1f);
+}
+
+//----------------------------------------------------------------------------------------
+/*
+ * Used to initialize view matrices
+ */
+void A2::initViewMatrices() {
+	modelRotation = makeRotateXMat4(0);
+	modelTranslation = makeTranslateMat4(0,0,0);
 }
 
 //----------------------------------------------------------------------------------------
@@ -270,6 +295,16 @@ void A2::initCube()
 
 //----------------------------------------------------------------------------------------
 /*
+ * Converts window coordinates to view port coordinates
+ */
+glm::vec2 A2::mapWindowToViewPort(const glm::vec2 & point)
+{
+	return glm::vec2(glm::abs(viewPortX1 - viewPortX2) / 2 * (point.x + 1) + glm::min(viewPortX1, viewPortX2),
+					 glm::abs(viewPortY1 - viewPortY2) / 2 * (point.y + 1) + glm::min(viewPortY1, viewPortY2));
+}
+
+//----------------------------------------------------------------------------------------
+/*
  * Draw a Gnomon using the given a transformation matrix
  */
 void A2::drawGnomon(const glm::mat4 & M)
@@ -283,15 +318,27 @@ void A2::drawGnomon(const glm::mat4 & M)
 
 	// red X axis
 	setLineColour(vec3(1.0f, 0, 0));
-	drawLine(newGnomonCoords[0], newGnomonCoords[1]);
+	drawLine(mapWindowToViewPort(glm::vec2(newGnomonCoords[0])), mapWindowToViewPort(glm::vec2(newGnomonCoords[1])));
 
 	// green Y axis
 	setLineColour(vec3(0, 1.0f, 0));
-	drawLine(newGnomonCoords[0], newGnomonCoords[2]);
+	drawLine(mapWindowToViewPort(glm::vec2(newGnomonCoords[0])), mapWindowToViewPort(glm::vec2(newGnomonCoords[2])));
 
 	// blue Z axis
 	setLineColour(vec3(0, 0, 1.0f));
-	drawLine(newGnomonCoords[0], newGnomonCoords[3]);
+	drawLine(mapWindowToViewPort(glm::vec2(newGnomonCoords[0])), mapWindowToViewPort(glm::vec2(newGnomonCoords[3])));
+}
+
+//----------------------------------------------------------------------------------------
+/*
+ * draws the view port
+ */
+void A2::drawViewPort()
+{
+	drawLine(glm::vec2(viewPortX1, viewPortY1), glm::vec2(viewPortX1, viewPortY2));
+	drawLine(glm::vec2(viewPortX1, viewPortY2), glm::vec2(viewPortX2, viewPortY2));
+	drawLine(glm::vec2(viewPortX2, viewPortY2), glm::vec2(viewPortX2, viewPortY1));
+	drawLine(glm::vec2(viewPortX2, viewPortY1), glm::vec2(viewPortX1, viewPortY1));
 }
 
 //----------------------------------------------------------------------------------------
@@ -316,18 +363,18 @@ void A2::drawCube(const glm::mat4 & M)
 	//	printf("%s\n", glm::to_string(newCubeCoords[i]).c_str());
 	//}
 
-	drawLine(newCubeCoords[0], newCubeCoords[1]);
-	drawLine(newCubeCoords[0], newCubeCoords[2]);
-	drawLine(newCubeCoords[0], newCubeCoords[4]);
-	drawLine(newCubeCoords[1], newCubeCoords[3]);
-	drawLine(newCubeCoords[1], newCubeCoords[5]);
-	drawLine(newCubeCoords[2], newCubeCoords[3]);
-	drawLine(newCubeCoords[2], newCubeCoords[6]);
-	drawLine(newCubeCoords[3], newCubeCoords[7]);
-	drawLine(newCubeCoords[4], newCubeCoords[5]);
-	drawLine(newCubeCoords[4], newCubeCoords[6]);
-	drawLine(newCubeCoords[5], newCubeCoords[7]);
-	drawLine(newCubeCoords[6], newCubeCoords[7]);
+	drawLine(mapWindowToViewPort(glm::vec2(newCubeCoords[0])), mapWindowToViewPort(glm::vec2(newCubeCoords[1])));
+	drawLine(mapWindowToViewPort(glm::vec2(newCubeCoords[0])), mapWindowToViewPort(glm::vec2(newCubeCoords[2])));
+	drawLine(mapWindowToViewPort(glm::vec2(newCubeCoords[0])), mapWindowToViewPort(glm::vec2(newCubeCoords[4])));
+	drawLine(mapWindowToViewPort(glm::vec2(newCubeCoords[1])), mapWindowToViewPort(glm::vec2(newCubeCoords[3])));
+	drawLine(mapWindowToViewPort(glm::vec2(newCubeCoords[1])), mapWindowToViewPort(glm::vec2(newCubeCoords[5])));
+	drawLine(mapWindowToViewPort(glm::vec2(newCubeCoords[2])), mapWindowToViewPort(glm::vec2(newCubeCoords[3])));
+	drawLine(mapWindowToViewPort(glm::vec2(newCubeCoords[2])), mapWindowToViewPort(glm::vec2(newCubeCoords[6])));
+	drawLine(mapWindowToViewPort(glm::vec2(newCubeCoords[3])), mapWindowToViewPort(glm::vec2(newCubeCoords[7])));
+	drawLine(mapWindowToViewPort(glm::vec2(newCubeCoords[4])), mapWindowToViewPort(glm::vec2(newCubeCoords[5])));
+	drawLine(mapWindowToViewPort(glm::vec2(newCubeCoords[4])), mapWindowToViewPort(glm::vec2(newCubeCoords[6])));
+	drawLine(mapWindowToViewPort(glm::vec2(newCubeCoords[5])), mapWindowToViewPort(glm::vec2(newCubeCoords[7])));
+	drawLine(mapWindowToViewPort(glm::vec2(newCubeCoords[6])), mapWindowToViewPort(glm::vec2(newCubeCoords[7])));
 }
 
 //----------------------------------------------------------------------------------------
@@ -502,7 +549,14 @@ void A2::appLogic()
 	// Call at the beginning of frame, before drawing lines:
 	initLineData();
 
-	glm::mat4 M = modelTranslation * modelRotation;
+	// Draw the view port 
+	drawViewPort();
+
+
+	glm::mat4 M = viewTranslation * viewRotation;
+	drawGnomon(M);
+	
+	M = M * modelTranslation * modelRotation;
 	drawGnomon(M);
 
 	M = M * modelScale;
@@ -511,7 +565,7 @@ void A2::appLogic()
 
 	//// Draw outer square:
 	//setLineColour(vec3(1.0f, 0.7f, 0.8f));
-	//drawLine(vec2(-0.5f, -0.5f), vec2(0.5f, -0.5f));
+	//drawLine(vec2(-0.5f, 0.5f), vec2(0, 0));
 	//drawLine(vec2(0.5f, -0.5f), vec2(0.5f, 0.5f));
 	//drawLine(vec2(0.5f, 0.5f), vec2(-0.5f, 0.5f));
 	//drawLine(vec2(-0.5f, 0.5f), vec2(-0.5f, -0.5f));
@@ -555,6 +609,9 @@ void A2::guiLogic()
 		ImGui::RadioButton("Model Rotation", &currentMode, Mode::ModelRotation);
 		ImGui::RadioButton("Model Scale", &currentMode, Mode::ModelScale);
 		ImGui::RadioButton("Model Translation", &currentMode, Mode::ModelTranslation);
+		ImGui::RadioButton("View Rotation", &currentMode, Mode::ViewRotation);
+		ImGui::RadioButton("View Translation", &currentMode, Mode::ViewTranslation);
+		ImGui::RadioButton("View Port", &currentMode, Mode::ViewPort);
 
 		ImGui::Text( "Framerate: %.1f FPS", ImGui::GetIO().Framerate );
 
@@ -641,20 +698,8 @@ bool A2::mouseMoveEvent (
 	// Fill in with event handling code...
 	//modelRotation = makeRotateXMat4((float)xPos);
 	//modelRotation = modelRotation * makeRotateYMat4((float)yPos);
-
-	if (leftMouseDown) {
-		leftMouseXChange = xPos - lastX;
-	}
-	
-	if (rightMouseDown) {
-		rightMouseXChange = xPos - lastX;
-	}
-
-	if (middleMouseDown) {
-		middleMouseXChange = xPos - lastX;
-	}
-
-	applyTransformationChanges();
+	applyTransformationChanges(xPos, yPos, xPos - lastX, yPos - lastY);
+	//std::cout << xPos << " " << yPos << endl;
 
 	lastX = xPos;
 	lastY = yPos;
@@ -664,40 +709,77 @@ bool A2::mouseMoveEvent (
 	return eventHandled;
 }
 
-void A2::applyTransformationChanges() {
+void A2::applyTransformationChanges(double xPos, double yPos, double xDiff, double yDiff) {
 	switch (currentMode) {
-		case Mode::ModelRotation: 
+		case Mode::ViewPort:
 			if (leftMouseDown) {
-				modelRotation = modelRotation * makeRotateXMat4((float) (leftMouseXChange * modelRotationFactor));	
+				if (leftMouseDown == 1) {
+					viewPortX1 = (float) xPos / (float) windowWidth;
+					viewPortX1 = 2 * viewPortX1 - 1;
+					viewPortY1 = (float) yPos / (float) windowHeight;
+					viewPortY1 = -2 * viewPortY1 + 1;
+					leftMouseDown = 2;
+				}
+				viewPortX2 = (float) xPos / (float) windowWidth;
+				viewPortX2 = 2 * viewPortX2 - 1;
+				viewPortY2 = (float) yPos / (float) windowHeight;
+				viewPortY2 = -2 * viewPortY2 + 1;
+			}
+			break;
+		case Mode::ViewRotation:
+			if (leftMouseDown) {
+				viewRotation = viewRotation * makeRotateXMat4((float) (xDiff * viewRotationFactor));	
 			}
 			if (middleMouseDown) {
-				modelRotation = modelRotation * makeRotateYMat4((float) (middleMouseXChange * modelRotationFactor));	
+				viewRotation = viewRotation * makeRotateYMat4((float) (xDiff * viewRotationFactor));	
 			}
 			if (rightMouseDown) {
-				modelRotation = modelRotation * makeRotateZMat4((float) (rightMouseXChange * modelRotationFactor));	
+				viewRotation = viewRotation * makeRotateZMat4((float) (xDiff * viewRotationFactor));	
+			}
+			break;
+		case Mode::ViewTranslation:
+			if (leftMouseDown) {
+				viewTranslation = viewTranslation * makeAxisTranslationMat4(makeTranslateMat4((float) (xDiff * viewTranslationFactor), 0, 0), viewRotation);	
+			}
+			if (middleMouseDown) {
+				viewTranslation = viewTranslation * makeAxisTranslationMat4(makeTranslateMat4(0, (float) (xDiff * viewTranslationFactor), 0), viewRotation);	
+			}
+			if (rightMouseDown) {
+				viewTranslation = viewTranslation * makeAxisTranslationMat4(makeTranslateMat4(0, 0, (float) (xDiff * viewTranslationFactor)), viewRotation);	
+			}
+			break;
+		case Mode::ModelRotation: 
+			if (leftMouseDown) {
+				modelRotation = modelRotation * makeRotateXMat4((float) (xDiff * modelRotationFactor));	
+			}
+			if (middleMouseDown) {
+				modelRotation = modelRotation * makeRotateYMat4((float) (xDiff * modelRotationFactor));	
+			}
+			if (rightMouseDown) {
+				modelRotation = modelRotation * makeRotateZMat4((float) (xDiff * modelRotationFactor));	
 			}
 			break;
 		case Mode::ModelScale: 
 			if (leftMouseDown) {
-				modelScale = addToScaleMat4(modelScale, (float) (leftMouseXChange * modelScaleFactor), 0, 0);	
+				modelScale = addToScaleMat4(modelScale, (float) (xDiff * modelScaleFactor), 0, 0);	
 				//printf("%s\n", glm::to_string(modelScale).c_str());
 			}
 			if (middleMouseDown) {
-				modelScale = addToScaleMat4(modelScale, 0, (float) (middleMouseXChange * modelScaleFactor), 0);	
+				modelScale = addToScaleMat4(modelScale, 0, (float) (xDiff * modelScaleFactor), 0);	
 			}
 			if (rightMouseDown) {
-				modelScale = addToScaleMat4(modelScale, 0, 0, (float) (rightMouseXChange * modelScaleFactor));	
+				modelScale = addToScaleMat4(modelScale, 0, 0, (float) (xDiff * modelScaleFactor));	
 			}
 			break;
 		case Mode::ModelTranslation: 
 			if (leftMouseDown) {
-				modelTranslation = modelTranslation * makeAxisTranslationMat4(makeTranslateMat4((float) (leftMouseXChange * modelTranslationFactor), 0, 0), modelRotation);	
+				modelTranslation = modelTranslation * makeAxisTranslationMat4(makeTranslateMat4((float) (xDiff * modelTranslationFactor), 0, 0), modelRotation);	
 			}
 			if (middleMouseDown) {
-				modelTranslation = modelTranslation * makeAxisTranslationMat4(makeTranslateMat4(0, (float) (middleMouseXChange * modelTranslationFactor), 0), modelRotation);	
+				modelTranslation = modelTranslation * makeAxisTranslationMat4(makeTranslateMat4(0, (float) (xDiff * modelTranslationFactor), 0), modelRotation);	
 			}
 			if (rightMouseDown) {
-				modelTranslation = modelTranslation * makeAxisTranslationMat4(makeTranslateMat4(0, 0, (float) (rightMouseXChange * modelTranslationFactor)), modelRotation);	
+				modelTranslation = modelTranslation * makeAxisTranslationMat4(makeTranslateMat4(0, 0, (float) (xDiff * modelTranslationFactor)), modelRotation);	
 			}
 			break;
 		default:
@@ -724,6 +806,7 @@ bool A2::mouseButtonInputEvent (
 		else if (actions == GLFW_RELEASE) {
 			leftMouseDown = 0;
 			leftMouseXChange = 0;
+			leftMouseYChange = 0;
 		}
 	}
 	else if (button == GLFW_MOUSE_BUTTON_RIGHT) {
@@ -733,6 +816,7 @@ bool A2::mouseButtonInputEvent (
 		else if (actions == GLFW_RELEASE) {
 			rightMouseDown = 0;
 			rightMouseXChange = 0;
+			rightMouseYChange = 0;
 		}
 	}
 	else if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
@@ -742,6 +826,7 @@ bool A2::mouseButtonInputEvent (
 		else if (actions == GLFW_RELEASE) {
 			middleMouseDown = 0;
 			middleMouseXChange = 0;
+			middleMouseYChange = 0;
 		}
 	}
 
@@ -774,6 +859,8 @@ bool A2::windowResizeEvent (
 	bool eventHandled(false);
 
 	// Fill in with event handling code...
+	glfwGetWindowSize(m_window, &windowWidth, &windowHeight);
+	std::cout << windowWidth << " " << windowHeight << endl;
 
 	return eventHandled;
 }
@@ -802,6 +889,15 @@ bool A2::keyInputEvent (
 		}
 		else if (key == GLFW_KEY_S) {
 			currentMode = Mode::ModelScale;
+		}
+		else if (key == GLFW_KEY_O) {
+			currentMode = Mode::ViewRotation;
+		}
+		else if (key == GLFW_KEY_N) {
+			currentMode = Mode::ViewTranslation;
+		}
+		else if (key == GLFW_KEY_V) {
+			currentMode = Mode::ViewPort;
 		}
 	}
 
