@@ -57,20 +57,24 @@ void A2::init()
 
 	mapVboDataToVertexAttributeLocation();
 
+	initGnomon();
 	initCube();
 	initModelMatrices();
 	initViewMatrices();
-	initGnomon();
-
+	initProjectionMatrices();
 	initViewPort();
+}
 
-	float m[16] = {
-		0.001, 0, 0, 0,
-		0, 0.001, 0, 0,
-		0, 0, 0.001, 0,
-		0, 0, 0, 1
-	};
-
+//----------------------------------------------------------------------------------------
+/*
+ * resets all transformations;
+ */
+void A2::reset() {
+	initModelMatrices();
+	initViewMatrices();
+	initProjectionMatrices();
+	initViewPort();
+	currentMode = Mode::ModelRotation;
 }
 
 //----------------------------------------------------------------------------------------
@@ -84,6 +88,23 @@ glm::mat4 A2::multAllMat()
 			modelTranslation *
 			modelRotation * 
 			modelScale; 
+}
+
+//---------------------------------------------------------------------------------------
+/*
+ * given an fov angle, a far plane, and a near plane. Returns a perspective projection matrix
+ */
+glm::mat4 A2::makePerspectiveMat4(float angle, float near, float far)
+{
+	float angleRad = glm::radians(angle);
+	float m[16] = {
+		1.0f / tan(angleRad / 2.0f), 0, 0, 0,
+		0, 1.0f / tan(angleRad / 2.0f), 0, 0,
+		0, 0, -1 * ((far + near)/(far - near)), -1,
+		0, 0, (-2 * far * near)/(far - near),  0
+	};
+
+	return glm::make_mat4(m);
 }
 
 //---------------------------------------------------------------------------------------
@@ -105,9 +126,6 @@ glm::mat4 A2::makeAxisTranslationMat4(const glm::mat4 & mat, const glm::mat4 & a
 			}
 		}
 	}
-
-	//printf("retMat: %s\n", glm::to_string(retMat).c_str());
-	//printf("mat: %s\n", glm::to_string(mat).c_str());
 
 	return retMat;
 }
@@ -259,11 +277,23 @@ void A2::initGnomon()
 
 //----------------------------------------------------------------------------------------
 /*
+ * Used to initialize projection matrices
+ */
+void A2::initProjectionMatrices() {
+	fov = 90;
+	nearPlane = -0.1f;
+	farPlane = -20.0f;
+	projectionMatrix = makePerspectiveMat4(fov, nearPlane, farPlane);
+}
+
+//----------------------------------------------------------------------------------------
+/*
  * Used to initialize view matrices
  */
 void A2::initViewMatrices() {
-	modelRotation = makeRotateXMat4(0);
-	modelTranslation = makeTranslateMat4(0,0,0);
+	viewRotation = makeRotateXMat4(0);
+	viewTranslation = makeTranslateMat4(0,0,-1);
+	viewMatrix = viewTranslation * viewRotation;
 }
 
 //----------------------------------------------------------------------------------------
@@ -272,7 +302,7 @@ void A2::initViewMatrices() {
  */
 void A2::initModelMatrices() {
 	modelScale = makeScaleMat4(0.1,0.1,0.1);
-	modelRotation = makeRotateXMat4(30);
+	modelRotation = makeRotateXMat4(0);
 	modelTranslation = makeTranslateMat4(0,0,0);
 }
 
@@ -369,11 +399,32 @@ Line A2::clipToPlane(const glm::vec3 & point, const glm::vec3 & normal, const gl
 
 //----------------------------------------------------------------------------------------
 /*
- * Draw a line, clipped to the bounding volume and mapped to the view port
+ * Draw a line, projected in perspective and clipped to the bounding volume and mapped to the view port
  */
 void A2::drawClippedViewPortLine(const glm::vec3 & v0, const glm::vec3 & v1)
 {
-	Line line = clipToPlane(glm::vec3(0,0,0),glm::vec3(0,0,-1),v0,v1);
+	// Front clip
+	Line line = clipToPlane(glm::vec3(0,0,nearPlane), glm::vec3(0,0,-1), v0, v1);
+	
+	// Back clip
+	line = clipToPlane(glm::vec3(0,0,farPlane), glm::vec3(0,0,1), line);
+
+	line = Line(vec3((projectionMatrix * point(line.A)) / line.A.z), vec3((projectionMatrix * point(line.B)) / line.B.z));
+
+	//line = clipToPlane(glm::vec3(0,0,1), glm::vec3(0,0,-1), line);
+
+	// Top clip
+	line = clipToPlane(glm::vec3(0,1,0), glm::vec3(0,-1,0), line);
+
+	// Bottom clip
+	line = clipToPlane(glm::vec3(0,-1,0), glm::vec3(0,1,0), line);
+
+	// Right clip
+	line = clipToPlane(glm::vec3(1,0,0), glm::vec3(-1,0,0), line);
+
+	// Left clip
+	line = clipToPlane(glm::vec3(-1,0,0), glm::vec3(1,0,0), line);
+
 	if (line.valid) {
 		drawLine(mapWindowToViewPort(line));
 	}
@@ -394,15 +445,15 @@ void A2::drawGnomon(const glm::mat4 & M)
 
 	// red X axis
 	setLineColour(vec3(1.0f, 0, 0));
-	drawLine(mapWindowToViewPort(glm::vec2(newGnomonCoords[0])), mapWindowToViewPort(glm::vec2(newGnomonCoords[1])));
+	drawClippedViewPortLine(vec3(newGnomonCoords[0]), vec3(newGnomonCoords[1]));
 
 	// green Y axis
 	setLineColour(vec3(0, 1.0f, 0));
-	drawLine(mapWindowToViewPort(glm::vec2(newGnomonCoords[0])), mapWindowToViewPort(glm::vec2(newGnomonCoords[2])));
+	drawClippedViewPortLine(vec3(newGnomonCoords[0]), vec3(newGnomonCoords[2]));
 
 	// blue Z axis
 	setLineColour(vec3(0, 0, 1.0f));
-	drawLine(mapWindowToViewPort(glm::vec2(newGnomonCoords[0])), mapWindowToViewPort(glm::vec2(newGnomonCoords[3])));
+	drawClippedViewPortLine(vec3(newGnomonCoords[0]), vec3(newGnomonCoords[3]));
 }
 
 //----------------------------------------------------------------------------------------
@@ -411,6 +462,7 @@ void A2::drawGnomon(const glm::mat4 & M)
  */
 void A2::drawViewPort()
 {
+	setLineColour(vec3(0.0f, 0.0f, 0.0f));
 	drawLine(glm::vec2(viewPortX1, viewPortY1), glm::vec2(viewPortX1, viewPortY2));
 	drawLine(glm::vec2(viewPortX1, viewPortY2), glm::vec2(viewPortX2, viewPortY2));
 	drawLine(glm::vec2(viewPortX2, viewPortY2), glm::vec2(viewPortX2, viewPortY1));
@@ -439,17 +491,19 @@ void A2::drawCube(const glm::mat4 & M)
 	//	printf("%s\n", glm::to_string(newCubeCoords[i]).c_str());
 	//}
 
+	setLineColour(vec3(1.0f, 1.0f, 1.0f));
+	drawClippedViewPortLine(vec3(newCubeCoords[1]), vec3(newCubeCoords[3]));
+	drawClippedViewPortLine(vec3(newCubeCoords[1]), vec3(newCubeCoords[5]));
+	drawClippedViewPortLine(vec3(newCubeCoords[3]), vec3(newCubeCoords[7]));
+	drawClippedViewPortLine(vec3(newCubeCoords[5]), vec3(newCubeCoords[7]));
+
 	drawClippedViewPortLine(vec3(newCubeCoords[0]), vec3(newCubeCoords[1]));
 	drawClippedViewPortLine(vec3(newCubeCoords[0]), vec3(newCubeCoords[2]));
 	drawClippedViewPortLine(vec3(newCubeCoords[0]), vec3(newCubeCoords[4]));
-	drawClippedViewPortLine(vec3(newCubeCoords[1]), vec3(newCubeCoords[3]));
-	drawClippedViewPortLine(vec3(newCubeCoords[1]), vec3(newCubeCoords[5]));
 	drawClippedViewPortLine(vec3(newCubeCoords[2]), vec3(newCubeCoords[3]));
 	drawClippedViewPortLine(vec3(newCubeCoords[2]), vec3(newCubeCoords[6]));
-	drawClippedViewPortLine(vec3(newCubeCoords[3]), vec3(newCubeCoords[7]));
 	drawClippedViewPortLine(vec3(newCubeCoords[4]), vec3(newCubeCoords[5]));
 	drawClippedViewPortLine(vec3(newCubeCoords[4]), vec3(newCubeCoords[6]));
-	drawClippedViewPortLine(vec3(newCubeCoords[5]), vec3(newCubeCoords[7]));
 	drawClippedViewPortLine(vec3(newCubeCoords[6]), vec3(newCubeCoords[7]));
 }
 
@@ -637,8 +691,7 @@ void A2::appLogic()
 	// Draw the view port 
 	drawViewPort();
 
-
-	glm::mat4 M = viewTranslation * viewRotation;
+	glm::mat4 M = viewMatrix;
 	drawGnomon(M);
 	
 	M = M * modelTranslation * modelRotation;
@@ -688,15 +741,23 @@ void A2::guiLogic()
 
 
 		// Create Button, and check if it was clicked:
-		if( ImGui::Button( "Quit Application" ) ) {
+		if( ImGui::Button( "Quit Application (Q)" ) ) {
 			glfwSetWindowShouldClose(m_window, GL_TRUE);
 		}
-		ImGui::RadioButton("Model Rotation", &currentMode, Mode::ModelRotation);
-		ImGui::RadioButton("Model Scale", &currentMode, Mode::ModelScale);
-		ImGui::RadioButton("Model Translation", &currentMode, Mode::ModelTranslation);
-		ImGui::RadioButton("View Rotation", &currentMode, Mode::ViewRotation);
-		ImGui::RadioButton("View Translation", &currentMode, Mode::ViewTranslation);
-		ImGui::RadioButton("View Port", &currentMode, Mode::ViewPort);
+		if( ImGui::Button( "Reset (A)" ) ) {
+			reset();
+		}
+		ImGui::RadioButton("Model Rotation (R)", &currentMode, Mode::ModelRotation);
+		ImGui::RadioButton("Model Scale (S)", &currentMode, Mode::ModelScale);
+		ImGui::RadioButton("Model Translation (T)", &currentMode, Mode::ModelTranslation);
+		ImGui::RadioButton("View Rotation (O)", &currentMode, Mode::ViewRotation);
+		ImGui::RadioButton("View Translation (N)", &currentMode, Mode::ViewTranslation);
+		ImGui::RadioButton("View Port (V)", &currentMode, Mode::ViewPort);
+		ImGui::RadioButton("Perspective (P)", &currentMode, Mode::Perspective);
+
+		ImGui::Text("Near Plane: %.3f", -nearPlane);
+		ImGui::Text("Far Plane: %.3f", -farPlane);
+		ImGui::Text("FOV: %.3f degrees", fov);
 
 		ImGui::Text( "Framerate: %.1f FPS", ImGui::GetIO().Framerate );
 
@@ -796,6 +857,20 @@ bool A2::mouseMoveEvent (
 
 void A2::applyTransformationChanges(double xPos, double yPos, double xDiff, double yDiff) {
 	switch (currentMode) {
+		case Mode::Perspective:
+			if (leftMouseDown) {
+				fov = glm::clamp(fov + (float)(xDiff * perspectiveFovFactor), 5.0f, 160.0f);	
+				projectionMatrix = makePerspectiveMat4(fov, nearPlane, farPlane);
+			}
+			if (middleMouseDown) {
+				nearPlane = glm::clamp(nearPlane - (float)(xDiff * perspectiveNearPlaneFactor), farPlane + 0.001f, -0.001f);
+				projectionMatrix = makePerspectiveMat4(fov, nearPlane, farPlane);
+			}
+			if (rightMouseDown) {
+				farPlane = glm::clamp(farPlane - (float)(xDiff * perspectiveFarPlaneFactor), -200.0f, nearPlane - 0.001f);
+				projectionMatrix = makePerspectiveMat4(fov, nearPlane, farPlane);
+			}
+			break;
 		case Mode::ViewPort:
 			if (leftMouseDown) {
 				if (leftMouseDown == 1) {
@@ -813,24 +888,33 @@ void A2::applyTransformationChanges(double xPos, double yPos, double xDiff, doub
 			break;
 		case Mode::ViewRotation:
 			if (leftMouseDown) {
-				viewRotation = viewRotation * makeRotateXMat4((float) (xDiff * viewRotationFactor));	
+				//viewRotation = viewRotation * makeRotateXMat4((float) (xDiff * viewRotationFactor));	
+				viewMatrix = glm::inverse(makeRotateXMat4((float) (xDiff * viewRotationFactor))) * viewMatrix;
 			}
 			if (middleMouseDown) {
-				viewRotation = viewRotation * makeRotateYMat4((float) (xDiff * viewRotationFactor));	
+				//viewRotation = viewRotation * makeRotateYMat4((float) (xDiff * viewRotationFactor));	
+				viewMatrix = glm::inverse(makeRotateYMat4((float) (xDiff * viewRotationFactor))) * viewMatrix;
 			}
 			if (rightMouseDown) {
-				viewRotation = viewRotation * makeRotateZMat4((float) (xDiff * viewRotationFactor));	
+				//viewRotation = viewRotation * makeRotateZMat4((float) (xDiff * viewRotationFactor));	
+				viewMatrix = glm::inverse(makeRotateZMat4((float) (xDiff * viewRotationFactor))) * viewMatrix;
 			}
 			break;
 		case Mode::ViewTranslation:
 			if (leftMouseDown) {
-				viewTranslation = viewTranslation * makeAxisTranslationMat4(makeTranslateMat4((float) (xDiff * viewTranslationFactor), 0, 0), viewRotation);	
+				//viewTranslation = viewTranslation * makeAxisTranslationMat4(makeTranslateMat4((float) (xDiff * viewTranslationFactor), 0, 0), viewRotation);	
+				//viewTranslation = viewTranslation * makeTranslateMat4((float) (xDiff * viewTranslationFactor), 0, 0), viewRotation;
+				viewMatrix = glm::inverse(makeTranslateMat4((float) (xDiff * viewTranslationFactor), 0, 0)) * viewMatrix;
 			}
 			if (middleMouseDown) {
-				viewTranslation = viewTranslation * makeAxisTranslationMat4(makeTranslateMat4(0, (float) (xDiff * viewTranslationFactor), 0), viewRotation);	
+				//viewTranslation = viewTranslation * makeAxisTranslationMat4(makeTranslateMat4(0, (float) (xDiff * viewTranslationFactor), 0), viewRotation);	
+				//viewTranslation = viewTranslation * makeTranslateMat4(0, (float) (xDiff * viewTranslationFactor), 0), viewRotation;
+				viewMatrix = glm::inverse(makeTranslateMat4(0, (float) (xDiff * viewTranslationFactor), 0)) * viewMatrix;
 			}
 			if (rightMouseDown) {
-				viewTranslation = viewTranslation * makeAxisTranslationMat4(makeTranslateMat4(0, 0, (float) (xDiff * viewTranslationFactor)), viewRotation);	
+				//viewTranslation = viewTranslation * makeAxisTranslationMat4(makeTranslateMat4(0, 0, (float) (xDiff * viewTranslationFactor)), viewRotation);	
+				//viewTranslation = viewTranslation * makeTranslateMat4(0, 0, (float) (xDiff * viewTranslationFactor)), viewRotation;
+				viewMatrix = glm::inverse(makeTranslateMat4(0, 0, (float) (xDiff * viewTranslationFactor))) * viewMatrix;
 			}
 			break;
 		case Mode::ModelRotation: 
@@ -983,6 +1067,12 @@ bool A2::keyInputEvent (
 		}
 		else if (key == GLFW_KEY_V) {
 			currentMode = Mode::ViewPort;
+		}
+		else if (key == GLFW_KEY_P) {
+			currentMode = Mode::Perspective;
+		}
+		else if (key == GLFW_KEY_A) {
+			reset();
 		}
 	}
 

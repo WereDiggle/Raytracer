@@ -42,7 +42,7 @@ struct Line {
 	} 
 };
 
-enum Mode { ModelRotation = 0, ModelTranslation, ModelScale, ViewRotation, ViewTranslation, ViewPort};
+enum Mode { ModelRotation = 0, ModelTranslation, ModelScale, ViewRotation, ViewTranslation, ViewPort, Perspective};
 
 class A2 : public CS488Window {
 public:
@@ -73,6 +73,8 @@ protected:
 
 	void setLineColour(const glm::vec3 & colour);
 
+	void reset();
+	void initProjectionMatrices();
 	void initModelMatrices();
 	void initViewMatrices();
 	void initCube();
@@ -108,6 +110,7 @@ protected:
 			const glm::vec4 & v1
 	);
 
+	glm::mat4 makePerspectiveMat4(float angle, float near, float far);
 	glm::mat4 makeScaleMat4(float x, float y, float z);
 	glm::mat4 makeTranslateMat4(float x, float y, float z);
 	glm::mat4 makeRotateXMat4(float theta);
@@ -141,6 +144,10 @@ protected:
 	double viewRotationFactor = 0.5;
 	double viewTranslationFactor = 0.01;
 
+	double perspectiveFovFactor = 0.5;
+	double perspectiveNearPlaneFactor = 0.001;
+	double perspectiveFarPlaneFactor = 0.01;
+
 	float minModelScale = 0.001f;
 
 	int windowHeight;
@@ -166,9 +173,15 @@ protected:
 	// View transformation matrices
 	glm::mat4 viewTranslation;
 	glm::mat4 viewRotation;
+	glm::mat4 viewMatrix;
 
 	// Projection matrices
 	glm::mat4 projectionMatrix;
+
+	// Projection variables
+	float fov;
+	float nearPlane;
+	float farPlane;
 
 	// Cube coordinates
 	glm::vec3 cubeCoords[8];
