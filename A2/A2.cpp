@@ -305,6 +305,82 @@ glm::vec2 A2::mapWindowToViewPort(const glm::vec2 & point)
 
 //----------------------------------------------------------------------------------------
 /*
+ * Converts window coordinates to view port coordinates
+ */
+glm::vec3 A2::mapWindowToViewPort(const glm::vec3 & point)
+{
+	return glm::vec3(glm::abs(viewPortX1 - viewPortX2) / 2 * (point.x + 1) + glm::min(viewPortX1, viewPortX2),
+					 glm::abs(viewPortY1 - viewPortY2) / 2 * (point.y + 1) + glm::min(viewPortY1, viewPortY2),
+					 point.z);
+}
+
+//----------------------------------------------------------------------------------------
+/*
+ * Converts window Line to view port Line
+ */
+Line A2::mapWindowToViewPort(const Line & line)
+{
+	return Line(mapWindowToViewPort(line.A), mapWindowToViewPort(line.B));
+}
+
+//----------------------------------------------------------------------------------------
+/*
+ * clips the given line to plane represented by the point and normal. Returns the clipped line
+ */
+Line A2::clipToPlane(const glm::vec3 & point, const glm::vec3 & normal, Line line)
+{
+	Line retLine = Line();
+	if (line.valid) {
+		retLine = clipToPlane(point, normal, line.A, line.B);
+	}
+	return retLine;
+}
+
+//----------------------------------------------------------------------------------------
+/*
+ * clips the given line (A,B) to plane represented by the point and normal. Returns the clipped line
+ */
+Line A2::clipToPlane(const glm::vec3 & point, const glm::vec3 & normal, const glm::vec3 & A, const glm::vec3 & B)
+{
+	float wecA = glm::dot(A - point, normal);
+	float wecB = glm::dot(B - point, normal);
+
+	// completely outside
+	if (wecA < 0 && wecB < 0) {
+		return Line();
+	}
+
+	// completely inside
+	if (wecA >= 0 && wecB >= 0) {
+		return Line(A, B);
+	}
+
+	float t = wecA / (wecA - wecB);
+	Line retLine;
+	if (wecA < 0) {
+		retLine = Line(A + t * (B-A), B);
+	}
+	else {
+		retLine = Line(A, A + t * (B-A));
+	}
+
+	return retLine;
+}
+
+//----------------------------------------------------------------------------------------
+/*
+ * Draw a line, clipped to the bounding volume and mapped to the view port
+ */
+void A2::drawClippedViewPortLine(const glm::vec3 & v0, const glm::vec3 & v1)
+{
+	Line line = clipToPlane(glm::vec3(0,0,0),glm::vec3(0,0,-1),v0,v1);
+	if (line.valid) {
+		drawLine(mapWindowToViewPort(line));
+	}
+}
+
+//----------------------------------------------------------------------------------------
+/*
  * Draw a Gnomon using the given a transformation matrix
  */
 void A2::drawGnomon(const glm::mat4 & M)
@@ -363,18 +439,18 @@ void A2::drawCube(const glm::mat4 & M)
 	//	printf("%s\n", glm::to_string(newCubeCoords[i]).c_str());
 	//}
 
-	drawLine(mapWindowToViewPort(glm::vec2(newCubeCoords[0])), mapWindowToViewPort(glm::vec2(newCubeCoords[1])));
-	drawLine(mapWindowToViewPort(glm::vec2(newCubeCoords[0])), mapWindowToViewPort(glm::vec2(newCubeCoords[2])));
-	drawLine(mapWindowToViewPort(glm::vec2(newCubeCoords[0])), mapWindowToViewPort(glm::vec2(newCubeCoords[4])));
-	drawLine(mapWindowToViewPort(glm::vec2(newCubeCoords[1])), mapWindowToViewPort(glm::vec2(newCubeCoords[3])));
-	drawLine(mapWindowToViewPort(glm::vec2(newCubeCoords[1])), mapWindowToViewPort(glm::vec2(newCubeCoords[5])));
-	drawLine(mapWindowToViewPort(glm::vec2(newCubeCoords[2])), mapWindowToViewPort(glm::vec2(newCubeCoords[3])));
-	drawLine(mapWindowToViewPort(glm::vec2(newCubeCoords[2])), mapWindowToViewPort(glm::vec2(newCubeCoords[6])));
-	drawLine(mapWindowToViewPort(glm::vec2(newCubeCoords[3])), mapWindowToViewPort(glm::vec2(newCubeCoords[7])));
-	drawLine(mapWindowToViewPort(glm::vec2(newCubeCoords[4])), mapWindowToViewPort(glm::vec2(newCubeCoords[5])));
-	drawLine(mapWindowToViewPort(glm::vec2(newCubeCoords[4])), mapWindowToViewPort(glm::vec2(newCubeCoords[6])));
-	drawLine(mapWindowToViewPort(glm::vec2(newCubeCoords[5])), mapWindowToViewPort(glm::vec2(newCubeCoords[7])));
-	drawLine(mapWindowToViewPort(glm::vec2(newCubeCoords[6])), mapWindowToViewPort(glm::vec2(newCubeCoords[7])));
+	drawClippedViewPortLine(vec3(newCubeCoords[0]), vec3(newCubeCoords[1]));
+	drawClippedViewPortLine(vec3(newCubeCoords[0]), vec3(newCubeCoords[2]));
+	drawClippedViewPortLine(vec3(newCubeCoords[0]), vec3(newCubeCoords[4]));
+	drawClippedViewPortLine(vec3(newCubeCoords[1]), vec3(newCubeCoords[3]));
+	drawClippedViewPortLine(vec3(newCubeCoords[1]), vec3(newCubeCoords[5]));
+	drawClippedViewPortLine(vec3(newCubeCoords[2]), vec3(newCubeCoords[3]));
+	drawClippedViewPortLine(vec3(newCubeCoords[2]), vec3(newCubeCoords[6]));
+	drawClippedViewPortLine(vec3(newCubeCoords[3]), vec3(newCubeCoords[7]));
+	drawClippedViewPortLine(vec3(newCubeCoords[4]), vec3(newCubeCoords[5]));
+	drawClippedViewPortLine(vec3(newCubeCoords[4]), vec3(newCubeCoords[6]));
+	drawClippedViewPortLine(vec3(newCubeCoords[5]), vec3(newCubeCoords[7]));
+	drawClippedViewPortLine(vec3(newCubeCoords[6]), vec3(newCubeCoords[7]));
 }
 
 //----------------------------------------------------------------------------------------
@@ -393,6 +469,15 @@ glm::vec4 A2::point(glm::vec3 v)
 glm::vec2 A2::removeZ(glm::vec3 v)
 {
 	return glm::vec2(v.x, v.y);
+}
+
+//----------------------------------------------------------------------------------------
+/*
+ * Wrapper for drawLine. takes a Line struct
+ */
+void A2::drawLine(const Line & line) 
+{
+	drawLine(vec2(line.A), vec2(line.B));
 }
 
 //----------------------------------------------------------------------------------------

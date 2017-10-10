@@ -25,6 +25,23 @@ public:
 	GLsizei numVertices;
 };
 
+struct Line {
+	glm::vec3 A;
+	glm::vec3 B;
+
+	// should you draw this or not.
+	// Don't want case where a single dot is drawn even though we don't want any of the line to be drawn
+	bool valid;
+
+	Line(const glm::vec3 & A, const glm::vec3 & B) : A(A), B(B), valid(true) 
+	{
+	} 
+
+	Line() : A(glm::vec3(0)), B(glm::vec3(0)), valid(false) 
+	{
+	} 
+};
+
 enum Mode { ModelRotation = 0, ModelTranslation, ModelScale, ViewRotation, ViewTranslation, ViewPort};
 
 class A2 : public CS488Window {
@@ -63,6 +80,10 @@ protected:
 	void initViewPort();
 
 	glm::vec2 mapWindowToViewPort(const glm::vec2 & point);
+	glm::vec3 mapWindowToViewPort(const glm::vec3 & point);
+	Line mapWindowToViewPort(const Line & line);
+	Line clipToPlane(const glm::vec3 & point, const glm::vec3 & normal, Line line);
+	Line clipToPlane(const glm::vec3 & point, const glm::vec3 & normal, const glm::vec3 & A, const glm::vec3 & B);
 
 	void drawViewPort();
 	void drawGnomon(const glm::mat4 & M);
@@ -71,6 +92,8 @@ protected:
 	glm::vec2 removeZ(glm::vec3);
 	glm::vec4 point(glm::vec3 v);
 
+	void drawClippedViewPortLine(const glm::vec3 & v0, const glm::vec3 & v1);
+	void drawLine(const Line & line);
 	void drawLine (
 			const glm::vec2 & v0,
 			const glm::vec2 & v1
