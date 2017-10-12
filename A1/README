@@ -1,0 +1,16 @@
+Compilation
+###########
+
+Compiling and running is program is default.
+
+premake4 gmake
+make
+./A0
+
+compiled on gl06.student.cs
+
+Manual
+######
+The indicator for the active cell should change colour second.
+
+Added a mapping for the c key which will just change the colour of the active cell without shrinking or growing it
