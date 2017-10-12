@@ -1,13 +1,14 @@
 Compilation
 ###########
 
-Compiling and running is program is default.
+Compiling and running the program is default.
 
 premake4 gmake
 make
-./A0
+./A2
 
-Manual
+tested on gl34.student.cs.uwaterloo.ca
+
 ######
 
 Rotate View Mode:
