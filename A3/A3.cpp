@@ -63,6 +63,7 @@ void A3::init()
 	// positions, and normals will be extracted and stored within the MeshConsolidator
 	// class.
 	unique_ptr<MeshConsolidator> meshConsolidator (new MeshConsolidator{
+			getAssetFilePath("cylinder.obj"),
 			getAssetFilePath("cube.obj"),
 			getAssetFilePath("sphere.obj"),
 			getAssetFilePath("suzanne.obj")
@@ -250,7 +251,7 @@ void A3::initPerspectiveMatrix()
 
 //----------------------------------------------------------------------------------------
 void A3::initViewMatrix() {
-	m_view = glm::lookAt(vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, -1.0f),
+	m_view = glm::lookAt(vec3(testDistance * glm::sin(testRotation), 0.0f,testDistance * glm::cos(testRotation)), vec3(0.0f, 0.0f, 0.0f),
 			vec3(0.0f, 1.0f, 0.0f));
 }
 
@@ -413,6 +414,7 @@ void A3::renderSceneGraph(const SceneNode & root) {
 	// could put a set of mutually recursive functions in this class, which
 	// walk down the tree from nodes of different types.
 
+	/*
 	for (const SceneNode * node : root.children) {
 
 		if (node->m_nodeType != NodeType::GeometryNode)
@@ -431,9 +433,35 @@ void A3::renderSceneGraph(const SceneNode & root) {
 		glDrawArrays(GL_TRIANGLES, batchInfo.startIndex, batchInfo.numIndices);
 		m_shader.disable();
 	}
+	*/
+	renderNode(root);
 
 	glBindVertexArray(0);
 	CHECK_GL_ERRORS;
+}
+
+// Renders the given node and all children nodes
+void A3::renderNode(const SceneNode & node) {
+
+	// Render the current node if it's a geometry node
+	if (node.m_nodeType == NodeType::GeometryNode) {
+		const GeometryNode & geometryNode = static_cast<const GeometryNode &>(node);
+
+		updateShaderUniforms(m_shader, geometryNode, m_view);
+
+		// Get the BatchInfo corresponding to the GeometryNode's unique MeshId.
+		BatchInfo batchInfo = m_batchInfoMap[geometryNode.meshId];
+
+		//-- Now render the mesh:
+		m_shader.enable();
+		glDrawArrays(GL_TRIANGLES, batchInfo.startIndex, batchInfo.numIndices);
+		m_shader.disable();
+	}
+
+	// Render it's children
+	for (const SceneNode * childNode : node.children) {
+		renderNode(*childNode);
+	}
 }
 
 //----------------------------------------------------------------------------------------
@@ -523,6 +551,9 @@ bool A3::mouseScrollEvent (
 	bool eventHandled(false);
 
 	// Fill in with event handling code...
+	testRotation+= (float) yOffSet * 0.1;
+	m_view = glm::lookAt(vec3(testDistance * glm::sin(testRotation), 0.0f,testDistance * glm::cos(testRotation)), vec3(0.0f, 0.0f, 0.0f),
+			vec3(0.0f, 1.0f, 0.0f));
 
 	return eventHandled;
 }
@@ -555,6 +586,9 @@ bool A3::keyInputEvent (
 		if( key == GLFW_KEY_M ) {
 			show_gui = !show_gui;
 			eventHandled = true;
+		}
+		else if ( key == GLFW_KEY_Q) {
+			glfwSetWindowShouldClose(m_window, GL_TRUE);
 		}
 	}
 	// Fill in with event handling code...

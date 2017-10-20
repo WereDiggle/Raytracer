@@ -48,12 +48,17 @@ protected:
 	void initPerspectiveMatrix();
 	void uploadCommonSceneUniforms();
 	void renderSceneGraph(const SceneNode &node);
+	void renderNode(const SceneNode &node);
 	void renderArcCircle();
 
 	glm::mat4 m_perpsective;
 	glm::mat4 m_view;
 
 	LightSource m_light;
+
+	// test rotation, for getting a better idea of the model
+	float testRotation = 0.0f;
+	float testDistance = 10.0f;
 
 	//-- GL resources for mesh geometry data:
 	GLuint m_vao_meshData;
