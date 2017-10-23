@@ -110,6 +110,11 @@ void A3::processLuaSceneFile(const std::string & filename) {
 //----------------------------------------------------------------------------------------
 void A3::createShaderProgram()
 {
+	m_shader_picker.generateProgramObject();
+	m_shader_picker.attachVertexShader( getAssetFilePath("picker_VertexShader.vs").c_str() );
+	m_shader_picker.attachFragmentShader( getAssetFilePath("picker_FragmentShader.fs").c_str() );
+	m_shader_picker.link();
+
 	m_shader.generateProgramObject();
 	m_shader.attachVertexShader( getAssetFilePath("VertexShader.vs").c_str() );
 	m_shader.attachFragmentShader( getAssetFilePath("FragmentShader.fs").c_str() );
@@ -124,9 +129,14 @@ void A3::createShaderProgram()
 //----------------------------------------------------------------------------------------
 void A3::enableVertexShaderInputSlots()
 {
+
 	//-- Enable input slots for m_vao_meshData:
 	{
 		glBindVertexArray(m_vao_meshData);
+
+		// Enable the colour id shader attrib for "position" when picking
+		m_picker_positionAttribLocation = m_shader_picker.getAttribLocation("position");
+		glEnableVertexAttribArray(m_picker_positionAttribLocation);
 
 		// Enable the vertex shader attribute location for "position" when rendering.
 		m_positionAttribLocation = m_shader.getAttribLocation("position");
@@ -138,7 +148,6 @@ void A3::enableVertexShaderInputSlots()
 
 		CHECK_GL_ERRORS;
 	}
-
 
 	//-- Enable input slots for m_vao_arcCircle:
 	{
@@ -210,6 +219,9 @@ void A3::mapVboDataToVertexShaderInputLocations()
 	// Bind VAO in order to record the data mapping.
 	glBindVertexArray(m_vao_meshData);
 
+	glBindBuffer(GL_ARRAY_BUFFER, m_vbo_vertexPositions);
+	glVertexAttribPointer(m_picker_positionAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
 	// Tell GL how to map data from the vertex buffer "m_vbo_vertexPositions" into the
 	// "position" vertex attribute location for any bound vertex shader program.
 	glBindBuffer(GL_ARRAY_BUFFER, m_vbo_vertexPositions);
@@ -270,7 +282,6 @@ void A3::uploadCommonSceneUniforms() {
 		GLint location = m_shader.getUniformLocation("Perspective");
 		glUniformMatrix4fv(location, 1, GL_FALSE, value_ptr(m_perpsective));
 		CHECK_GL_ERRORS;
-
 
 		//-- Set LightSource uniform for the scene:
 		{
@@ -345,14 +356,15 @@ void A3::guiLogic()
 static void updateShaderUniforms(
 		const ShaderProgram & shader,
 		const GeometryNode & node,
-		const glm::mat4 & viewMatrix
+		const glm::mat4 & viewMatrix,
+		const glm::mat4 & parentTransMatrix
 ) {
 
 	shader.enable();
 	{
 		//-- Set ModelView matrix:
 		GLint location = shader.getUniformLocation("ModelView");
-		mat4 modelView = viewMatrix * node.trans;
+		mat4 modelView = viewMatrix * parentTransMatrix * node.trans;
 		glUniformMatrix4fv(location, 1, GL_FALSE, value_ptr(modelView));
 		CHECK_GL_ERRORS;
 
@@ -366,6 +378,13 @@ static void updateShaderUniforms(
 		//-- Set Material values:
 		location = shader.getUniformLocation("material.kd");
 		vec3 kd = node.material.kd;
+		// TODO: just testing
+		if (node.isSelected) {
+			kd = vec3(1.0f,1.0f,1.0f);
+		}
+		else {
+			kd = vec3(0.0f,0.0f,0.0f);
+		}
 		glUniform3fv(location, 1, value_ptr(kd));
 		CHECK_GL_ERRORS;
 		location = shader.getUniformLocation("material.ks");
@@ -434,20 +453,22 @@ void A3::renderSceneGraph(const SceneNode & root) {
 		m_shader.disable();
 	}
 	*/
-	renderNode(root);
+	//renderNode(root, glm::mat4());
+	renderNode(root, glm::mat4());
 
 	glBindVertexArray(0);
 	CHECK_GL_ERRORS;
 }
 
 // Renders the given node and all children nodes
-void A3::renderNode(const SceneNode & node) {
+void A3::renderNode(const SceneNode & node, const glm::mat4 & parentTransMatrix) {
 
 	// Render the current node if it's a geometry node
+	glm::mat4 curTransMatrix = parentTransMatrix; 
 	if (node.m_nodeType == NodeType::GeometryNode) {
 		const GeometryNode & geometryNode = static_cast<const GeometryNode &>(node);
 
-		updateShaderUniforms(m_shader, geometryNode, m_view);
+		updateShaderUniforms(m_shader, geometryNode, m_view, parentTransMatrix);
 
 		// Get the BatchInfo corresponding to the GeometryNode's unique MeshId.
 		BatchInfo batchInfo = m_batchInfoMap[geometryNode.meshId];
@@ -458,10 +479,103 @@ void A3::renderNode(const SceneNode & node) {
 		m_shader.disable();
 	}
 
+	// Set the parent transform for the children
+	curTransMatrix = parentTransMatrix * node.trans;
+
 	// Render it's children
 	for (const SceneNode * childNode : node.children) {
-		renderNode(*childNode);
+		renderNode(*childNode, curTransMatrix);
 	}
+}
+
+glm::vec4 A3::intToColour(unsigned int i) {
+	int r = (i & 0x000000FF) >> 0;
+	int g = (i & 0x0000FF00) >> 8;
+	int b = (i & 0x00FF0000) >> 16;
+
+	return glm::vec4(r/255.0f,
+						g/255.0f,
+						b/255.0f,
+						1.0f);
+}
+
+void A3::renderPickingNode(const SceneNode & node, const glm::mat4 & parentTransMatrix) {
+
+	// Render the current node if it's a geometry node
+	glm::mat4 curTransMatrix = parentTransMatrix; 
+	if (node.m_nodeType == NodeType::GeometryNode) {
+		const GeometryNode & geometryNode = static_cast<const GeometryNode &>(node);
+
+		m_shader_picker.enable();
+
+		GLint location = m_shader_picker.getUniformLocation("ModelView");
+		mat4 modelView = m_view * parentTransMatrix * node.trans;
+		glUniformMatrix4fv(location, 1, GL_FALSE, value_ptr(modelView));
+
+		location = m_shader_picker.getUniformLocation("Perspective");
+		glUniformMatrix4fv(location, 1, GL_FALSE, value_ptr(m_perpsective));
+
+		location = m_shader_picker.getUniformLocation("PickingColor");
+		glUniform4fv(location, 1, value_ptr(intToColour(node.m_nodeId)));
+
+		CHECK_GL_ERRORS;
+
+		// Get the BatchInfo corresponding to the GeometryNode's unique MeshId.
+		BatchInfo batchInfo = m_batchInfoMap[geometryNode.meshId];
+
+		//-- Now render the mesh:
+		glDrawArrays(GL_TRIANGLES, batchInfo.startIndex, batchInfo.numIndices);
+		m_shader_picker.disable();
+	}
+
+	// Set the parent transform for the children
+	curTransMatrix = parentTransMatrix * node.trans;
+
+	// Render it's children
+	for (const SceneNode * childNode : node.children) {
+		renderPickingNode(*childNode, curTransMatrix);
+	}
+}
+
+unsigned int A3::pickJointUnderMouse() {
+
+	glEnable( GL_DEPTH_TEST );
+
+	// clear buffers
+	glClearColor(1.0f,1.0f,1.0f,1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// Bind all the vertex info
+	glBindVertexArray(m_vao_meshData);
+
+	renderPickingNode(*m_rootNode, glm::mat4());
+
+	glFlush();
+	glFinish();
+
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+	unsigned char data[4];
+	double mouseX, mouseY;
+	int windowWidth, windowHeight;
+	glfwGetCursorPos(m_window, &mouseX, &mouseY);
+	glfwGetWindowSize(m_window, &windowWidth, &windowHeight);
+	cout << mouseX << " " << windowHeight - mouseY << endl;
+	glReadPixels(mouseX, windowHeight - mouseY, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+	unsigned int pickedId = data[0] + data[1] * 256 + data[2] * 256 *256;
+	cout << pickedId << endl;
+
+	glClearColor(0.35, 0.35, 0.35, 1.0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glBindVertexArray(0);
+
+	glDisable( GL_DEPTH_TEST );
+
+	CHECK_GL_ERRORS;
+
+	return pickedId;
 }
 
 //----------------------------------------------------------------------------------------
@@ -520,6 +634,8 @@ bool A3::mouseMoveEvent (
 	bool eventHandled(false);
 
 	// Fill in with event handling code...
+	curMouseX = xPos;
+	curMouseY = yPos;
 
 	return eventHandled;
 }
@@ -536,6 +652,10 @@ bool A3::mouseButtonInputEvent (
 	bool eventHandled(false);
 
 	// Fill in with event handling code...
+	if (button == GLFW_MOUSE_BUTTON_LEFT && actions == GLFW_RELEASE) {
+		pickJointUnderMouse();
+	}
+
 
 	return eventHandled;
 }

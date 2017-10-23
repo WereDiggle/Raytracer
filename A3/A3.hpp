@@ -48,17 +48,30 @@ protected:
 	void initPerspectiveMatrix();
 	void uploadCommonSceneUniforms();
 	void renderSceneGraph(const SceneNode &node);
-	void renderNode(const SceneNode &node);
+	void renderNode(const SceneNode &node, const glm::mat4 & parentTransMatrix);
+	void renderPickingNode(const SceneNode & node, const glm::mat4 & parentTransMatrix);
 	void renderArcCircle();
+	unsigned int pickJointUnderMouse();
+
+	// helper functions
+	glm::vec4 intToColour(unsigned int i);
 
 	glm::mat4 m_perpsective;
 	glm::mat4 m_view;
 
 	LightSource m_light;
 
+	// Mouse position. Updates with on mouse move
+	double curMouseX;
+	double curMouseY;
+
 	// test rotation, for getting a better idea of the model
 	float testRotation = 0.0f;
 	float testDistance = 10.0f;
+
+	//-- GL resources for the picker
+	GLint m_picker_positionAttribLocation;
+	ShaderProgram m_shader_picker;
 
 	//-- GL resources for mesh geometry data:
 	GLuint m_vao_meshData;
