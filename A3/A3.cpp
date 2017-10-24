@@ -281,7 +281,8 @@ void A3::mapJoints(SceneNode & node) {
 
 	// map the node id to the node if it's a joint
 	if (node.m_nodeType == NodeType::JointNode) {
-		m_jointMap[node.m_nodeId] = &node;
+		JointNode & jointNode = static_cast<JointNode &>(node);
+		m_jointMap[node.m_nodeId] = &jointNode;
 		cout << "joint ID: " << node.m_nodeId << endl;
 	}
 
@@ -465,7 +466,7 @@ void A3::renderSceneGraph(const SceneNode & root) {
 void A3::renderNode(const SceneNode & node, const glm::mat4 & parentTransMatrix) {
 
 	// Render the current node if it's a geometry node
-	glm::mat4 curTransMatrix = parentTransMatrix; 
+	glm::mat4 curTransMatrix = parentTransMatrix * node.get_transform();
 	if (node.m_nodeType == NodeType::GeometryNode) {
 		const GeometryNode & geometryNode = static_cast<const GeometryNode &>(node);
 
@@ -479,9 +480,10 @@ void A3::renderNode(const SceneNode & node, const glm::mat4 & parentTransMatrix)
 		glDrawArrays(GL_TRIANGLES, batchInfo.startIndex, batchInfo.numIndices);
 		m_shader.disable();
 	}
-
-	// Set the parent transform for the children
-	curTransMatrix = parentTransMatrix * node.trans;
+	else if (node.m_nodeType == NodeType::JointNode) {
+		const JointNode & jointNode = static_cast<const JointNode &>(node);
+		curTransMatrix = parentTransMatrix * jointNode.getJointTransform();
+	}
 
 	// Render it's children
 	for (const SceneNode * childNode : node.children) {
@@ -503,7 +505,7 @@ glm::vec4 A3::intToColour(unsigned int i) {
 void A3::renderPickingNode(const SceneNode & node, const glm::mat4 & parentTransMatrix, unsigned int jointId) {
 
 	// Render the current node if it's a geometry node
-	glm::mat4 curTransMatrix = parentTransMatrix; 
+	glm::mat4 curTransMatrix = parentTransMatrix * node.get_transform(); 
 
 	// use 0 for not-a-joint, since only the root will have 0
 	unsigned int curJointId = jointId;
@@ -535,10 +537,9 @@ void A3::renderPickingNode(const SceneNode & node, const glm::mat4 & parentTrans
 	}
 	else if (node.m_nodeType == NodeType::JointNode) {
 		curJointId = node.m_nodeId;
+		const JointNode & jointNode = static_cast<const JointNode &>(node);
+		curTransMatrix = parentTransMatrix * jointNode.getJointTransform();
 	}
-
-	// Set the parent transform for the children
-	curTransMatrix = parentTransMatrix * node.trans;
 
 	// Render it's children
 	for (const SceneNode * childNode : node.children) {
@@ -699,13 +700,15 @@ bool A3::mouseMoveEvent (
 }
 
 void A3::rotateAllSelectedJoints(double dx, double dy) {
-	for (map<unsigned int, SceneNode* >::iterator it = m_jointMap.begin(); it != m_jointMap.end(); ++it) {
+	for (map<unsigned int, JointNode* >::iterator it = m_jointMap.begin(); it != m_jointMap.end(); ++it) {
 		cout << "before it->second->isSelected" << endl;
 		cout << it->first << endl;
 		if (it->second->isSelected) {
 			// TODO: change rotation of joint by x and y, keeping it limited to max and min
-			it->second->rotate('x', dx);
-			it->second->rotate('z', dy);
+			cout << "before it->second->rotate X" << endl;
+			it->second->rotateJoint('x', (float)dx);
+			cout << "before it->second->rotate Y" << endl;
+			it->second->rotateJoint('y', (float)dy);
 		}
 		cout << "after it->second->isSelected" << endl;
 	}

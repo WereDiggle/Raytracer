@@ -12,6 +12,8 @@
 #include <map>
 #include <vector>
 
+class JointNode;
+
 struct LightSource {
 	glm::vec3 position;
 	glm::vec3 rgbIntensity;
@@ -115,5 +117,5 @@ protected:
 	// Extra info for the node heirarchy
 
 	// maps joint node IDs to node pointers
-	std::map<unsigned int, SceneNode* > m_jointMap; 
+	std::map<unsigned int, JointNode* > m_jointMap; 
 };
