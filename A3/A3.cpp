@@ -84,6 +84,7 @@ void A3::init()
 
 	initLightSources();
 
+	mapJoints(*m_rootNode);
 
 	// Exiting the current scope calls delete automatically on meshConsolidator freeing
 	// all vertex data resources.  This is fine since we already copied this data to
@@ -274,6 +275,20 @@ void A3::initLightSources() {
 	m_light.rgbIntensity = vec3(0.8f); // White light
 }
 
+void A3::mapJoints(SceneNode & node) {
+
+	// map the node id to the node if it's a joint
+	if (node.m_nodeType == NodeType::JointNode) {
+		m_jointMap[node.m_nodeId] = &node;
+		cout << "joint ID: " << node.m_nodeId << endl;
+	}
+
+	// Recurse
+	for (SceneNode * childNode : node.children) {
+		mapJoints(*childNode);
+	}
+}
+
 //----------------------------------------------------------------------------------------
 void A3::uploadCommonSceneUniforms() {
 	m_shader.enable();
@@ -345,6 +360,8 @@ void A3::guiLogic()
 		if( ImGui::Button( "Quit Application" ) ) {
 			glfwSetWindowShouldClose(m_window, GL_TRUE);
 		}
+		ImGui::RadioButton("Position/Orientation (P)", &curMouseMode, MouseMode::Model);
+		ImGui::RadioButton("Joints (J)", &curMouseMode, MouseMode::Joint);
 
 		ImGui::Text( "Framerate: %.1f FPS", ImGui::GetIO().Framerate );
 
@@ -499,10 +516,13 @@ glm::vec4 A3::intToColour(unsigned int i) {
 						1.0f);
 }
 
-void A3::renderPickingNode(const SceneNode & node, const glm::mat4 & parentTransMatrix) {
+void A3::renderPickingNode(const SceneNode & node, const glm::mat4 & parentTransMatrix, unsigned int jointId) {
 
 	// Render the current node if it's a geometry node
 	glm::mat4 curTransMatrix = parentTransMatrix; 
+
+	// use 0 for not-a-joint, since only the root will have 0
+	unsigned int curJointId = jointId;
 	if (node.m_nodeType == NodeType::GeometryNode) {
 		const GeometryNode & geometryNode = static_cast<const GeometryNode &>(node);
 
@@ -516,7 +536,9 @@ void A3::renderPickingNode(const SceneNode & node, const glm::mat4 & parentTrans
 		glUniformMatrix4fv(location, 1, GL_FALSE, value_ptr(m_perpsective));
 
 		location = m_shader_picker.getUniformLocation("PickingColor");
-		glUniform4fv(location, 1, value_ptr(intToColour(node.m_nodeId)));
+		// We only want the geometry nodes that are children of joint nodes to be selectable.
+		// It does not need to be a direct child though.
+		glUniform4fv(location, 1, value_ptr(intToColour(curJointId)));
 
 		CHECK_GL_ERRORS;
 
@@ -527,13 +549,37 @@ void A3::renderPickingNode(const SceneNode & node, const glm::mat4 & parentTrans
 		glDrawArrays(GL_TRIANGLES, batchInfo.startIndex, batchInfo.numIndices);
 		m_shader_picker.disable();
 	}
+	else if (node.m_nodeType == NodeType::JointNode) {
+		curJointId = node.m_nodeId;
+	}
 
 	// Set the parent transform for the children
 	curTransMatrix = parentTransMatrix * node.trans;
 
 	// Render it's children
 	for (const SceneNode * childNode : node.children) {
-		renderPickingNode(*childNode, curTransMatrix);
+		renderPickingNode(*childNode, curTransMatrix, curJointId);
+	}
+}
+
+// Highlights the joint and all children nodes until next joint is reached
+void A3::highlightJoint(SceneNode & node, bool highlight) {
+
+	if (node.m_nodeType == NodeType::JointNode) {
+		node.isSelected = highlight;
+		// highlight it's children
+		for (SceneNode * childNode : node.children) {
+			highlightNodes(*childNode, highlight);
+		}
+	}
+}
+
+void A3::highlightNodes(SceneNode & node, bool highlight) {
+	if (node.m_nodeType == NodeType::GeometryNode) {
+		node.isSelected = highlight;
+		for (SceneNode * childNode : node.children) {
+			highlightNodes(*childNode, highlight);
+		}
 	}
 }
 
@@ -574,6 +620,11 @@ unsigned int A3::pickJointUnderMouse() {
 	glDisable( GL_DEPTH_TEST );
 
 	CHECK_GL_ERRORS;
+
+	SceneNode* selectedJoint = m_jointMap[pickedId];
+	if (selectedJoint != nullptr) {
+		highlightJoint(*selectedJoint, !selectedJoint->isSelected);
+	}
 
 	return pickedId;
 }
@@ -634,8 +685,30 @@ bool A3::mouseMoveEvent (
 	bool eventHandled(false);
 
 	// Fill in with event handling code...
-	curMouseX = xPos;
-	curMouseY = yPos;
+	switch(curMouseMode) {
+		case MouseMode::Joint:
+			if (leftMouseDown) {
+				// TODO: mouse model left right up down relative to screen
+			}
+			if (middleMouseDown) {
+				// TODO: mouse model should move along z axis with mouse Y
+			}
+			if (rightMouseDown) {
+				// TODO: 3D trackball for rotation of model
+			}
+			break;
+		case MouseMode::Model:
+			if (middleMouseDown) {
+				// TODO: change angles of all selected joints along X axis
+			}
+			if (rightMouseDown) {
+				// TODO: change angles of all selected joints along Y axis
+			}
+			break;
+	}
+
+	lastMouseX = xPos;
+	lastMouseY = yPos;
 
 	return eventHandled;
 }
@@ -652,10 +725,31 @@ bool A3::mouseButtonInputEvent (
 	bool eventHandled(false);
 
 	// Fill in with event handling code...
-	if (button == GLFW_MOUSE_BUTTON_LEFT && actions == GLFW_RELEASE) {
-		pickJointUnderMouse();
+	if (button == GLFW_MOUSE_BUTTON_LEFT) {
+		if (actions == GLFW_PRESS && !ImGui::IsMouseHoveringAnyWindow()) {
+			leftMouseDown = 1;
+		}
+		else if (actions == GLFW_RELEASE) {
+			pickJointUnderMouse();
+			leftMouseDown = 0;
+		}
 	}
-
+	else if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+		if (actions == GLFW_PRESS && !ImGui::IsMouseHoveringAnyWindow()) {
+			rightMouseDown = 1;
+		}
+		else if (actions == GLFW_RELEASE) {
+			rightMouseDown = 0;
+		}
+	}
+	else if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
+		if (actions == GLFW_PRESS && !ImGui::IsMouseHoveringAnyWindow()) {
+			middleMouseDown = 1;
+		}
+		else if (actions == GLFW_RELEASE) {
+			middleMouseDown = 0;
+		}
+	}
 
 	return eventHandled;
 }
@@ -709,6 +803,45 @@ bool A3::keyInputEvent (
 		}
 		else if ( key == GLFW_KEY_Q) {
 			glfwSetWindowShouldClose(m_window, GL_TRUE);
+		}
+		else if ( key == GLFW_KEY_I) {
+			// TODO: reset position
+		}
+		else if ( key == GLFW_KEY_O) {
+			// TODO: reset orientation
+		}
+		else if ( key == GLFW_KEY_N) {
+			// TODO: reset all joint angles. Clears undo/redo stack
+		}
+		else if ( key == GLFW_KEY_A) {
+			// TODO: reset all the things
+		}
+		else if ( key == GLFW_KEY_U) {
+			// TODO: undo the last change
+		}
+		else if ( key == GLFW_KEY_R) {
+			// TODO: redo the change
+		}
+		else if ( key == GLFW_KEY_C) {
+			// TODO: draw circle for trackball
+		}
+		else if ( key == GLFW_KEY_Z) {
+			// TODO: use depth buffering
+		}
+		else if ( key == GLFW_KEY_Z) {
+			// TODO: use depth buffering
+		}
+		else if ( key == GLFW_KEY_B) {
+			// TODO: backface culling
+		}
+		else if ( key == GLFW_KEY_F) {
+			// TODO: frontface culling
+		}
+		else if ( key == GLFW_KEY_P) {
+			curMouseMode = MouseMode::Model;
+		}
+		else if ( key == GLFW_KEY_J) {
+			curMouseMode = MouseMode::Joint;
 		}
 	}
 	// Fill in with event handling code...

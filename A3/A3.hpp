@@ -9,12 +9,15 @@
 
 #include <glm/glm.hpp>
 #include <memory>
+#include <map>
+#include <vector>
 
 struct LightSource {
 	glm::vec3 position;
 	glm::vec3 rgbIntensity;
 };
 
+enum MouseMode { Model = 0, Joint};
 
 class A3 : public CS488Window {
 public:
@@ -44,14 +47,17 @@ protected:
 	void mapVboDataToVertexShaderInputLocations();
 	void initViewMatrix();
 	void initLightSources();
+	void mapJoints(SceneNode & node);
 
 	void initPerspectiveMatrix();
 	void uploadCommonSceneUniforms();
 	void renderSceneGraph(const SceneNode &node);
 	void renderNode(const SceneNode &node, const glm::mat4 & parentTransMatrix);
-	void renderPickingNode(const SceneNode & node, const glm::mat4 & parentTransMatrix);
+	void renderPickingNode(const SceneNode & node, const glm::mat4 & parentTransMatrix, unsigned int jointId = 0);
 	void renderArcCircle();
 	unsigned int pickJointUnderMouse();
+	void highlightJoint(SceneNode & node, bool highlight);
+	void highlightNodes(SceneNode & node, bool highlight);
 
 	// helper functions
 	glm::vec4 intToColour(unsigned int i);
@@ -61,9 +67,18 @@ protected:
 
 	LightSource m_light;
 
-	// Mouse position. Updates with on mouse move
-	double curMouseX;
-	double curMouseY;
+
+	// The control mode for mouse inputs
+	int curMouseMode = MouseMode::Joint;
+
+	// mouse down variables
+	int leftMouseDown = 0;
+	int middleMouseDown = 0;
+	int rightMouseDown = 0;
+
+	// Mouse position on the previous mouse move event
+	double lastMouseX = 0;
+	double lastMouseY = 0;
 
 	// test rotation, for getting a better idea of the model
 	float testRotation = 0.0f;
@@ -95,4 +110,10 @@ protected:
 	std::string m_luaSceneFile;
 
 	std::shared_ptr<SceneNode> m_rootNode;
+
+	// Extra info for the node heirarchy
+
+	// maps joint node IDs to node pointers
+	std::map<unsigned int, SceneNode* > m_jointMap; 
+	std::vector<SceneNode*> m_selectedJoints;
 };
