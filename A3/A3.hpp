@@ -59,6 +59,8 @@ protected:
 	void highlightJoint(SceneNode & node, bool highlight);
 	void highlightNodes(SceneNode & node, bool highlight);
 
+	void rotateAllSelectedJoints(double dx, double dy);
+
 	// helper functions
 	glm::vec4 intToColour(unsigned int i);
 
@@ -66,7 +68,6 @@ protected:
 	glm::mat4 m_view;
 
 	LightSource m_light;
-
 
 	// The control mode for mouse inputs
 	int curMouseMode = MouseMode::Joint;
@@ -115,5 +116,4 @@ protected:
 
 	// maps joint node IDs to node pointers
 	std::map<unsigned int, SceneNode* > m_jointMap; 
-	std::vector<SceneNode*> m_selectedJoints;
 };

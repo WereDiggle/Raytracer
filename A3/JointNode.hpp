@@ -14,6 +14,7 @@ public:
 		double min, init, max;
 	};
 
-
+	double m_curAngleX;
+	double m_curAngleY;
 	JointRange m_joint_x, m_joint_y;
 };

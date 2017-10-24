@@ -13,6 +13,8 @@ using namespace std;
 #include <glm/gtx/io.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <sys/time.h>
+
 using namespace glm;
 
 static bool show_gui = true;
@@ -395,12 +397,16 @@ static void updateShaderUniforms(
 		//-- Set Material values:
 		location = shader.getUniformLocation("material.kd");
 		vec3 kd = node.material.kd;
-		// TODO: just testing
+		// TODO: just testing. Use colour shifting over time
 		if (node.isSelected) {
-			kd = vec3(1.0f,1.0f,1.0f);
-		}
-		else {
-			kd = vec3(0.0f,0.0f,0.0f);
+			struct timeval timer;
+			gettimeofday(&timer, NULL);
+			float milliseconds = timer.tv_usec / 1000000.0f;
+			time_t seconds = timer.tv_sec;
+			milliseconds = milliseconds + (seconds % 3);
+			milliseconds = milliseconds * (360.0f / 3.0f);
+			milliseconds = glm::radians(milliseconds);
+			kd = vec3(glm::cos(milliseconds),glm::cos(milliseconds + M_PI_4),glm::sin(milliseconds));
 		}
 		glUniform3fv(location, 1, value_ptr(kd));
 		CHECK_GL_ERRORS;
@@ -449,28 +455,6 @@ void A3::renderSceneGraph(const SceneNode & root) {
 	// subclasses, that renders the subtree rooted at every node.  Or you
 	// could put a set of mutually recursive functions in this class, which
 	// walk down the tree from nodes of different types.
-
-	/*
-	for (const SceneNode * node : root.children) {
-
-		if (node->m_nodeType != NodeType::GeometryNode)
-			continue;
-
-		const GeometryNode * geometryNode = static_cast<const GeometryNode *>(node);
-
-		updateShaderUniforms(m_shader, *geometryNode, m_view);
-
-
-		// Get the BatchInfo corresponding to the GeometryNode's unique MeshId.
-		BatchInfo batchInfo = m_batchInfoMap[geometryNode->meshId];
-
-		//-- Now render the mesh:
-		m_shader.enable();
-		glDrawArrays(GL_TRIANGLES, batchInfo.startIndex, batchInfo.numIndices);
-		m_shader.disable();
-	}
-	*/
-	//renderNode(root, glm::mat4());
 	renderNode(root, glm::mat4());
 
 	glBindVertexArray(0);
@@ -621,9 +605,10 @@ unsigned int A3::pickJointUnderMouse() {
 
 	CHECK_GL_ERRORS;
 
-	SceneNode* selectedJoint = m_jointMap[pickedId];
-	if (selectedJoint != nullptr) {
+	if (m_jointMap.find(pickedId) != m_jointMap.end()) {
+		SceneNode* selectedJoint = m_jointMap[pickedId];
 		highlightJoint(*selectedJoint, !selectedJoint->isSelected);
+		cout << "valid joint selected" << endl;
 	}
 
 	return pickedId;
@@ -686,7 +671,7 @@ bool A3::mouseMoveEvent (
 
 	// Fill in with event handling code...
 	switch(curMouseMode) {
-		case MouseMode::Joint:
+		case MouseMode::Model:
 			if (leftMouseDown) {
 				// TODO: mouse model left right up down relative to screen
 			}
@@ -697,12 +682,12 @@ bool A3::mouseMoveEvent (
 				// TODO: 3D trackball for rotation of model
 			}
 			break;
-		case MouseMode::Model:
-			if (middleMouseDown) {
+		case MouseMode::Joint:
+			if (middleMouseDown || rightMouseDown) {
 				// TODO: change angles of all selected joints along X axis
-			}
-			if (rightMouseDown) {
 				// TODO: change angles of all selected joints along Y axis
+				rotateAllSelectedJoints((xPos-lastMouseX) * middleMouseDown, (yPos-lastMouseY) * rightMouseDown);
+
 			}
 			break;
 	}
@@ -711,6 +696,20 @@ bool A3::mouseMoveEvent (
 	lastMouseY = yPos;
 
 	return eventHandled;
+}
+
+void A3::rotateAllSelectedJoints(double dx, double dy) {
+	for (map<unsigned int, SceneNode* >::iterator it = m_jointMap.begin(); it != m_jointMap.end(); ++it) {
+		cout << "before it->second->isSelected" << endl;
+		cout << it->first << endl;
+		if (it->second->isSelected) {
+			// TODO: change rotation of joint by x and y, keeping it limited to max and min
+			it->second->rotate('x', dx);
+			it->second->rotate('z', dy);
+		}
+		cout << "after it->second->isSelected" << endl;
+	}
+
 }
 
 //----------------------------------------------------------------------------------------
