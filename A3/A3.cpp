@@ -88,7 +88,6 @@ void A3::init()
 
 	mapJoints(*m_rootNode);
 
-	// TODO: store initial joint data in undo stack at the bottom
 	pushCurrentJointState();
 
 	// Exiting the current scope calls delete automatically on meshConsolidator freeing
@@ -765,8 +764,18 @@ bool A3::mouseMoveEvent (
 			}
 			if (rightMouseDown) {
 				// TODO: 3D trackball for rotation of model
+                float translateX = m_rootNode->trans[3][0];
+                float translateY = m_rootNode->trans[3][1];
+                float translateZ = m_rootNode->trans[3][2];
+
+                resetPosition();
+
 				m_rootNode->rotate('y', xPos-lastMouseX);
 				m_rootNode->rotate('x', yPos-lastMouseY);
+
+                m_rootNode->trans[3][0] = translateX;
+                m_rootNode->trans[3][1] = translateY;
+                m_rootNode->trans[3][2] = translateZ;
 			}
 			break;
 		case MouseMode::Joint:
