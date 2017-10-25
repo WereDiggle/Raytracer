@@ -9,6 +9,7 @@ public:
 
 	glm::mat4 getJointTransform() const;
 	void rotateJoint(char axis, float angle);
+	void setJointRotation(double angleX, double angleY);
 
 	void set_joint_x(double min, double init, double max);
 	void set_joint_y(double min, double init, double max);

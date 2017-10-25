@@ -88,10 +88,30 @@ void A3::init()
 
 	mapJoints(*m_rootNode);
 
+	// TODO: store initial joint data in undo stack at the bottom
+	std::map<unsigned int, std::pair<double, double>> curState;
+	for (map<unsigned int, JointNode* >::iterator it = m_jointMap.begin(); it != m_jointMap.end(); ++it) {
+		curState[it->first] = std::pair<double, double>(it->second->m_joint_x.init, it->second->m_joint_y.init);
+	}
+	m_undoStack.push_back(curState);
+	m_curUndo = 0;
+	m_redoLimit = 0;
+
 	// Exiting the current scope calls delete automatically on meshConsolidator freeing
 	// all vertex data resources.  This is fine since we already copied this data to
 	// VBOs on the GPU.  We have no use for storing vertex data on the CPU side beyond
 	// this point.
+}
+
+void A3::undo() {
+	map<unsigned int, pair<double, double>> curState = m_undoStack[m_curUndo];
+	for (std::map<unsigned int, std::pair<double, double>>::iterator it = curState.begin(); it != curState.end(); ++it) {
+		m_jointMap[it->first]->setJointRotation(it->second.first, it->second.second);
+	}
+}
+
+void A3::redo() {
+
 }
 
 //----------------------------------------------------------------------------------------
@@ -685,8 +705,6 @@ bool A3::mouseMoveEvent (
 			break;
 		case MouseMode::Joint:
 			if (middleMouseDown || rightMouseDown) {
-				// TODO: change angles of all selected joints along X axis
-				// TODO: change angles of all selected joints along Y axis
 				rotateAllSelectedJoints((xPos-lastMouseX) * middleMouseDown, (lastMouseY-yPos) * rightMouseDown);
 
 			}
@@ -701,18 +719,11 @@ bool A3::mouseMoveEvent (
 
 void A3::rotateAllSelectedJoints(double dx, double dy) {
 	for (map<unsigned int, JointNode* >::iterator it = m_jointMap.begin(); it != m_jointMap.end(); ++it) {
-		cout << "before it->second->isSelected" << endl;
-		cout << it->first << endl;
 		if (it->second->isSelected) {
-			// TODO: change rotation of joint by x and y, keeping it limited to max and min
-			cout << "before it->second->rotate X" << endl;
 			it->second->rotateJoint('x', (float)dx);
-			cout << "before it->second->rotate Y" << endl;
 			it->second->rotateJoint('y', (float)dy);
 		}
-		cout << "after it->second->isSelected" << endl;
 	}
-
 }
 
 //----------------------------------------------------------------------------------------
@@ -820,6 +831,7 @@ bool A3::keyInputEvent (
 		}
 		else if ( key == GLFW_KEY_U) {
 			// TODO: undo the last change
+			undo();
 		}
 		else if ( key == GLFW_KEY_R) {
 			// TODO: redo the change

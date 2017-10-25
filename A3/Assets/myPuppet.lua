@@ -119,8 +119,8 @@ end
 function makeHead()
 
     headSize = 0.3
-    eyeSize = 0.25
-    eyeApart = 0.05
+    eyeSize = 0.1
+    eyeApart = 0.15
 
     headJoint = gr.joint('headJoint', {-45,0,45}, {-45,0,45})
 
@@ -131,7 +131,22 @@ function makeHead()
 
         eye = gr.mesh('sphere', 'eye')
         eye:scale(eyeSize, eyeSize, eyeSize)
-        eye:translate(1,0,0)
+        eye:translate(1,eyeApart,0)
+        eye:rotate('x', 0)
+        eye:set_material(black)
+        head:add_child(eye)
+
+        eye = gr.mesh('sphere', 'eye')
+        eye:scale(eyeSize, eyeSize, eyeSize)
+        eye:translate(1,eyeApart,0)
+        eye:rotate('x', 120)
+        eye:set_material(black)
+        head:add_child(eye)
+
+        eye = gr.mesh('sphere', 'eye')
+        eye:scale(eyeSize, eyeSize, eyeSize)
+        eye:translate(1,eyeApart,0)
+        eye:rotate('x', 240)
         eye:set_material(black)
         head:add_child(eye)
 
@@ -144,6 +159,12 @@ torso:scale(1.0, 0.75, 1.0)
 torso:translate(0.0, 0.0, 0.0)
 torso:set_material(lightBlue)
 rootNode:add_child(torso)
+
+block = gr.mesh('cube', 'block')
+block:scale(1.5,2,1)
+block:translate(0,0.5,-1.2)
+block:set_material(lightBlue)
+rootNode:add_child(block)
 
 -- making some legs
 legsDepth = -0.4
@@ -176,7 +197,7 @@ rootNode:add_child(leg)
 
 -- make some arms
 armsDepth = -0.5
-armsOut = 1
+armsOut = 0.7
 armsApart = 0.4
 
 arm = makeArm()
@@ -188,6 +209,18 @@ arm = makeArm()
 arm:rotate('y', -90)
 arm:translate(-armsApart,armsDepth,armsOut)
 rootNode:add_child(arm)
+
+armSocket = gr.mesh('sphere', 'armSocket')
+armSocket:scale(0.3,0.3,0.3)
+armSocket:translate(armsApart, armsDepth, armsOut)
+armSocket:set_material(white)
+rootNode:add_child(armSocket)
+
+armSocket = gr.mesh('sphere', 'armSocket')
+armSocket:scale(0.3,0.3,0.3)
+armSocket:translate(-armsApart, armsDepth, armsOut)
+armSocket:set_material(white)
+rootNode:add_child(armSocket)
 
 -- make some heads
 headsDepth = 0.5

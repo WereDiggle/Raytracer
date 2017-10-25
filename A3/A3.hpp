@@ -118,4 +118,13 @@ protected:
 
 	// maps joint node IDs to node pointers
 	std::map<unsigned int, JointNode* > m_jointMap; 
+
+	// undo/redo stack
+	// each element in the stack is a map from node id to X and Y joint angles
+	std::vector<std::map<unsigned int, std::pair<double, double> > > m_undoStack;
+	int m_curUndo;
+	int m_redoLimit;
+
+	void undo();
+	void redo();
 };
