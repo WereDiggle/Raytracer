@@ -398,17 +398,55 @@ void A3::guiLogic()
 	ImGuiWindowFlags windowFlags(ImGuiWindowFlags_AlwaysAutoResize);
 	float opacity(0.5f);
 
+	if (ImGui::BeginMainMenuBar()) {
+		if (ImGui::BeginMenu("Application")) {
+			if (ImGui::MenuItem("Reset Position", "I")) {
+				// TODO:
+			}
+			if (ImGui::MenuItem("Reset Orientation", "O")) {
+				// TODO:
+			}
+			if (ImGui::MenuItem("Reset Joints", "N")) {
+				// TODO:
+			}
+			if (ImGui::MenuItem("Reset All", "A")) {
+				// TODO:
+			}
+			if (ImGui::MenuItem("Quit Application", "Q")) {
+				glfwSetWindowShouldClose(m_window, GL_TRUE);
+			}
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu("Edit")) {
+			if (ImGui::MenuItem("Undo", "U")) {
+				undo();
+			}
+			if (ImGui::MenuItem("Redo", "R")) {
+				redo();
+			}
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu("Options")) {
+			if (ImGui::MenuItem("Circle", "C")) {
+				// TODO: add circle
+			}
+			if (ImGui::MenuItem("Z-buffer", "Z")) {
+				// TODO:
+			}
+			if (ImGui::MenuItem("Backface Culling", "B")) {
+				// TODO:
+			}
+			if (ImGui::MenuItem("Frontface Culling", "F")) {
+				// TODO:
+			}
+			ImGui::EndMenu();
+		}
+		ImGui::EndMainMenuBar();
+	}
+
 	ImGui::Begin("Properties", &showDebugWindow, ImVec2(100,100), opacity,
 			windowFlags);
 
-
-		// Add more gui elements here here ...
-
-
-		// Create Button, and check if it was clicked:
-		if( ImGui::Button( "Quit Application" ) ) {
-			glfwSetWindowShouldClose(m_window, GL_TRUE);
-		}
 		ImGui::RadioButton("Position/Orientation (P)", &curMouseMode, MouseMode::Model);
 		ImGui::RadioButton("Joints (J)", &curMouseMode, MouseMode::Joint);
 
@@ -768,7 +806,9 @@ bool A3::mouseButtonInputEvent (
 			leftMouseDown = 1;
 		}
 		else if (actions == GLFW_RELEASE) {
-			pickJointUnderMouse();
+			if (!ImGui::IsMouseHoveringAnyWindow()) {
+				pickJointUnderMouse();
+			}
 			leftMouseDown = 0;
 		}
 	}
@@ -847,6 +887,7 @@ bool A3::keyInputEvent (
 		}
 		else if ( key == GLFW_KEY_Q) {
 			glfwSetWindowShouldClose(m_window, GL_TRUE);
+			eventHandled = true;
 		}
 		else if ( key == GLFW_KEY_I) {
 			// TODO: reset position
@@ -863,10 +904,12 @@ bool A3::keyInputEvent (
 		else if ( key == GLFW_KEY_U) {
 			// TODO: undo the last change
 			undo();
+			eventHandled = true;
 		}
 		else if ( key == GLFW_KEY_R) {
 			// TODO: redo the change
 			redo();
+			eventHandled = true;
 		}
 		else if ( key == GLFW_KEY_C) {
 			// TODO: draw circle for trackball
@@ -885,9 +928,11 @@ bool A3::keyInputEvent (
 		}
 		else if ( key == GLFW_KEY_P) {
 			curMouseMode = MouseMode::Model;
+			eventHandled = true;
 		}
 		else if ( key == GLFW_KEY_J) {
 			curMouseMode = MouseMode::Joint;
+			eventHandled = true;
 		}
 	}
 	// Fill in with event handling code...
