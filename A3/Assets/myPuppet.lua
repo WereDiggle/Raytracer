@@ -69,8 +69,73 @@ end
 
 function makeArm()
 
-    armJoint = gr.joint('armJoint');
+    fingerApart = 0.125
+    fingerUpArm = 1.2
 
+    armJoint = gr.joint('armJoint', {-45,0,45}, {-45,0,45})
+
+        arm = gr.mesh('sphere', 'arm')
+        arm:translate(1.0,0,0)
+        arm:scale(0.7,0.2,0.2)
+        arm:set_material(lightBlue)
+        armJoint:add_child(arm)
+
+        finger = makeFinger()
+        finger:translate(fingerUpArm, fingerApart, 0.0)
+        finger:rotate('x', 0)
+        armJoint:add_child(finger)
+
+        finger = makeFinger()
+        finger:translate(fingerUpArm, fingerApart, 0.0)
+        finger:rotate('x', 120)
+        armJoint:add_child(finger)
+
+        finger = makeFinger()
+        finger:translate(fingerUpArm, fingerApart, 0.0)
+        finger:rotate('x', 240)
+        armJoint:add_child(finger)
+
+    return armJoint
+
+end
+
+function makeFinger()
+
+    baseFingerLength = 0.2
+    baseFingerThickness = 0.04
+
+    baseFingerJoint = gr.joint('baseFingerJoint', {-45,0,45}, {-45,0,45})
+
+        baseFinger = gr.mesh('sphere', 'baseFinger')
+        baseFinger:translate(1.0,0,0)
+        baseFinger:scale(baseFingerLength, baseFingerThickness, baseFingerThickness)
+        baseFinger:set_material(white)
+        baseFingerJoint:add_child(baseFinger)
+
+    return baseFingerJoint
+
+end
+
+function makeHead()
+
+    headSize = 0.3
+    eyeSize = 0.25
+    eyeApart = 0.05
+
+    headJoint = gr.joint('headJoint', {-45,0,45}, {-45,0,45})
+
+        head = gr.mesh('sphere', 'head')
+        head:scale(headSize, headSize, headSize)
+        head:set_material(white)
+        headJoint:add_child(head)
+
+        eye = gr.mesh('sphere', 'eye')
+        eye:scale(eyeSize, eyeSize, eyeSize)
+        eye:translate(1,0,0)
+        eye:set_material(black)
+        head:add_child(eye)
+
+    return headJoint
 end
 
 -- torso
@@ -108,5 +173,44 @@ leg:rotate('y', 180)
 leg:translate(-legsOut,legsDepth,-legsApart)
 --leg:rotate('x', legsAngle)
 rootNode:add_child(leg)
+
+-- make some arms
+armsDepth = -0.5
+armsOut = 1
+armsApart = 0.4
+
+arm = makeArm()
+arm:rotate('y', -90)
+arm:translate(armsApart,armsDepth,armsOut)
+rootNode:add_child(arm)
+
+arm = makeArm()
+arm:rotate('y', -90)
+arm:translate(-armsApart,armsDepth,armsOut)
+rootNode:add_child(arm)
+
+-- make some heads
+headsDepth = 0.5
+headsOut = 0.5
+
+head = makeHead()
+head:rotate('z', 90)
+head:rotate('x', 45)
+head:translate(0,headsDepth,headsOut)
+rootNode:add_child(head)
+
+head = makeHead()
+head:rotate('z', 90)
+head:rotate('x', 45)
+head:translate(0,headsDepth,headsOut)
+head:rotate('y', 90)
+rootNode:add_child(head)
+
+head = makeHead()
+head:rotate('z', 90)
+head:rotate('x', 45)
+head:translate(0,headsDepth,headsOut)
+head:rotate('y', -90)
+rootNode:add_child(head)
 
 return rootNode

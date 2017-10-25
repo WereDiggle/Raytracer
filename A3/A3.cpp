@@ -407,7 +407,7 @@ static void updateShaderUniforms(
 			milliseconds = milliseconds + (seconds % 3);
 			milliseconds = milliseconds * (360.0f / 3.0f);
 			milliseconds = glm::radians(milliseconds);
-			kd = vec3(glm::cos(milliseconds),glm::cos(milliseconds + M_PI_4),glm::sin(milliseconds));
+			kd = vec3(1.0f,glm::cos(milliseconds + M_PI_4),glm::sin(milliseconds));
 		}
 		glUniform3fv(location, 1, value_ptr(kd));
 		CHECK_GL_ERRORS;
@@ -687,7 +687,7 @@ bool A3::mouseMoveEvent (
 			if (middleMouseDown || rightMouseDown) {
 				// TODO: change angles of all selected joints along X axis
 				// TODO: change angles of all selected joints along Y axis
-				rotateAllSelectedJoints((xPos-lastMouseX) * middleMouseDown, (yPos-lastMouseY) * rightMouseDown);
+				rotateAllSelectedJoints((xPos-lastMouseX) * middleMouseDown, (lastMouseY-yPos) * rightMouseDown);
 
 			}
 			break;
