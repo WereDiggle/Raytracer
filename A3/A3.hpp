@@ -69,6 +69,10 @@ protected:
 	void resetJoints();
 	void resetAll();
 
+	// Trackball functions
+	glm::vec3 vCalcRotVec(float fNewX, float fNewY, float fOldX, float fOldY, float fDiameter);
+	glm::mat4 vAxisRotMatrix(float fVecX, float fVecY, float fVecZ);
+
 	// helper functions
 	glm::vec4 intToColour(unsigned int i);
 
