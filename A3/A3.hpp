@@ -122,9 +122,10 @@ protected:
 	// undo/redo stack
 	// each element in the stack is a map from node id to X and Y joint angles
 	std::vector<std::map<unsigned int, std::pair<double, double> > > m_undoStack;
+	std::vector<std::map<unsigned int, std::pair<double, double> > > m_redoStack;
 	int m_curUndo;
-	int m_redoLimit;
 
+	void pushCurrentJointState();
 	void undo();
 	void redo();
 };

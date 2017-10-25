@@ -89,13 +89,7 @@ void A3::init()
 	mapJoints(*m_rootNode);
 
 	// TODO: store initial joint data in undo stack at the bottom
-	std::map<unsigned int, std::pair<double, double>> curState;
-	for (map<unsigned int, JointNode* >::iterator it = m_jointMap.begin(); it != m_jointMap.end(); ++it) {
-		curState[it->first] = std::pair<double, double>(it->second->m_joint_x.init, it->second->m_joint_y.init);
-	}
-	m_undoStack.push_back(curState);
-	m_curUndo = 0;
-	m_redoLimit = 0;
+	pushCurrentJointState();
 
 	// Exiting the current scope calls delete automatically on meshConsolidator freeing
 	// all vertex data resources.  This is fine since we already copied this data to
@@ -103,9 +97,30 @@ void A3::init()
 	// this point.
 }
 
+void A3::pushCurrentJointState() {
+	std::map<unsigned int, std::pair<double, double>> curState;
+	for (map<unsigned int, JointNode* >::iterator it = m_jointMap.begin(); it != m_jointMap.end(); ++it) {
+		curState[it->first] = std::pair<double, double>(it->second->m_curAngleX, it->second->m_curAngleY);
+	}
+	m_undoStack.push_back(curState);
+	m_redoStack.clear();
+}
+
 void A3::undo() {
-	map<unsigned int, pair<double, double>> curState = m_undoStack[m_curUndo];
-	for (std::map<unsigned int, std::pair<double, double>>::iterator it = curState.begin(); it != curState.end(); ++it) {
+
+	// more than just the initial joint state
+	if (m_undoStack.size() > 1) {
+		map<unsigned int, pair<double, double>> curState = m_undoStack.back();
+		m_undoStack.pop_back();
+		m_redoStack.push_back(curState);
+	}
+	else {
+		// TODO: show warning about undoing past stack
+		cout << "can't undo past stack" << endl;
+	}
+
+	// apply the state to the joints
+	for (std::map<unsigned int, std::pair<double, double>>::iterator it = m_undoStack.back().begin(); it != m_undoStack.back().end(); ++it) {
 		m_jointMap[it->first]->setJointRotation(it->second.first, it->second.second);
 	}
 }
@@ -706,7 +721,6 @@ bool A3::mouseMoveEvent (
 		case MouseMode::Joint:
 			if (middleMouseDown || rightMouseDown) {
 				rotateAllSelectedJoints((xPos-lastMouseX) * middleMouseDown, (lastMouseY-yPos) * rightMouseDown);
-
 			}
 			break;
 	}
@@ -753,6 +767,9 @@ bool A3::mouseButtonInputEvent (
 		}
 		else if (actions == GLFW_RELEASE) {
 			rightMouseDown = 0;
+			if (curMouseMode == MouseMode::Joint) {
+				pushCurrentJointState();
+			}
 		}
 	}
 	else if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
@@ -761,6 +778,9 @@ bool A3::mouseButtonInputEvent (
 		}
 		else if (actions == GLFW_RELEASE) {
 			middleMouseDown = 0;
+			if (curMouseMode == MouseMode::Joint) {
+				pushCurrentJointState();
+			}
 		}
 	}
 
