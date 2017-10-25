@@ -427,16 +427,16 @@ void A3::guiLogic()
 		}
 		if (ImGui::BeginMenu("Options")) {
 			if (ImGui::MenuItem("Circle", "C")) {
-				// TODO: add circle
+				m_drawTrackBall = !m_drawTrackBall;
 			}
 			if (ImGui::MenuItem("Z-buffer", "Z")) {
-				// TODO:
+				m_allowZBuffer = !m_allowZBuffer;
 			}
 			if (ImGui::MenuItem("Backface Culling", "B")) {
-				// TODO:
+				m_backfaceCulling = !m_backfaceCulling;
 			}
 			if (ImGui::MenuItem("Frontface Culling", "F")) {
-				// TODO:
+				m_frontfaceCulling = !m_frontfaceCulling;
 			}
 			ImGui::EndMenu();
 		}
@@ -481,7 +481,6 @@ static void updateShaderUniforms(
 		//-- Set Material values:
 		location = shader.getUniformLocation("material.kd");
 		vec3 kd = node.material.kd;
-		// TODO: just testing. Use colour shifting over time
 		if (node.isSelected) {
 			struct timeval timer;
 			gettimeofday(&timer, NULL);
@@ -513,12 +512,31 @@ static void updateShaderUniforms(
  */
 void A3::draw() {
 
-	glEnable( GL_DEPTH_TEST );
+	// Z buffer
+	if (m_allowZBuffer) {
+		glEnable( GL_DEPTH_TEST );
+	}
+
+	// face culling
+	if (m_frontfaceCulling || m_backfaceCulling) {
+		glEnable(GL_CULL_FACE);
+		if (!m_frontfaceCulling) {
+			glCullFace(GL_BACK);
+		}
+		else if (!m_backfaceCulling) {
+			glCullFace(GL_FRONT);
+		}
+		else {
+			glCullFace(GL_FRONT_AND_BACK);
+		}
+	}
+
 	renderSceneGraph(*m_rootNode);
 
-
-	glDisable( GL_DEPTH_TEST );
-	renderArcCircle();
+	if (m_drawTrackBall) {
+		glDisable( GL_DEPTH_TEST );
+		renderArcCircle();
+	}
 }
 
 //----------------------------------------------------------------------------------------
@@ -761,7 +779,6 @@ bool A3::mouseMoveEvent (
 				m_rootNode->translate(glm::vec3(0.0f, 0.0f, (float) (0.01*(yPos-lastMouseY))));
 			}
 			if (rightMouseDown) {
-				// TODO: 3D trackball for rotation of model
                 float translateX = m_rootNode->trans[3][0];
                 float translateY = m_rootNode->trans[3][1];
 				float translateZ = m_rootNode->trans[3][2];
@@ -937,16 +954,16 @@ bool A3::keyInputEvent (
 			eventHandled = true;
 		}
 		else if ( key == GLFW_KEY_C) {
-			// TODO: draw circle for trackball
+			m_drawTrackBall = !m_drawTrackBall;
 		}
 		else if ( key == GLFW_KEY_Z) {
-			// TODO: use depth buffering
+			m_allowZBuffer = !m_allowZBuffer;
 		}
 		else if ( key == GLFW_KEY_B) {
-			// TODO: backface culling
+			m_backfaceCulling = !m_backfaceCulling;
 		}
 		else if ( key == GLFW_KEY_F) {
-			// TODO: frontface culling
+			m_frontfaceCulling = !m_frontfaceCulling;
 		}
 		else if ( key == GLFW_KEY_P) {
 			curMouseMode = MouseMode::Model;

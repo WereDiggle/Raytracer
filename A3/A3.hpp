@@ -81,6 +81,12 @@ protected:
 
 	LightSource m_light;
 
+	// whether to draw the trackball circle
+	bool m_drawTrackBall = false;
+	bool m_allowZBuffer = true;
+	bool m_backfaceCulling = false;
+	bool m_frontfaceCulling = false;
+
 	// The control mode for mouse inputs
 	int curMouseMode = MouseMode::Joint;
 
