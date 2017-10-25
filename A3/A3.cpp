@@ -110,9 +110,8 @@ void A3::undo() {
 
 	// more than just the initial joint state
 	if (m_undoStack.size() > 1) {
-		map<unsigned int, pair<double, double>> curState = m_undoStack.back();
+		m_redoStack.push_back(m_undoStack.back());
 		m_undoStack.pop_back();
-		m_redoStack.push_back(curState);
 	}
 	else {
 		// TODO: show warning about undoing past stack
@@ -126,7 +125,19 @@ void A3::undo() {
 }
 
 void A3::redo() {
+	if (m_redoStack.size() > 0) {
+		// apply the state to the joints
+		for (std::map<unsigned int, std::pair<double, double>>::iterator it = m_redoStack.back().begin(); it != m_redoStack.back().end(); ++it) {
+			m_jointMap[it->first]->setJointRotation(it->second.first, it->second.second);
+		}
+		m_undoStack.push_back(m_redoStack.back());
+		m_redoStack.pop_back();
 
+	}
+	else {
+		// TODO: show warning about nothing to redo
+		cout << "nothing to redo" << endl;
+	}
 }
 
 //----------------------------------------------------------------------------------------
@@ -855,6 +866,7 @@ bool A3::keyInputEvent (
 		}
 		else if ( key == GLFW_KEY_R) {
 			// TODO: redo the change
+			redo();
 		}
 		else if ( key == GLFW_KEY_C) {
 			// TODO: draw circle for trackball
