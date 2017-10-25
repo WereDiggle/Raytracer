@@ -671,7 +671,9 @@ void A3::highlightNodes(SceneNode & node, bool highlight) {
 
 unsigned int A3::pickJointUnderMouse() {
 
-	glEnable( GL_DEPTH_TEST );
+	if (m_allowZBuffer) {
+		glEnable( GL_DEPTH_TEST );
+	}
 
 	// clear buffers
 	glClearColor(1.0f,1.0f,1.0f,1.0f);
@@ -889,9 +891,11 @@ bool A3::mouseScrollEvent (
 	bool eventHandled(false);
 
 	// Fill in with event handling code...
+	/*
 	testRotation+= (float) yOffSet * 0.1;
 	m_view = glm::lookAt(vec3(testDistance * glm::sin(testRotation), 0.0f,testDistance * glm::cos(testRotation)), vec3(0.0f, 0.0f, 0.0f),
 			vec3(0.0f, 1.0f, 0.0f));
+			*/
 
 	return eventHandled;
 }
