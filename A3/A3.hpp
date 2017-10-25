@@ -63,6 +63,12 @@ protected:
 
 	void rotateAllSelectedJoints(double dx, double dy);
 
+	// Reset Functions
+	void resetPosition();
+	void resetOrientation();
+	void resetJoints();
+	void resetAll();
+
 	// helper functions
 	glm::vec4 intToColour(unsigned int i);
 

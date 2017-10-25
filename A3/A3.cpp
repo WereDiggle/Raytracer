@@ -401,16 +401,16 @@ void A3::guiLogic()
 	if (ImGui::BeginMainMenuBar()) {
 		if (ImGui::BeginMenu("Application")) {
 			if (ImGui::MenuItem("Reset Position", "I")) {
-				// TODO:
+				resetPosition();
 			}
 			if (ImGui::MenuItem("Reset Orientation", "O")) {
-				// TODO:
+				resetOrientation();
 			}
 			if (ImGui::MenuItem("Reset Joints", "N")) {
-				// TODO:
+				resetJoints();
 			}
 			if (ImGui::MenuItem("Reset All", "A")) {
-				// TODO:
+				resetAll();
 			}
 			if (ImGui::MenuItem("Quit Application", "Q")) {
 				glfwSetWindowShouldClose(m_window, GL_TRUE);
@@ -761,10 +761,12 @@ bool A3::mouseMoveEvent (
 				m_rootNode->translate(glm::vec3((float) (0.01*(xPos-lastMouseX)), (float) (0.01*(lastMouseY-yPos)), 0.0f));
 			}
 			if (middleMouseDown) {
-				m_rootNode->translate(glm::vec3(0.0f, 0.0f, (float) (0.01*(lastMouseY-yPos))));
+				m_rootNode->translate(glm::vec3(0.0f, 0.0f, (float) (0.01*(yPos-lastMouseY))));
 			}
 			if (rightMouseDown) {
 				// TODO: 3D trackball for rotation of model
+				m_rootNode->rotate('y', xPos-lastMouseX);
+				m_rootNode->rotate('x', yPos-lastMouseY);
 			}
 			break;
 		case MouseMode::Joint:
@@ -891,15 +893,19 @@ bool A3::keyInputEvent (
 		}
 		else if ( key == GLFW_KEY_I) {
 			// TODO: reset position
+			resetPosition();
 		}
 		else if ( key == GLFW_KEY_O) {
 			// TODO: reset orientation
+			resetOrientation();
 		}
 		else if ( key == GLFW_KEY_N) {
 			// TODO: reset all joint angles. Clears undo/redo stack
+			resetJoints();
 		}
 		else if ( key == GLFW_KEY_A) {
 			// TODO: reset all the things
+			resetAll();
 		}
 		else if ( key == GLFW_KEY_U) {
 			// TODO: undo the last change
@@ -938,4 +944,39 @@ bool A3::keyInputEvent (
 	// Fill in with event handling code...
 
 	return eventHandled;
+}
+
+void A3::resetAll() {
+	resetOrientation();
+	resetPosition();
+	resetJoints();
+}
+
+void A3::resetPosition() {
+	m_rootNode->trans[3][0] = 0.0f;
+	m_rootNode->trans[3][1] = 0.0f;
+	m_rootNode->trans[3][2] = 0.0f;
+}
+
+void A3::resetOrientation() {
+	for (int i=0; i<3; i++) {
+		for (int j=0; j<3; j++) {
+			if (i == j) {
+				m_rootNode->trans[i][j] = 1.0f;
+			}
+			else {
+				m_rootNode->trans[i][j] = 0.0f;
+			}
+		}
+	}
+}
+
+void A3::resetJoints() {
+	m_redoStack.clear();
+	m_undoStack.erase(m_undoStack.begin()+1,m_undoStack.end());
+
+	// apply the state to the joints
+	for (std::map<unsigned int, std::pair<double, double>>::iterator it = m_undoStack.front().begin(); it != m_undoStack.front().end(); ++it) {
+		m_jointMap[it->first]->setJointRotation(it->second.first, it->second.second);
+	}
 }
