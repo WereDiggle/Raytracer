@@ -758,10 +758,10 @@ bool A3::mouseMoveEvent (
 	switch(curMouseMode) {
 		case MouseMode::Model:
 			if (leftMouseDown) {
-				// TODO: mouse model left right up down relative to screen
+				m_rootNode->translate(glm::vec3((float) (0.01*(xPos-lastMouseX)), (float) (0.01*(lastMouseY-yPos)), 0.0f));
 			}
 			if (middleMouseDown) {
-				// TODO: mouse model should move along z axis with mouse Y
+				m_rootNode->translate(glm::vec3(0.0f, 0.0f, (float) (0.01*(lastMouseY-yPos))));
 			}
 			if (rightMouseDown) {
 				// TODO: 3D trackball for rotation of model

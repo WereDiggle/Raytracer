@@ -85,7 +85,7 @@ protected:
 
 	// test rotation, for getting a better idea of the model
 	float testRotation = 0.0f;
-	float testDistance = 10.0f;
+	float testDistance = 5.0f;
 
 	//-- GL resources for the picker
 	GLint m_picker_positionAttribLocation;
