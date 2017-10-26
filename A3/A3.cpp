@@ -98,6 +98,19 @@ void A3::init()
 	// this point.
 }
 
+void A3::reloadPuppet() {
+	processLuaSceneFile(m_luaSceneFile);
+
+    m_undoStack.clear();
+    m_redoStack.clear();
+    
+	mapJoints(*m_rootNode);
+
+	pushCurrentJointState();
+
+	initialTrans = m_rootNode->trans;
+}
+
 void A3::pushCurrentJointState() {
 	std::map<unsigned int, std::pair<double, double>> curState;
 	for (map<unsigned int, JointNode* >::iterator it = m_jointMap.begin(); it != m_jointMap.end(); ++it) {
@@ -108,6 +121,7 @@ void A3::pushCurrentJointState() {
 }
 
 void A3::undo() {
+
 
 	// more than just the initial joint state
 	if (m_undoStack.size() > 1) {
@@ -987,6 +1001,10 @@ bool A3::keyInputEvent (
 		}
 		else if ( key == GLFW_KEY_J) {
 			curMouseMode = MouseMode::Joint;
+			eventHandled = true;
+		}
+		else if ( key == GLFW_KEY_L) {
+            reloadPuppet();
 			eventHandled = true;
 		}
 	}

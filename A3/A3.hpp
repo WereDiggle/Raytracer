@@ -65,6 +65,7 @@ protected:
 	void rotateAllSelectedJoints(double dx, double dy);
 
 	// Reset Functions
+    void reloadPuppet();
 	void resetPosition();
 	void resetOrientation();
 	void resetJoints();

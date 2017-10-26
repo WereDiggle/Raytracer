@@ -7,7 +7,9 @@ black = gr.material({0.0, 0.0, 0.0}, {0.1, 0.1, 0.1}, 10)
 white = gr.material({1.0, 1.0, 1.0}, {0.5, 0.5, 0.5}, 10)
 
 darkGray = gr.material({0.1, 0.1, 0.1}, {0.0, 0.0, 0.0}, 10)
+lightGray = gr.material({0.8, 0.8, 0.8}, {0.5, 0.5, 0.5}, 10)
 
+darkBlue = gr.material({0.0, 0.3, 1.0}, {0.3, 0.3, 0.3}, 10)
 lightBlue = gr.material({0.0, 0.6, 1.0}, {0.1, 0.1, 0.1}, 10)
 
 function makeLeg(side)
@@ -99,7 +101,7 @@ function makeArm(side)
     armJoint = gr.joint('armJoint', {-45,0,60}, yLimits)
 
         arm = gr.mesh('sphere', 'arm')
-        arm:translate(0,0,1)
+        arm:translate(0,-0.5,1)
         arm:scale(0.2,0.2,armLength)
         arm:set_material(lightBlue)
         armJoint:add_child(arm)
@@ -107,16 +109,19 @@ function makeArm(side)
         finger = makeFinger()
         finger:translate(0, fingerApart, fingerUpArm)
         finger:rotate('z', 0)
+        finger:translate(0, -0.1, 0)
         armJoint:add_child(finger)
 
         finger = makeFinger()
         finger:translate(0, fingerApart, fingerUpArm)
         finger:rotate('z', 120)
+        finger:translate(0, -0.1, 0)
         armJoint:add_child(finger)
 
         finger = makeFinger()
         finger:translate(0, fingerApart, fingerUpArm)
         finger:rotate('z', 240)
+        finger:translate(0, -0.1, 0)
         armJoint:add_child(finger)
 
     return armJoint
@@ -197,17 +202,40 @@ torso:translate(0.0, 0.0, 0.0)
 torso:set_material(lightBlue)
 rootNode:add_child(torso)
 
+-- ring around the torso
 ring = gr.mesh('sphere', 'ring')
 ring:scale(1.02, 0.2, 1.02)
 ring:translate(0.0, 0.0, 0.0)
 ring:set_material(white)
 rootNode:add_child(ring)
 
+-- the big block behind the spider
 block = gr.mesh('cube', 'block')
 block:scale(1.5,2,1)
 block:translate(0,0.5,-1.2)
 block:set_material(lightBlue)
 rootNode:add_child(block)
+
+-- mouth?
+mouth = gr.mesh('cube', 'mouth')
+mouth:scale(0.2,0.2,0.3)
+mouth:rotate('x', 35)
+mouth:translate(0,-0.3,0.8)
+mouth:set_material(white)
+rootNode:add_child(mouth)
+
+-- antennae
+lowerAnt = gr.mesh('cube', 'lowerAnt')
+lowerAnt:scale(0.2,1,0.2)
+lowerAnt:translate(0,0.5,0)
+lowerAnt:set_material(darkBlue)
+rootNode:add_child(lowerAnt)
+
+upperAnt = gr.mesh('cube', 'upperAnt')
+upperAnt:scale(0.1,1,0.1)
+upperAnt:translate(0,0.75,0)
+upperAnt:set_material(darkBlue)
+rootNode:add_child(upperAnt)
 
 -- making some legs
 legsDepth = -0.5

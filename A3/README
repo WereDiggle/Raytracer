@@ -1,6 +1,47 @@
 Took code resources from http://www.opengl-tutorial.org/miscellaneous/clicking-on-objects/picking-with-an-opengl-hack/
 
-Controls
+##########
+#Controls#
+##########
 
-left click in Joint Mode will select any selectable limbs and deselect all others
-Shift + Left Click will add to the current selection
+Joint Mode
+##########
+
+left click in Joint Mode will toggle the selectable limb under the mouse and deselect all others
+Shift + Left Click will toggle selection without deselecting all other joints
+
+Holding the middle mouse button and moving along the y axis will rotate the joint up and down
+
+Holding the right mouse button and moving along the x axis will rotate the joint left and right
+
+not all joints can be moved along both the x and y axis
+
+Position/Orientation Mode
+#########################
+
+Holding the left mouse button and dragging will move the puppet along the x and y axis
+
+Holding the middle mouse button and dragging will move th puppet along the z axis
+
+Holding the right mouse button and dragging along the trackball will rotate using the trackball
+
+toggle trackball with the C key or in the options menu
+
+Misc
+####
+
+The other stuff works according to assignment specs
+
+########
+#Joints#
+########
+
+Puppet modeled after the Tachikoma Sentient Spider Tanks from Ghost in the Shell: Stand Alone Complex
+
+There are 32 Degrees of Freedom 
+
+Each eye on the head can be fully rotated
+
+Both the arms have 2 DoF and each finger on the arm can be moved with 1 DoF
+
+All four legs have 2 joints each. Each joint has 2 DoF
