@@ -4,9 +4,9 @@ rootNode = gr.node('root')
 -- colours
 blue = gr.material({0.0, 0.0, 1.0}, {0.1, 0.1, 0.1}, 10)
 black = gr.material({0.0, 0.0, 0.0}, {0.1, 0.1, 0.1}, 10)
-white = gr.material({1.0, 1.0, 1.0}, {0.1, 0.1, 0.1}, 10)
+white = gr.material({1.0, 1.0, 1.0}, {0.5, 0.5, 0.5}, 10)
 
-darkGray = gr.material({0.1, 0.1, 0.1}, {0.1, 0.1, 0.1}, 10)
+darkGray = gr.material({0.1, 0.1, 0.1}, {0.0, 0.0, 0.0}, 10)
 
 lightBlue = gr.material({0.0, 0.6, 1.0}, {0.1, 0.1, 0.1}, 10)
 
