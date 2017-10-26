@@ -57,7 +57,7 @@ protected:
 	void renderNode(const SceneNode &node, const glm::mat4 & parentTransMatrix);
 	void renderPickingNode(const SceneNode & node, const glm::mat4 & parentTransMatrix, unsigned int jointId = 0);
 	void renderArcCircle();
-	unsigned int pickJointUnderMouse();
+	unsigned int pickJointUnderMouse(bool addJoint);
 	void highlightJoint(SceneNode & node, bool highlight);
 	void highlightNodes(SceneNode & node, bool highlight);
 
@@ -84,6 +84,9 @@ protected:
 
 	// used for reseting
 	glm::mat4 initialTrans;
+
+	float rotationFactor = 0.5;
+	int errorCountDown = 0;
 
 	// whether to draw the trackball circle
 	bool m_drawTrackBall = true;

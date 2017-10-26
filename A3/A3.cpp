@@ -115,8 +115,7 @@ void A3::undo() {
 		m_undoStack.pop_back();
 	}
 	else {
-		// TODO: show warning about undoing past stack
-		cout << "can't undo past stack" << endl;
+		errorCountDown = 20;
 	}
 
 	// apply the state to the joints
@@ -136,8 +135,7 @@ void A3::redo() {
 
 	}
 	else {
-		// TODO: show warning about nothing to redo
-		cout << "nothing to redo" << endl;
+		errorCountDown = 20;
 	}
 }
 
@@ -330,7 +328,6 @@ void A3::mapJoints(SceneNode & node) {
 	if (node.m_nodeType == NodeType::JointNode) {
 		JointNode & jointNode = static_cast<JointNode &>(node);
 		m_jointMap[node.m_nodeId] = &jointNode;
-		cout << "joint ID: " << node.m_nodeId << endl;
 	}
 
 	// Recurse
@@ -514,6 +511,11 @@ static void updateShaderUniforms(
  */
 void A3::draw() {
 
+	if (errorCountDown > 0) {
+		glClearColor(0.35 + 0.05 * (errorCountDown-1), 0.35, 0.35, 1.0);
+		errorCountDown = glm::max(errorCountDown-1, 0);
+	}
+
 	// Z buffer
 	if (m_allowZBuffer) {
 		glEnable( GL_DEPTH_TEST );
@@ -671,7 +673,7 @@ void A3::highlightNodes(SceneNode & node, bool highlight) {
 	}
 }
 
-unsigned int A3::pickJointUnderMouse() {
+unsigned int A3::pickJointUnderMouse(bool addJoint) {
 
 	if (m_allowZBuffer) {
 		glEnable( GL_DEPTH_TEST );
@@ -694,11 +696,9 @@ unsigned int A3::pickJointUnderMouse() {
 	unsigned char data[4];
 	double mouseX, mouseY;
 	glfwGetCursorPos(m_window, &mouseX, &mouseY);
-	cout << mouseX << " " << m_framebufferHeight - mouseY << endl;
 	glReadPixels(mouseX, m_framebufferHeight - mouseY, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
 	unsigned int pickedId = data[0] + data[1] * 256 + data[2] * 256 *256;
-	cout << pickedId << endl;
 
 	glClearColor(0.35, 0.35, 0.35, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -711,7 +711,11 @@ unsigned int A3::pickJointUnderMouse() {
 
 	if (m_jointMap.find(pickedId) != m_jointMap.end()) {
 		SceneNode* selectedJoint = m_jointMap[pickedId];
-		highlightJoint(*selectedJoint, !selectedJoint->isSelected);
+		bool toggle = !selectedJoint->isSelected;
+		if (!addJoint) {
+			clearJointSelection();
+		}
+		highlightJoint(*selectedJoint, toggle);
 	}
 
 	return pickedId;
@@ -826,8 +830,8 @@ bool A3::mouseMoveEvent (
 void A3::rotateAllSelectedJoints(double dx, double dy) {
 	for (map<unsigned int, JointNode* >::iterator it = m_jointMap.begin(); it != m_jointMap.end(); ++it) {
 		if (it->second->isSelected) {
-			it->second->rotateJoint('x', (float)dx);
-			it->second->rotateJoint('y', (float)dy);
+			it->second->rotateJoint('x', (float)dx * rotationFactor);
+			it->second->rotateJoint('y', (float)dy * rotationFactor);
 		}
 	}
 }
@@ -857,10 +861,7 @@ bool A3::mouseButtonInputEvent (
 		}
 		else if (actions == GLFW_RELEASE) {
 			if (!ImGui::IsMouseHoveringAnyWindow() && curMouseMode == MouseMode::Joint) {
-				if (!(mods & GLFW_MOD_SHIFT)) {
-					clearJointSelection();
-				}
-				pickJointUnderMouse();
+				pickJointUnderMouse(mods & GLFW_MOD_SHIFT);
 			}
 			leftMouseDown = 0;
 		}

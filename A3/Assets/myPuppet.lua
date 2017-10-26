@@ -8,8 +8,7 @@ white = gr.material({1.0, 1.0, 1.0}, {0.1, 0.1, 0.1}, 10)
 
 darkGray = gr.material({0.1, 0.1, 0.1}, {0.1, 0.1, 0.1}, 10)
 
--- TODO: needs work
-lightBlue = gr.material({0.5, 1.0, 1.0}, {0.1, 0.1, 0.1}, 10)
+lightBlue = gr.material({0.0, 0.6, 1.0}, {0.1, 0.1, 0.1}, 10)
 
 function makeLeg(side)
 
@@ -66,7 +65,7 @@ function makeOuterLeg()
 
         -- the outer leg
         outerLeg = gr.mesh('sphere', 'outerLeg')
-        outerLeg:translate(0,0,0.9)
+        outerLeg:translate(0,0.3,0.8)
         outerLeg:scale(outerLegWidth,outerLegDepth,outerLegLength)
         outerLeg:set_material(lightBlue) 
         outerLegJoint:add_child(outerLeg)
@@ -84,8 +83,10 @@ end
 
 function makeArm(side)
 
+    armLength = 0.5
+
     fingerApart = 0.125
-    fingerUpArm = 1.2
+    fingerUpArm = 0.8
 
     armMaxRot = 60
 
@@ -99,7 +100,7 @@ function makeArm(side)
 
         arm = gr.mesh('sphere', 'arm')
         arm:translate(0,0,1)
-        arm:scale(0.2,0.2,0.7)
+        arm:scale(0.2,0.2,armLength)
         arm:set_material(lightBlue)
         armJoint:add_child(arm)
 
@@ -127,13 +128,26 @@ function makeFinger()
     baseFingerLength = 0.2
     baseFingerThickness = 0.04
 
-    baseFingerJoint = gr.joint('baseFingerJoint', {-45,0,45}, {-45,0,45})
+    tipFingerLength = 0.1
+    tipFingerThickness = 0.03
+
+    baseFingerJoint = gr.joint('baseFingerJoint', {-45,0,15}, {0,0,0})
 
         baseFinger = gr.mesh('sphere', 'baseFinger')
-        baseFinger:translate(0,0,1)
+        baseFinger:translate(0,0,0.6)
         baseFinger:scale(baseFingerThickness, baseFingerThickness, baseFingerLength)
         baseFinger:set_material(white)
         baseFingerJoint:add_child(baseFinger)
+
+            --tipFingerJoint = gr.joint('tipFingerJoint', {0,0,15}, {0,0,0})
+            --tipFingerJoint:translate(0,0,0.2)
+            --baseFingerJoint:add_child(tipFingerJoint)
+
+            --    tipFinger = gr.mesh('sphere', 'tipFinger')
+            --    tipFinger:translate(0,0,0.8)
+            --    tipFinger:scale(tipFingerThickness, tipFingerThickness, tipFingerLength)
+            --    tipFinger:set_material(white)
+            --    tipFingerJoint:add_child(tipFinger)
 
     return baseFingerJoint
 
@@ -141,11 +155,11 @@ end
 
 function makeHead()
 
-    headSize = 0.3
-    eyeSize = 0.1
-    eyeApart = 0.15
+    headSize = 0.35
+    eyeSize = 0.05
+    eyeApart = 0.1
 
-    headJoint = gr.joint('headJoint', {-45,0,45}, {-180,0,180})
+    headJoint = gr.joint('headJoint', {-45,0,45}, {-1800,0,1800})
 
         head = gr.mesh('sphere', 'head')
         head:scale(headSize, headSize, headSize)
@@ -199,16 +213,18 @@ rootNode:add_child(block)
 legsDepth = -0.5
 legsOut = 0.8
 legsApart = 0.3
-legsAngle = 30
+legsAngle = 15
 
 -- right side legs
 leg = makeLeg(-1)
 leg:rotate('y', 90)
+leg:rotate('y', -legsAngle)
 leg:translate(legsOut,legsDepth,legsApart)
 rootNode:add_child(leg)
 
 leg = makeLeg(1)
 leg:rotate('y', 90)
+leg:rotate('y', legsAngle)
 leg:translate(legsOut,legsDepth,-legsApart)
 --leg:rotate('x', legsAngle)
 rootNode:add_child(leg)
@@ -216,12 +232,14 @@ rootNode:add_child(leg)
 -- left side legs
 leg = makeLeg(1)
 leg:rotate('y', -90)
+leg:rotate('y', legsAngle)
 leg:translate(-legsOut,legsDepth,legsApart)
 --leg:rotate('x', legsAngle)
 rootNode:add_child(leg)
 
 leg = makeLeg(-1)
 leg:rotate('y', -90)
+leg:rotate('y', -legsAngle)
 leg:translate(-legsOut,legsDepth,-legsApart)
 --leg:rotate('x', legsAngle)
 rootNode:add_child(leg)
@@ -252,9 +270,9 @@ armSocket:set_material(white)
 rootNode:add_child(armSocket)
 
 -- make some heads
-headsDepth = 0.5
-headsOut = 0.5
-headsAngle = 27
+headsDepth = 0.35
+headsOut = 0.6
+headsAngle = 37
 
 head = makeHead()
 head:rotate('x', headsAngle)
