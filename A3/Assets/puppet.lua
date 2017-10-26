@@ -225,17 +225,25 @@ mouth:set_material(white)
 rootNode:add_child(mouth)
 
 -- antennae
-lowerAnt = gr.mesh('cube', 'lowerAnt')
-lowerAnt:scale(0.2,1,0.2)
-lowerAnt:translate(0,0.5,0)
-lowerAnt:set_material(darkBlue)
-rootNode:add_child(lowerAnt)
+lowerAntJoint = gr.joint('lowerAntJoint', {0,0,0.4}, {0,0,0})
+lowerAntJoint:translate(0,0,-30)
+rootNode:add_child(lowerAntJoint)
 
-upperAnt = gr.mesh('cube', 'upperAnt')
-upperAnt:scale(0.1,1,0.1)
-upperAnt:translate(0,0.75,0)
-upperAnt:set_material(darkBlue)
-rootNode:add_child(upperAnt)
+    lowerAnt = gr.mesh('cube', 'lowerAnt')
+    lowerAnt:scale(0.2,1,0.2)
+    lowerAnt:translate(0,0.5,30)
+    lowerAnt:set_material(darkBlue)
+    lowerAntJoint:add_child(lowerAnt)
+
+    upperAntJoint = gr.joint('upperAntJoint', {0,0,0.4}, {0,0,0})
+    --upperAntJoint:translate(0,0,-30)
+    lowerAntJoint:add_child(upperAntJoint)
+
+        upperAnt = gr.mesh('cube', 'upperAnt')
+        upperAnt:scale(0.1,1,0.1)
+        upperAnt:translate(0,0.75,30)
+        upperAnt:set_material(darkBlue)
+        upperAntJoint:add_child(upperAnt)
 
 -- making some legs
 legsDepth = -0.5
