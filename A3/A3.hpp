@@ -61,6 +61,7 @@ protected:
 	void highlightJoint(SceneNode & node, bool highlight);
 	void highlightNodes(SceneNode & node, bool highlight);
 
+	void clearJointSelection();
 	void rotateAllSelectedJoints(double dx, double dy);
 
 	// Reset Functions
@@ -81,8 +82,11 @@ protected:
 
 	LightSource m_light;
 
+	// used for reseting
+	glm::mat4 initialTrans;
+
 	// whether to draw the trackball circle
-	bool m_drawTrackBall = false;
+	bool m_drawTrackBall = true;
 	bool m_allowZBuffer = true;
 	bool m_backfaceCulling = false;
 	bool m_frontfaceCulling = false;

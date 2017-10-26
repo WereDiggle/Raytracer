@@ -1,1 +1,6 @@
 Took code resources from http://www.opengl-tutorial.org/miscellaneous/clicking-on-objects/picking-with-an-opengl-hack/
+
+Controls
+
+left click in Joint Mode will select any selectable limbs and deselect all others
+Shift + Left Click will add to the current selection

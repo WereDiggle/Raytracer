@@ -90,6 +90,8 @@ void A3::init()
 
 	pushCurrentJointState();
 
+	initialTrans = m_rootNode->trans;
+
 	// Exiting the current scope calls delete automatically on meshConsolidator freeing
 	// all vertex data resources.  This is fine since we already copied this data to
 	// VBOs on the GPU.  We have no use for storing vertex data on the CPU side beyond
@@ -710,7 +712,6 @@ unsigned int A3::pickJointUnderMouse() {
 	if (m_jointMap.find(pickedId) != m_jointMap.end()) {
 		SceneNode* selectedJoint = m_jointMap[pickedId];
 		highlightJoint(*selectedJoint, !selectedJoint->isSelected);
-		cout << "valid joint selected" << endl;
 	}
 
 	return pickedId;
@@ -811,7 +812,7 @@ bool A3::mouseMoveEvent (
 			break;
 		case MouseMode::Joint:
 			if (middleMouseDown || rightMouseDown) {
-				rotateAllSelectedJoints((xPos-lastMouseX) * middleMouseDown, (lastMouseY-yPos) * rightMouseDown);
+				rotateAllSelectedJoints((yPos-lastMouseY) * middleMouseDown, (xPos-lastMouseX) * rightMouseDown);
 			}
 			break;
 	}
@@ -828,6 +829,13 @@ void A3::rotateAllSelectedJoints(double dx, double dy) {
 			it->second->rotateJoint('x', (float)dx);
 			it->second->rotateJoint('y', (float)dy);
 		}
+	}
+}
+
+void A3::clearJointSelection() {
+	for (map<unsigned int, JointNode* >::iterator it = m_jointMap.begin(); it != m_jointMap.end(); ++it) {
+		it->second->isSelected = false;
+		highlightJoint(*(it->second), false);
 	}
 }
 
@@ -848,7 +856,10 @@ bool A3::mouseButtonInputEvent (
 			leftMouseDown = 1;
 		}
 		else if (actions == GLFW_RELEASE) {
-			if (!ImGui::IsMouseHoveringAnyWindow()) {
+			if (!ImGui::IsMouseHoveringAnyWindow() && curMouseMode == MouseMode::Joint) {
+				if (!(mods & GLFW_MOD_SHIFT)) {
+					clearJointSelection();
+				}
 				pickJointUnderMouse();
 			}
 			leftMouseDown = 0;
@@ -990,20 +1001,15 @@ void A3::resetAll() {
 }
 
 void A3::resetPosition() {
-	m_rootNode->trans[3][0] = 0.0f;
-	m_rootNode->trans[3][1] = 0.0f;
-	m_rootNode->trans[3][2] = 0.0f;
+	m_rootNode->trans[3][0] = initialTrans[3][0];
+	m_rootNode->trans[3][1] = initialTrans[3][1];
+	m_rootNode->trans[3][2] = initialTrans[3][2];
 }
 
 void A3::resetOrientation() {
 	for (int i=0; i<3; i++) {
 		for (int j=0; j<3; j++) {
-			if (i == j) {
-				m_rootNode->trans[i][j] = 1.0f;
-			}
-			else {
-				m_rootNode->trans[i][j] = 0.0f;
-			}
+			m_rootNode->trans[i][j] = initialTrans[i][j];
 		}
 	}
 }
