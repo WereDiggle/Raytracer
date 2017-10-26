@@ -41,10 +41,10 @@ void JointNode::rotateJoint(char axis, float angle) {
 void JointNode::setJointRotation(double angleX, double angleY) {
 
 	m_curAngleX = glm::clamp(angleX, m_joint_x.min, m_joint_x.max);
-	rotateTransX = glm::rotate(glm::radians((float) m_curAngleX), glm::vec3(0.0f, 1.0f, 0.0f));
+	rotateTransX = glm::rotate(glm::radians((float) m_curAngleX), glm::vec3(1.0f, 0.0f, 0.0f));
 
 	m_curAngleY = glm::clamp(angleY, m_joint_y.min, m_joint_y.max);
-	rotateTransY = glm::rotate(glm::radians((float) m_curAngleY), glm::vec3(0.0f, 0.0f, 1.0f));
+	rotateTransY = glm::rotate(glm::radians((float) m_curAngleY), glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
 //---------------------------------------------------------------------------------------

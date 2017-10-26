@@ -1,6 +1,14 @@
 Took code resources from http://www.opengl-tutorial.org/miscellaneous/clicking-on-objects/picking-with-an-opengl-hack/
 
+Took trackball code from the student environment
+
+stole a bunch of cylinder primitives from the internet, but they all turned out garbage so I didn't end up using them
+
 Compiled and tested on gl06.student.cs
+
+premake4 gmake
+make
+./A3 Assets/puppet.lua
 
 ##########
 #Controls#
@@ -40,9 +48,11 @@ The other stuff works according to assignment specs
 
 Puppet modeled after the Tachikoma Sentient Spider Tanks from Ghost in the Shell: Stand Alone Complex
 
-There are 32 Degrees of Freedom 
-
 Each eye on the head can be fully rotated
+
+Each of the web shooters on the back can be fully rotated
+
+The antennae is telescopic.
 
 Both the arms have 2 DoF and each finger on the arm can be moved with 1 DoF
 

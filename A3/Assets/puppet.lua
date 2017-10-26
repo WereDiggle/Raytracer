@@ -12,6 +12,8 @@ lightGray = gr.material({0.8, 0.8, 0.8}, {0.5, 0.5, 0.5}, 10)
 darkBlue = gr.material({0.0, 0.3, 1.0}, {0.3, 0.3, 0.3}, 10)
 lightBlue = gr.material({0.0, 0.6, 1.0}, {0.1, 0.1, 0.1}, 10)
 
+shinyRed = gr.material({1.0, 0.0, 0.0}, {1.0, 1.0, 1.0}, 10)
+
 function makeLeg(side)
 
     socketSize = 0.2
@@ -195,6 +197,35 @@ function makeHead()
     return headJoint
 end
 
+function makeSpinner()
+
+    spinnerSize = 0.3
+
+    shooterThickness = 0.03
+    shooterLength = 0.2
+
+    spinnerJoint = gr.joint('spinnerJoint', {-15,0,15}, {-1800,0,1800})
+
+        spinner = gr.mesh('sphere', 'spinner')
+        spinner:scale(spinnerSize,spinnerSize,spinnerSize)
+        spinner:set_material(white)
+        spinnerJoint:add_child(spinner)
+
+        shooter = gr.mesh('sphere', 'shooter')
+        shooter:scale(shooterThickness,shooterThickness,shooterLength)
+        shooter:translate(0,0.2,0.2)
+        shooter:set_material(lightGray)
+        spinnerJoint:add_child(shooter)
+     
+        shooter = gr.mesh('sphere', 'shooter')
+        shooter:scale(shooterThickness,shooterThickness,shooterLength)
+        shooter:translate(0,0.2,-0.2)
+        shooter:set_material(lightGray)
+        spinnerJoint:add_child(shooter)
+     
+    return spinnerJoint
+end
+
 -- torso
 torso = gr.mesh('sphere', 'torso')
 torso:scale(1.0, 0.75, 1.0)
@@ -216,6 +247,36 @@ block:translate(0,0.5,-1.2)
 block:set_material(lightBlue)
 rootNode:add_child(block)
 
+-- red lights on the block
+
+lightSize = 0.04
+largeLightSize = 0.06
+lightMesh = 'cube'
+
+redLight = gr.mesh(lightMesh, 'redLight')
+redLight:scale(largeLightSize,largeLightSize,largeLightSize)
+redLight:translate(0.45,1.25,-0.6)
+redLight:set_material(shinyRed)
+rootNode:add_child(redLight)
+
+redLight = gr.mesh(lightMesh, 'redLight')
+redLight:scale(lightSize,lightSize,lightSize)
+redLight:translate(0.35,1.25,-0.6)
+redLight:set_material(shinyRed)
+rootNode:add_child(redLight)
+
+redLight = gr.mesh(lightMesh, 'redLight')
+redLight:scale(largeLightSize,largeLightSize,largeLightSize)
+redLight:translate(-0.45,1.25,-0.6)
+redLight:set_material(shinyRed)
+rootNode:add_child(redLight)
+
+redLight = gr.mesh(lightMesh, 'redLight')
+redLight:scale(lightSize,lightSize,lightSize)
+redLight:translate(-0.35,1.25,-0.6)
+redLight:set_material(shinyRed)
+rootNode:add_child(redLight)
+
 -- mouth?
 mouth = gr.mesh('cube', 'mouth')
 mouth:scale(0.2,0.2,0.3)
@@ -236,7 +297,6 @@ rootNode:add_child(lowerAntJoint)
     lowerAntJoint:add_child(lowerAnt)
 
     upperAntJoint = gr.joint('upperAntJoint', {0,0,0.4}, {0,0,0})
-    --upperAntJoint:translate(0,0,-30)
     lowerAntJoint:add_child(upperAntJoint)
 
         upperAnt = gr.mesh('cube', 'upperAnt')
@@ -326,6 +386,18 @@ head:rotate('x', headsAngle)
 head:translate(0,headsDepth,headsOut)
 head:rotate('y', -90)
 rootNode:add_child(head)
+
+-- Tank web shooters?
+
+spinner = makeSpinner()
+spinner:rotate('z',90)
+spinner:translate(-0.7,1,-1.2)
+rootNode:add_child(spinner)
+
+spinner = makeSpinner()
+spinner:rotate('z',-90)
+spinner:translate(0.7,1,-1.2)
+rootNode:add_child(spinner)
 
 --TEST LIMB
 

@@ -1004,7 +1004,7 @@ bool A3::keyInputEvent (
 			eventHandled = true;
 		}
 		else if ( key == GLFW_KEY_L) {
-            reloadPuppet();
+            //reloadPuppet();
 			eventHandled = true;
 		}
 	}
