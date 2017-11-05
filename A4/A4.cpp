@@ -47,20 +47,29 @@ void A4_Render(
 	int imageHeight = h;
 	int imageWidth = w;
 
-	std::cout << imageHeight << " " << imageWidth << std::endl;
+	double aspectRatio = (double) imageWidth / imageHeight;
+
+	std::cout << imageHeight << " " << imageWidth << " " << aspectRatio << std::endl;
+
+	// TODO: set max and min for fov
+	double fovFactor = glm::tan(glm::radians(fovy)/2.0);
+
+	std::cout << fovFactor << std::endl;
+
+	double xFactor = aspectRatio * fovFactor;
 
 	// TODO: Assume camera pointing directly down z axis for now
 	// TODO: get left vec by cross product of up vector and direction of view vector
-	glm::vec3 leftVec = glm::vec3(-3,0,0);
-	glm::vec3 upVec = glm::vec3(0,3,0);
+	glm::vec3 viewDirection = glm::normalize(view - eye);
+	glm::vec3 left = glm::cross(up, viewDirection);
 
 	for (int y = 0; y < imageHeight; ++y) {
 		for (int x = 0; x < imageWidth; ++x) {
 
-			// If y == h/2 and x == w/2, then the pixelLoc is just the view vector
-			// Construct the ray for the current pixel
-			glm::vec3 pixelLoc = view + (x - imageWidth/2)*leftVec + (y - imageHeight/2)*upVec;
-			Ray primRay = Ray(eye, pixelLoc);
+			// Transform the pixel in raster space to a pixel in screen space
+			//glm::vec3 pixelLoc = view + (x - imageWidth/2)*left + (y - imageHeight/2)*up;
+			glm::vec3 pixelLocation = glm::vec3( (2.0*((x+0.5)/imageWidth)-1.0) * xFactor , (1.0-2.0*(y+0.5)/imageHeight) * fovFactor, eye.z - 1/*TODO: generalize for not looking down z axis*/ );
+			Ray primRay = Ray(eye, pixelLocation);
 			//std::cout << "x - w/2 " << (w/2) << std::endl;
 			//std::cout << "y: " << y << ", x: " << x << " " << primRay.direction.x << " " << primRay.direction.y << " " << primRay.direction.z << std::endl;
 
