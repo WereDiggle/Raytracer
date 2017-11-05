@@ -49,6 +49,11 @@ SceneNode::~SceneNode() {
 }
 
 //---------------------------------------------------------------------------------------
+Intersect SceneNode::checkIntersection(const Ray & ray) {
+	return Intersect();
+}
+
+//---------------------------------------------------------------------------------------
 void SceneNode::set_transform(const glm::mat4& m) {
 	trans = m;
 	invtrans = glm::inverse(m);

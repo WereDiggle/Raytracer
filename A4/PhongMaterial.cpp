@@ -9,3 +9,8 @@ PhongMaterial::PhongMaterial(
 
 PhongMaterial::~PhongMaterial()
 {}
+
+glm::vec3 PhongMaterial::getColour() {
+	// Just the diffuse for now
+	return m_kd;
+}

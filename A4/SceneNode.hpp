@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Material.hpp"
+#include "Ray.hpp"
+#include "Intersect.hpp"
 
 #include <glm/glm.hpp>
 
@@ -21,6 +23,8 @@ public:
 	SceneNode(const SceneNode & other);
 
     virtual ~SceneNode();
+
+    virtual Intersect checkIntersection(const Ray & ray);
     
 	int totalSceneNodes() const;
     

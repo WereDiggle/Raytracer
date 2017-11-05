@@ -1,10 +1,13 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include "Ray.hpp"
+#include "Intersect.hpp"
 
 class Primitive {
 public:
   virtual ~Primitive();
+  virtual Intersect checkIntersection(const Ray & ray);
 };
 
 class Sphere : public Primitive {
@@ -24,6 +27,7 @@ public:
   {
   }
   virtual ~NonhierSphere();
+  Intersect checkIntersection(const Ray & ray);
 
 private:
   glm::vec3 m_pos;
