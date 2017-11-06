@@ -28,6 +28,11 @@ s4 = gr.nh_sphere('s4', {-100, 25, -300}, 25)
 scene_root:add_child(s4)
 s4:set_material(mat4)
 
+-- red box 
+s4 = gr.nh_box('s4', {300, 300, 300}, 25)
+scene_root:add_child(s4)
+s4:set_material(mat4)
+
 -- blue sphere, second
 s5 = gr.nh_sphere('s5', {0, 100, -250}, 25)
 scene_root:add_child(s5)
@@ -36,10 +41,10 @@ s5:set_material(mat5)
 white_light = gr.light({-100.0, 150.0, 400.0}, {0.9, 0.9, 0.9}, {1, 0, 0})
 orange_light = gr.light({400.0, 100.0, 150.0}, {0.7, 0.0, 0.7}, {1, 0, 0})
 
-gr.render(scene_root, 'simple.png', 400, 256,
-	  {50, 50, 400}, {0, 0, 0}, {0, 1, 0}, 60,
+gr.render(scene_root, 'simple.png', 512, 512,
+	  {350, 350, 400}, {300, 300, 300}, {0, 1, 0}, 60,
 	  {0.3, 0.3, 0.3}, {white_light, orange_light})
 
-gr.render(scene_root, 'simple_back.png', 400, 256,
-	  {50, 50, -400}, {0, 0, 0}, {0, 1, 0}, 60,
+gr.render(scene_root, 'simple_back.png', 512, 512,
+	  {350, 350, 200}, {300, 300, 300}, {0, 1, 0}, 60,
 	  {0.3, 0.3, 0.3}, {white_light, orange_light})
