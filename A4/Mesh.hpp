@@ -7,6 +7,8 @@
 #include <glm/glm.hpp>
 
 #include "Primitive.hpp"
+#include "Ray.hpp"
+#include "Intersect.hpp"
 
 struct Triangle
 {
@@ -19,14 +21,19 @@ struct Triangle
 		, v2( pv2 )
 		, v3( pv3 )
 	{}
+
 };
 
 // A polygonal mesh.
 class Mesh : public Primitive {
 public:
   Mesh( const std::string& fname );
+
+  Intersect checkIntersection(const Ray & ray);
   
 private:
+	Intersect checkIntersectionTriangle(const Ray & ray, const Triangle & triangle);
+
 	std::vector<glm::vec3> m_vertices;
 	std::vector<Triangle> m_faces;
 
