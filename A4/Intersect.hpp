@@ -3,18 +3,27 @@
 #include <glm/glm.hpp>
 
 #include "Ray.hpp"
+#include "Material.hpp"
+#include "Light.hpp"
 
 // This class handles the information received when a Ray hits something
 class Intersect {
 
 public:
-    Intersect(const Ray & ray, const glm::vec3 & colour, bool isHit, double distanceHit);
+    Intersect(const Ray & ray, bool isHit, double distanceHit, const glm::vec3 & normalHit);
 
     // used for when the intersection doesn't hit anything
     Intersect();
+
+    glm::vec3 getLighting(Light * light);
     
-    glm::vec3 colour;
     bool isHit;
+
     Ray ray;
+
     double distanceHit;
+
+    Material *material;
+    
+    glm::vec3 normalHit;
 };

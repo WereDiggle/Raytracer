@@ -29,6 +29,6 @@ void GeometryNode::setMaterial( Material *mat )
 Intersect GeometryNode::checkIntersection( const Ray & ray )
 {
 	Intersect intersect = m_primitive->checkIntersection(ray);
-	intersect.colour = m_material->getColour();
+	intersect.material = m_material;
 	return intersect;
 }

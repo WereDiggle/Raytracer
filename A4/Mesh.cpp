@@ -92,7 +92,7 @@ Intersect Mesh::checkIntersectionTriangle(const Ray & ray, const Triangle & tria
 						  && glm::dot(triangleNormal, glm::cross(edge2, pointVector2)) >= 0
 						  && glm::dot(triangleNormal, glm::cross(edge3, pointVector3)) >= 0);
 
-		retIntersect = Intersect(ray, glm::vec3(0), withinBounds, distanceHit);
+		retIntersect = Intersect(ray, withinBounds, distanceHit, triangleNormal);
 	}
 
 	return retIntersect;
@@ -101,7 +101,7 @@ Intersect Mesh::checkIntersectionTriangle(const Ray & ray, const Triangle & tria
 Intersect Mesh::checkIntersection(const Ray & ray) {
 
 	// Iterate over all the triangles to find the closest one hit
-	Intersect closestIntersect = Intersect(ray, glm::vec3(0), false, std::numeric_limits<double>::max());
+	Intersect closestIntersect = Intersect(ray, false, std::numeric_limits<double>::max(), glm::vec3(0));
 	for (std::vector<Triangle>::iterator it = m_faces.begin(); it != m_faces.end(); ++it) {
 		Intersect curIntersect = checkIntersectionTriangle(ray, *it);
 		if (curIntersect.isHit && curIntersect.distanceHit < closestIntersect.distanceHit) {

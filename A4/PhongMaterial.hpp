@@ -8,6 +8,7 @@ class PhongMaterial : public Material {
 public:
   PhongMaterial(const glm::vec3& kd, const glm::vec3& ks, double shininess);
   glm::vec3 getColour();
+  glm::vec3 getLighting(const glm::vec3 & surfaceNormal, const glm::vec3 & lightDirection, const glm::vec3 & lightIntensity, double lightDistance, double * lightFalloff, const glm::vec3 & viewDirection);
   virtual ~PhongMaterial();
 
 private:

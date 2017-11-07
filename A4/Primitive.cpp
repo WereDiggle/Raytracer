@@ -46,13 +46,13 @@ Intersect NonhierSphere::checkIntersection(const Ray & ray) {
     // Take the lowest non-negative root
     if (numRoots == 2) {
         double distanceHit = (roots[0] > 0 && roots[0] < roots[1]) ? roots[0] : roots[1];
-        return Intersect(ray, glm::vec3(0), distanceHit > 0, distanceHit);
+        return Intersect(ray, distanceHit > 0, distanceHit, glm::normalize(ray.pointAtDistance(distanceHit) - m_pos));
     }
     else if (numRoots == 1) {
-        return Intersect(ray, glm::vec3(0), roots[0] > 0, roots[0]);
+        return Intersect(ray, roots[0] > 0, roots[0], glm::normalize(ray.pointAtDistance(roots[0]) - m_pos));
     }
     else {
-        return Intersect(ray, glm::vec3(0), false, -1.0);
+        return Intersect();
     }
 }
 
@@ -89,7 +89,7 @@ Intersect NonhierBox::checkIntersection(const Ray & ray) {
     //std::cout << "non hier box check intersection " << std::endl;
     //std::cout << "ray direction: " << glm::to_string(ray.direction) << std::endl;
     int planesHit = 0;
-    Intersect closestIntersect = Intersect(ray, glm::vec3(0), false, -1.0);
+    Intersect closestIntersect = Intersect();
     for (int i=0; i<6 && planesHit < 3; i++) {
         // Intersects plane if dot product of direction and normal is negative
         // t is positive along the ray
@@ -119,7 +119,7 @@ Intersect NonhierBox::checkIntersection(const Ray & ray) {
             // It's a hit!
             if (withinBounds) {
                 // since we're using normals, the ray should only hit one face
-                closestIntersect = Intersect(ray, glm::vec3(0), true, distanceHit);
+                closestIntersect = Intersect(ray, true, distanceHit, normals[i]);
                 break;
             }
 

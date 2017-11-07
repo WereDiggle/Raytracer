@@ -130,9 +130,23 @@ void A4_Render(
 					}
 				}
 			}
-			image(x, y, 0) = primRayIntersect.colour.r;
-			image(x, y, 1) = primRayIntersect.colour.g;
-			image(x, y, 2) = primRayIntersect.colour.b;
+
+			// TODO: lighting calculations go here
+			glm::vec3 totalLighting = glm::vec3(0);
+			if (primRayIntersect.isHit && primRayIntersect.material != nullptr) {
+				// Ambient light
+				glm::vec3 matColour = primRayIntersect.material->getColour();
+				totalLighting = glm::vec3(ambient.r * matColour.r, ambient.g * matColour.g, ambient.b * matColour.b);
+
+				// Add each individual light contribution
+				// TODO: shadow ray to see if we actually get the light
+				for (Light * light : lights) {
+					totalLighting += primRayIntersect.getLighting(light);
+				}
+			}
+			image(x, y, 0) = totalLighting.r;
+			image(x, y, 1) = totalLighting.g;
+			image(x, y, 2) = totalLighting.b;
 
 			// TODO: remove. make a white border and cross hairs
 			if (y == 0 || y == imageHeight/2 || y == imageHeight-1 || x == 0 || x == imageWidth/2 || x == imageWidth-1) {
