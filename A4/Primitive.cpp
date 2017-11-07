@@ -41,15 +41,15 @@ Intersect NonhierSphere::checkIntersection(const Ray & ray) {
     double b = 2 * (glm::dot(ray.direction, newOrigin));
     double c = glm::dot(newOrigin, newOrigin) - m_radius*m_radius;
     double roots[2];
-    size_t numRoots = quadraticRoots(a, b, c, roots) > 0;
+    size_t numRoots = quadraticRoots(a, b, c, roots);
 
     // Take the lowest non-negative root
     if (numRoots == 2) {
         double distanceHit = (roots[0] > 0 && roots[0] < roots[1]) ? roots[0] : roots[1];
-        return Intersect(ray, distanceHit > 0, distanceHit, glm::normalize(ray.pointAtDistance(distanceHit) - m_pos));
+        return Intersect(ray, distanceHit > ray.minDistance, distanceHit, glm::normalize(ray.pointAtDistance(distanceHit) - m_pos));
     }
     else if (numRoots == 1) {
-        return Intersect(ray, roots[0] > 0, roots[0], glm::normalize(ray.pointAtDistance(roots[0]) - m_pos));
+        return Intersect(ray, roots[0] > ray.minDistance, roots[0], glm::normalize(ray.pointAtDistance(roots[0]) - m_pos));
     }
     else {
         return Intersect();

@@ -13,4 +13,5 @@ public:
     glm::vec3 origin;
     glm::vec3 point;
     //double maxDistance;
+    double minDistance = 0.01;
 };

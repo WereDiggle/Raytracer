@@ -39,16 +39,16 @@ glm::vec3 PhongMaterial::getLighting(const glm::vec3 & surfaceNormal,
 
 	double falloffFactor = lightSurfaceDot/(lightFalloff[0] + lightFalloff[1]*lightDistance + lightFalloff[2]*lightDistance*lightDistance);
 
-	std::cout << "surfaceNormal: " << glm::to_string(surfaceNormal) << std::endl;
-	std::cout << "lightDirection: " << glm::to_string(lightDirection) << std::endl;
-	std::cout << "viewDirection: " << glm::to_string(viewDirection) << std::endl; 
-	std::cout << "reflectDirection: " << glm::to_string(reflectDirection) << std::endl;
-	std::cout << "reflectViewDot: " << glm::dot(reflectDirection, viewDirection) << std::endl;
-	std::cout << "specularFactor: " << specularFactor << std::endl;
-	std::cout << "lightSurfaceDot: " << lightSurfaceDot << std::endl;
-	std::cout << "phongStuff: " << glm::to_string(phongStuff) << std::endl;
-	std::cout << "lightIntensity: " << glm::to_string(lightIntensity) << std::endl;
-	std::cout << "lightDistance: " << lightDistance << std::endl << std::endl;
+	//std::cout << "surfaceNormal: " << glm::to_string(surfaceNormal) << std::endl;
+	//std::cout << "lightDirection: " << glm::to_string(lightDirection) << std::endl;
+	//std::cout << "viewDirection: " << glm::to_string(viewDirection) << std::endl; 
+	//std::cout << "reflectDirection: " << glm::to_string(reflectDirection) << std::endl;
+	//std::cout << "reflectViewDot: " << glm::dot(reflectDirection, viewDirection) << std::endl;
+	//std::cout << "specularFactor: " << specularFactor << std::endl;
+	//std::cout << "lightSurfaceDot: " << lightSurfaceDot << std::endl;
+	//std::cout << "phongStuff: " << glm::to_string(phongStuff) << std::endl;
+	//std::cout << "lightIntensity: " << glm::to_string(lightIntensity) << std::endl;
+	//std::cout << "lightDistance: " << lightDistance << std::endl << std::endl;
 
 	return glm::vec3(phongStuff.r * lightIntensity.r * falloffFactor, 
 					 phongStuff.g * lightIntensity.g * falloffFactor,

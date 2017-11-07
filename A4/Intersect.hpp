@@ -26,4 +26,6 @@ public:
     Material *material;
     
     glm::vec3 normalHit;
+
+    glm::vec3 pointHit;
 };

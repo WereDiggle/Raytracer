@@ -53,6 +53,21 @@ Intersect SceneNode::checkIntersection(const Ray & ray) {
 	return Intersect();
 }
 
+Intersect SceneNode::castRay(const Ray & ray) {
+
+	Intersect rayIntersect = Intersect();
+	for (SceneNode * childNode : children) {
+		Intersect curRayIntersect = childNode->checkIntersection(ray);
+		if (curRayIntersect.isHit) {
+			if (!rayIntersect.isHit || curRayIntersect.distanceHit < rayIntersect.distanceHit) {
+				rayIntersect = curRayIntersect;
+			}
+		}
+	}
+
+	return rayIntersect;
+}
+
 //---------------------------------------------------------------------------------------
 void SceneNode::set_transform(const glm::mat4& m) {
 	trans = m;

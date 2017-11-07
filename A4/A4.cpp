@@ -64,10 +64,6 @@ void A4_Render(
 	glm::vec3 side = glm::cross(viewDirection, up);
 	glm::vec3 newUp = glm::cross(side, viewDirection);
 
-	std::cout << "side: " << glm::to_string(side) << std::endl;
-	std::cout << "newUp: " << glm::to_string(newUp) << std::endl;
-	std::cout << "viewDirection: " << glm::to_string(viewDirection) << std::endl;
-
 	viewDirection = glm::normalize(viewDirection);
 	side = glm::normalize(side);
 	newUp = glm::normalize(newUp);
@@ -111,25 +107,14 @@ void A4_Render(
 			// TODO: convert raster calculations into a raster-to-camera matrix
 			glm::vec3 pixelLocation = glm::vec3( (2.0*((x+0.5)/imageWidth)-1.0) * xFactor , (1.0-2.0*(y+0.5)/imageHeight) * fovFactor, 1/*TODO: generalize for not looking down z axis*/ );
 
-
 			pixelLocation = glm::vec3(cameraToWorldMat * glm::vec4(pixelLocation, 1));
 			if (y == imageHeight/2 && x == imageWidth/2) {
 				std::cout << glm::to_string(pixelLocation) << std::endl;
 			}
 			Ray primRay = Ray(eye, pixelLocation);
-			//std::cout << "x - w/2 " << (w/2) << std::endl;
-			//std::cout << "y: " << y << ", x: " << x << " " << primRay.direction.x << " " << primRay.direction.y << " " << primRay.direction.z << std::endl;
 
 			// Check for intersection for primary ray			
-			Intersect primRayIntersect = Intersect();
-			for (SceneNode * childNode : root->children) {
-				Intersect curRayIntersect = childNode->checkIntersection(primRay);
-				if (curRayIntersect.isHit) {
-					if (!primRayIntersect.isHit || curRayIntersect.distanceHit < primRayIntersect.distanceHit) {
-						primRayIntersect = curRayIntersect;
-					}
-				}
-			}
+			Intersect primRayIntersect = root->castRay(primRay);
 
 			// TODO: lighting calculations go here
 			glm::vec3 totalLighting = glm::vec3(0);
@@ -141,7 +126,11 @@ void A4_Render(
 				// Add each individual light contribution
 				// TODO: shadow ray to see if we actually get the light
 				for (Light * light : lights) {
-					totalLighting += primRayIntersect.getLighting(light);
+					Ray shadowRay = Ray(primRayIntersect.pointHit, light->position);
+					Intersect shadowIntersect = root->castRay(shadowRay);
+					if (!shadowIntersect.isHit) {
+						totalLighting += primRayIntersect.getLighting(light);
+					}
 				}
 			}
 			image(x, y, 0) = totalLighting.r;
@@ -149,11 +138,11 @@ void A4_Render(
 			image(x, y, 2) = totalLighting.b;
 
 			// TODO: remove. make a white border and cross hairs
-			if (y == 0 || y == imageHeight/2 || y == imageHeight-1 || x == 0 || x == imageWidth/2 || x == imageWidth-1) {
-				image(x, y, 0) = 1;
-				image(x, y, 1) = 1;
-				image(x, y, 2) = 1;
-			}
+			//if (y == 0 || y == imageHeight/2 || y == imageHeight-1 || x == 0 || x == imageWidth/2 || x == imageWidth-1) {
+			//	image(x, y, 0) = 1;
+			//	image(x, y, 1) = 1;
+			//	image(x, y, 2) = 1;
+			//}
 
 			/*
 			// Red: increasing from top to bottom
@@ -166,5 +155,4 @@ void A4_Render(
 			*/
 		}
 	}
-
 }
