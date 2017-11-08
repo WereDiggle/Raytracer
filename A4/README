@@ -4,6 +4,15 @@ COMPILATION
 premake4 gmake
 make
 
+RUN
+###
+
+./A4 Assets/sample.lua
+
+note that the program assumes all mesh obj files are located in the Assets folder
+
+Tested on gl29.student.cs.uwaterloo.ca
+
 COMPILE TIME FLAGS
 ##################
 
@@ -24,6 +33,7 @@ SCENES
 ######
 
 The sample.lua script should will generate a 1920x1080 image titled 'the destruction of Alderaan'
+Pretend the cows are star destroyers.
 It might take a while to ray trace, so feel free to scale down the image.
 A pre ray traced image is already provided.
 super sampled at 2x2

@@ -12,7 +12,7 @@ grayFlat = gr.material({0.3,0.3,0.3}, {0,0,0}, 10)
 
 laserMat = gr.material({1,0,0}, {1,1,1}, 1)
 
-scene_root = gr.node('root')
+scene_root = gr.node('destruction_of_Alderaan')
 
 planet = gr.nh_sphere('s3', {400, -1200, -400}, 1200)
 scene_root:add_child(planet)
