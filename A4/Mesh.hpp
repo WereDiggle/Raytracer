@@ -37,5 +37,9 @@ private:
 	std::vector<glm::vec3> m_vertices;
 	std::vector<Triangle> m_faces;
 
-    friend std::ostream& operator<<(std::ostream& out, const Mesh& mesh);
+	glm::vec3 boundingBoxMin;
+	glm::vec3 boundingBoxMax;
+
+	friend std::ostream& operator<<(std::ostream& out, const Mesh& mesh);
+	std::string assetFolder = "Assets";
 };

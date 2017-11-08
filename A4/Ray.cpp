@@ -13,6 +13,6 @@ glm::vec3 Ray::pointAtDistance(double distance) const {
     return origin + (float)distance * direction;
 }
 
-Ray Ray::transformRay(const glm::mat4 & m) {
+Ray Ray::transformRay(const glm::mat4 & m) const {
     return Ray(glm::vec3(m * glm::vec4(origin, 1)), glm::vec3(m * glm::vec4(point, 1)));
 }

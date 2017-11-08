@@ -11,15 +11,16 @@ Mesh::Mesh( const std::string& fname )
 	: m_vertices()
 	, m_faces()
 {
-	std::cout << "Creating a new mesh: " << fname << std::endl;
+	std::string fpath = assetFolder + "/" + fname;
+	std::cout << "Creating a new mesh: " << fpath << std::endl;
 	std::string code;
 	double vx, vy, vz;
 	size_t s1, s2, s3;
 
-	std::ifstream ifs( fname.c_str() );
+	std::ifstream ifs( fpath.c_str() );
 
 	if (ifs.fail()) {
-		std::cerr << "Could not open: " << fname << std::endl;
+		std::cerr << "Could not open: " << fpath << std::endl;
 		std::cerr << "Error: " << strerror(errno)  << std::endl;
 	}
 
@@ -31,6 +32,16 @@ Mesh::Mesh( const std::string& fname )
 			ifs >> s1 >> s2 >> s3;
 			m_faces.push_back( Triangle( s1 - 1, s2 - 1, s3 - 1 ) );
 		} }
+
+	for (std::vector<glm::vec3>::iterator it = m_vertices.begin(); it != m_vertices.end(); ++it) {
+		boundingBoxMax = glm::vec3( glm::max(it->x, boundingBoxMax.x),
+									glm::max(it->y, boundingBoxMax.y),
+									glm::max(it->z, boundingBoxMax.z));
+
+		boundingBoxMin = glm::vec3( glm::min(it->x, boundingBoxMin.x),
+									glm::min(it->y, boundingBoxMin.y),
+									glm::min(it->z, boundingBoxMin.z));
+	}
 }
 
 std::ostream& operator<<(std::ostream& out, const Mesh& mesh)

@@ -1,4 +1,6 @@
 #include <stdlib.h>
+#include <iomanip>
+#include <ctime>
 
 #include <glm/ext.hpp>
 
@@ -25,6 +27,7 @@ void A4_Render(
 ) {
 
   // Fill in raytracing code here...
+  int start_time = clock();
 
   std::cout << "Calling A4_Render(\n" <<
 		  "\t" << *root <<
@@ -133,9 +136,6 @@ void A4_Render(
 			glm::vec3 pixelLocation = glm::vec3( (2.0*((x+0.5)/imageWidth)-1.0) * xFactor , (1.0-2.0*(y+0.5)/imageHeight) * fovFactor, 1/*TODO: generalize for not looking down z axis*/ );
 
 			pixelLocation = glm::vec3(cameraToWorldMat * glm::vec4(pixelLocation, 1));
-			if (y == imageHeight/2 && x == imageWidth/2) {
-				std::cout << glm::to_string(pixelLocation) << std::endl;
-			}
 			Ray primRay = Ray(eye, pixelLocation);
 
 			// Check for intersection for primary ray			
@@ -162,6 +162,13 @@ void A4_Render(
 				image(x, y, 2) = totalLighting.b;
 			}
 
+			// Progress calculations
+			int intermediate_time = clock();
+			std::cout << std::setfill('0') << std::setw(5) << std::fixed << std::setprecision(2);
+			std::cout << "Progress: " << (y*10000/imageHeight)/100.0f << "%";
+			std::cout << " [Elapsed Time: " << (intermediate_time - start_time)/double(CLOCKS_PER_SEC) << " seconds] \t" << '\r';
+			std::cout.flush();
+
 			// TODO: remove. make a white border and cross hairs
 			//if (y == 0 || y == imageHeight/2 || y == imageHeight-1 || x == 0 || x == imageWidth/2 || x == imageWidth-1) {
 			//	image(x, y, 0) = 1;
@@ -180,4 +187,8 @@ void A4_Render(
 			*/
 		}
 	}
+	std::cout << std::endl;
+	int stop_time = clock();
+	std::cout << "ray tracing took: " << (stop_time - start_time)/double(CLOCKS_PER_SEC) << " seconds" << std::endl;
+
 }

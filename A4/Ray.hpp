@@ -9,7 +9,7 @@ public:
     glm::vec3 pointAtDistance(double distance) const;
     glm::vec3 pointAtDistance(float distance) const;
 
-    Ray transformRay(const glm::mat4 & m);
+    Ray transformRay(const glm::mat4 & m) const;
 
     glm::vec3 direction;
     glm::vec3 origin;

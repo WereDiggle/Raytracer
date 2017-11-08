@@ -26,14 +26,17 @@ scene_root = gr.node('root')
 -- phongBox:set_material(whiteMat)
 
 -- Test triangle
--- triangle = gr.mesh('triangle', 'Assets/triangle.obj')
+-- triangle = gr.mesh('triangle', 'triangle.obj')
 -- scene_root:add_child(triangle)
 -- triangle:set_material(whiteMat)
 
 -- Test cube 
--- cube = gr.mesh('cube', 'Assets/cube.obj')
--- scene_root:add_child(cube)
--- cube:set_material(whiteMat)
+cube = gr.mesh('cube', 'cube.obj')
+cube:scale(100, 100, 100)
+cube:rotate('z', 45)
+cube:translate(200, 100, 300)
+cube:set_material(mat1)
+scene_root:add_child(cube)
 -- 
 -- gray sphere, first
 -- s2 = gr.nh_sphere('s2', {100, 0, 0}, 25)
@@ -43,7 +46,7 @@ scene_root = gr.node('root')
 -- orangy sphere, fifth
 s3 = gr.nh_sphere('s3', {0, -1200, 0}, 1000)
 scene_root:add_child(s3)
-s3:set_material(mat4)
+s3:set_material(mat3)
 -- 
 -- red sphere, third
 s4 = gr.nh_sphere('s4', {100, 50, 0}, 50)
@@ -51,8 +54,11 @@ s3:add_child(s4)
 s4:set_material(mat4)
 
 -- red box 
-redBox = gr.nh_box('s4', {-100, 100, 200}, 100)
-s4:add_child(redBox)
+redBox = gr.nh_box('s4', {-0, 0, 0}, 100)
+redBox:scale(2, 2, 1)
+redBox:rotate('z', 45)
+redBox:translate(-100, 150, 200)
+s3:add_child(redBox)
 redBox:set_material(mat4)
 -- 
 -- -- blue sphere, second
@@ -64,9 +70,9 @@ red_light = gr.light({0, 800, 400.0}, {1, 0, 0}, {1, 0, 0})
 green_light = gr.light({400.0, -400.0, 400.0}, {0, 1, 0}, {1, 0.0, 0})
 blue_light = gr.light({-400, -400, 400.0}, {0, 0, 1}, {1, 0.0, 0})
 
-white_light = gr.light({0, 800, 0}, {1, 1, 1}, {1, 0, 0})
+white_light = gr.light({0, 800, 300}, {1, 1, 1}, {1, 0, 0})
 
-ambientLight = {0.1, 0.1, 0.1}
+ambientLight = {0.3, 0.3, 0.3}
 
 lights = {white_light}
 
