@@ -61,7 +61,8 @@ scene_root = gr.node('root')
 -- s3:add_child(redBox)
 -- redBox:set_material(mat4)
 
-steldodec = gr.mesh( 'dodec', 'dodeca.obj' )
+steldodec = gr.mesh( 'dodec', 'mickey.obj' )
+steldodec:rotate('x', '-90')
 steldodec:set_material(mat3)
 scene_root:add_child(steldodec)
 -- 
@@ -74,14 +75,14 @@ red_light = gr.light({0, 800, 400.0}, {1, 0, 0}, {1, 0, 0})
 green_light = gr.light({400.0, -400.0, 400.0}, {0, 1, 0}, {1, 0.0, 0})
 blue_light = gr.light({-400, -400, 400.0}, {0, 0, 1}, {1, 0.0, 0})
 
-white_light = gr.light({0, 5, 0}, {1, 1, 1}, {1, 0, 0})
+white_light = gr.light({0, 100, 0}, {1, 1, 1}, {1, 0, 0})
 
 ambientLight = {0.3, 0.3, 0.3}
 
 lights = {white_light}
 
 gr.render(scene_root, 'simple.png', 512, 512,
-	  {5, 5, 5}, {0, 0, 0}, {0, 1, 0}, 60,
+	  {3, 0, 0}, {0, 0, 0}, {0, 1, 0}, 60,
 	  ambientLight, lights)
 
 --gr.render(scene_root, 'simple_back.png', 512, 512,

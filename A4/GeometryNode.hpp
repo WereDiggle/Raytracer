@@ -13,7 +13,6 @@ public:
 
 	void setMaterial( Material *material );
 
-	// TODO: make a class for intersection
 	virtual Intersect checkIntersection( const Ray & ray );
     //Intersect castRay(const Ray & ray);
 

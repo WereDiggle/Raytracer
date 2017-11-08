@@ -81,9 +81,6 @@ Intersect NonhierBox::checkIntersection(const Ray & ray) {
         m_pos+m_dimensions, m_pos,
     };
 
-    
-    //glm::vec3 bounds[6] = {
-
     // Find all planes that the ray intersects with
     // It's at most 3
     //std::cout << "non hier box check intersection " << std::endl;
@@ -119,7 +116,7 @@ Intersect NonhierBox::checkIntersection(const Ray & ray) {
             // It's a hit!
             if (withinBounds) {
                 // since we're using normals, the ray should only hit one face
-                closestIntersect = Intersect(ray, true, distanceHit, normals[i]);
+                closestIntersect = Intersect(ray, distanceHit > ray.minDistance, distanceHit, normals[i]);
                 break;
             }
 

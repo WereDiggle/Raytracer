@@ -1,0 +1,29 @@
+COMPILATION
+###########
+
+premake4 gmake
+make
+
+COMPILE TIME FLAGS
+##################
+
+SUPER_SAMPLING in A4.cpp controls how many samples to use per pixel.
+The square of the number is the number of samples per pixel used. 1x1, 2x2, 3x3, etc.
+
+BOUNDING_BOX_ONLY in Mesh.hpp controls whether to show only the bounding boxes or not.
+Set true to show only the bounding boxes.
+
+FEATURES
+########
+
+The extra feature that was implemented for this assignment is super sampling.
+It's controlled by a compile time flag. 
+See macho-cows_super_1, macho-cows_super_2, macho-cows_super_3 for examples of different anti aliasing levels
+
+SCENES
+######
+
+The sample.lua script should will generate a 1920x1080 image titled 'the destruction of Alderaan'
+It might take a while to ray trace, so feel free to scale down the image.
+A pre ray traced image is already provided.
+super sampled at 2x2

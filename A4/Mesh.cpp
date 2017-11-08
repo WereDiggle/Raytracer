@@ -108,7 +108,7 @@ Intersect Mesh::checkIntersectionTriangle(const Ray & ray, const Triangle & tria
 						  && glm::dot(triangleNormal, glm::cross(edge2, pointVector2)) >= 0
 						  && glm::dot(triangleNormal, glm::cross(edge3, pointVector3)) >= 0);
 
-		retIntersect = Intersect(ray, withinBounds, distanceHit, triangleNormal);
+		retIntersect = Intersect(ray, withinBounds && distanceHit > ray.minDistance, distanceHit, triangleNormal);
 	}
 
 	return retIntersect;

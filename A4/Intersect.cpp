@@ -30,7 +30,7 @@ Intersect Intersect::transformIntersect(const glm::mat4 & m) {
     newIntersect.isHit = isHit;
     newIntersect.pointHit = glm::vec3(m * glm::vec4(pointHit, 1));
     newIntersect.distanceHit = glm::length(newIntersect.ray.origin - newIntersect.pointHit);
-    newIntersect.normalHit = glm::normalize(glm::mat3(glm::transpose(glm::inverse(m))) * normalHit);
+    newIntersect.normalHit = glm::mat3(glm::transpose(glm::inverse(m))) * normalHit;
     newIntersect.material = material;
 
     return newIntersect;
