@@ -8,6 +8,8 @@
 
 #include "A4.hpp"
 
+#define SUPER_SAMPLING 3
+
 void A4_Render(
 		// What to render
 		SceneNode * root,
@@ -130,42 +132,66 @@ void A4_Render(
 	for (int y = 0; y < imageHeight; ++y) {
 		for (int x = 0; x < imageWidth; ++x) {
 
-			// Transform the pixel in raster space to a pixel in screen space
-			//glm::vec3 pixelLoc = view + (x - imageWidth/2)*side + (y - imageHeight/2)*up;
-			// TODO: convert raster calculations into a raster-to-camera matrix
-			glm::vec3 pixelLocation = glm::vec3( (2.0*((x+0.5)/imageWidth)-1.0) * xFactor , (1.0-2.0*(y+0.5)/imageHeight) * fovFactor, 1/*TODO: generalize for not looking down z axis*/ );
+			// Sampling. Not actually n^2 since SUPER_SAMPLING should be a small constant number
+			// Will make it run a lot slower though :(
+			glm::vec3 sampledPixels[SUPER_SAMPLING*SUPER_SAMPLING];
 
-			pixelLocation = glm::vec3(cameraToWorldMat * glm::vec4(pixelLocation, 1));
-			Ray primRay = Ray(eye, pixelLocation);
+			//std::cout << std::endl;
 
-			// Check for intersection for primary ray			
-			Intersect primRayIntersect = root->castRay(primRay);
+			for (int ys = 0; ys < SUPER_SAMPLING; ++ys) {
+				for (int xs = 0; xs < SUPER_SAMPLING; ++xs) {
 
-			// TODO: lighting calculations go here
-			if (primRayIntersect.isHit && primRayIntersect.material != nullptr) {
-				// Ambient light
-				glm::vec3 matColour = primRayIntersect.material->getColour();
-				glm::vec3 totalLighting = glm::vec3(ambient.r * matColour.r, ambient.g * matColour.g, ambient.b * matColour.b);
+					// Transform the pixel in raster space to a pixel in screen space
+					//glm::vec3 pixelLoc = view + (x - imageWidth/2)*side + (y - imageHeight/2)*up;
+					// TODO: convert raster calculations into a raster-to-camera matrix
+					glm::vec3 pixelLocation = glm::vec3( (2.0*((SUPER_SAMPLING*x+xs+0.5)/(SUPER_SAMPLING*imageWidth))-1.0) * xFactor , (1.0-2.0*(SUPER_SAMPLING*y+ys+0.5)/(SUPER_SAMPLING*imageHeight)) * fovFactor, 1);
 
-				// Add each individual light contribution
-				// TODO: shadow ray to see if we actually get the light
-				for (Light * light : lights) {
-					Ray shadowRay = Ray(primRayIntersect.pointHit, light->position);
-					Intersect shadowIntersect = root->castRay(shadowRay);
-					if (!shadowIntersect.isHit) {
-						totalLighting += primRayIntersect.getLighting(light);
+					//std::cout << "pixelLocation: " << glm::to_string(pixelLocation) << std::endl;
+
+					pixelLocation = glm::vec3(cameraToWorldMat * glm::vec4(pixelLocation, 1));
+					Ray primRay = Ray(eye, pixelLocation);
+
+					// Check for intersection for primary ray			
+					Intersect primRayIntersect = root->castRay(primRay);
+
+					// Lighting Calculations
+					if (primRayIntersect.isHit && primRayIntersect.material != nullptr) {
+						// Ambient light
+						glm::vec3 matColour = primRayIntersect.material->getColour();
+						glm::vec3 totalLighting = glm::vec3(ambient.r * matColour.r, ambient.g * matColour.g, ambient.b * matColour.b);
+
+						// Add each individual light contribution
+						// TODO: move shadow code into Intersect.getLighting, also add the SceneNode as a param for getLighting
+						for (Light * light : lights) {
+							Ray shadowRay = Ray(primRayIntersect.pointHit, light->position);
+							Intersect shadowIntersect = root->castRay(shadowRay);
+							if (!shadowIntersect.isHit) {
+								totalLighting += primRayIntersect.getLighting(light);
+							}
+						}
+
+						// Store the sampled pixels
+						sampledPixels[ys*SUPER_SAMPLING+xs] = totalLighting;
 					}
 				}
-
-				image(x, y, 0) = totalLighting.r;
-				image(x, y, 1) = totalLighting.g;
-				image(x, y, 2) = totalLighting.b;
 			}
+
+			// Average sampled pixels
+			glm::vec3 averageColour = glm::vec3(0);
+			for (int pix = 0; pix<SUPER_SAMPLING*SUPER_SAMPLING; ++pix) {
+				averageColour += sampledPixels[pix];
+			}
+			averageColour = averageColour/(SUPER_SAMPLING*SUPER_SAMPLING);
+
+			image(x, y, 0) = averageColour.r;
+			image(x, y, 1) = averageColour.g;
+			image(x, y, 2) = averageColour.b;
+
 
 			// Progress calculations
 			int intermediate_time = clock();
 			std::cout << std::setfill('0') << std::setw(5) << std::fixed << std::setprecision(2);
-			std::cout << "Progress: " << (y*10000/imageHeight)/100.0f << "%";
+			std::cout << "Progress: " << 100.0*(y*imageHeight + x)/imageHeight/imageWidth << "%";
 			std::cout << " [Elapsed Time: " << (intermediate_time - start_time)/double(CLOCKS_PER_SEC) << " seconds] \t" << '\r';
 			std::cout.flush();
 

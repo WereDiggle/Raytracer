@@ -10,6 +10,8 @@
 #include "Ray.hpp"
 #include "Intersect.hpp"
 
+#define BOUNDING_BOX_ONLY false
+
 struct Triangle
 {
 	size_t v1;
