@@ -55,15 +55,25 @@ Intersect SceneNode::checkIntersection(const Ray & ray) {
 
 Intersect SceneNode::castRay(const Ray & ray) {
 
-	Intersect rayIntersect = Intersect();
+	// TODO: transform the ray
+
+	// remember that checkIntersection is virtual, so it should call the derived checkIntersection if possible
+	Intersect rayIntersect = checkIntersection(ray);
+
+	//std::cout << "before casting into children" << std::endl;
+
+	// recurse through all children, casting transformed rays at all of them
 	for (SceneNode * childNode : children) {
-		Intersect curRayIntersect = childNode->checkIntersection(ray);
+		Intersect curRayIntersect = childNode->castRay(ray);
 		if (curRayIntersect.isHit) {
 			if (!rayIntersect.isHit || curRayIntersect.distanceHit < rayIntersect.distanceHit) {
 				rayIntersect = curRayIntersect;
 			}
 		}
 	}
+
+	//std::cout << "after casting into children" << std::endl;
+	// TODO: transform the intersect back
 
 	return rayIntersect;
 }

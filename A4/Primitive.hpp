@@ -27,7 +27,7 @@ public:
   {
   }
   virtual ~NonhierSphere();
-  Intersect checkIntersection(const Ray & ray);
+  virtual Intersect checkIntersection(const Ray & ray);
 
 private:
   glm::vec3 m_pos;
@@ -42,7 +42,7 @@ public:
   }
   
   virtual ~NonhierBox();
-  Intersect checkIntersection(const Ray & ray);
+  virtual Intersect checkIntersection(const Ray & ray);
 
 private:
   glm::vec3 m_pos;

@@ -47,13 +47,13 @@ s3:set_material(mat4)
 -- 
 -- red sphere, third
 s4 = gr.nh_sphere('s4', {100, 50, 0}, 50)
-scene_root:add_child(s4)
+s3:add_child(s4)
 s4:set_material(mat4)
 
 -- red box 
-s4 = gr.nh_box('s4', {-100, 100, 200}, 100)
-scene_root:add_child(s4)
-s4:set_material(mat4)
+redBox = gr.nh_box('s4', {-100, 100, 200}, 100)
+s4:add_child(redBox)
+redBox:set_material(mat4)
 -- 
 -- -- blue sphere, second
 -- s5 = gr.nh_sphere('s5', {100, 0, -100}, 25)

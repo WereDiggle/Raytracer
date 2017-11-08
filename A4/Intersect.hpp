@@ -16,6 +16,8 @@ public:
     Intersect();
 
     glm::vec3 getLighting(Light * light);
+
+    Intersect transformIntersect(const glm::mat4 & m);
     
     bool isHit;
 

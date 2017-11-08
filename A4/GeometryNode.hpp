@@ -14,7 +14,8 @@ public:
 	void setMaterial( Material *material );
 
 	// TODO: make a class for intersection
-	Intersect checkIntersection( const Ray & ray );
+	virtual Intersect checkIntersection( const Ray & ray );
+    //Intersect castRay(const Ray & ray);
 
 	Material *m_material;
 	Primitive *m_primitive;

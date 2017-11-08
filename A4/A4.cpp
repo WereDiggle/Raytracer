@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include <glm/ext.hpp>
 
 #include "Ray.hpp"
@@ -98,6 +100,29 @@ void A4_Render(
 
 	std::cout << "cameraToWorld: " << glm::to_string(cameraToWorldMat) << std::endl;
 
+	srand(451);
+
+	// Generate the background
+	for (int y = 0; y < imageHeight; ++y) {
+		for (int x = 0; x < imageWidth; ++x) {
+
+			int prob = rand() % 100;
+			int r = rand() % 100;
+			int g = rand() % 100;
+			int b = rand() % 100;
+
+			if (prob < 2) {
+				image(x, y, 0) = r/100.0f;
+				image(x, y, 1) = g/100.0f;
+				image(x, y, 2) = b/100.0f;
+			}
+			else {
+				image(x, y, 0) = 0;
+				image(x, y, 1) = 0;
+				image(x, y, 2) = 0;
+			}
+		}
+	}
 
 	for (int y = 0; y < imageHeight; ++y) {
 		for (int x = 0; x < imageWidth; ++x) {
@@ -117,11 +142,10 @@ void A4_Render(
 			Intersect primRayIntersect = root->castRay(primRay);
 
 			// TODO: lighting calculations go here
-			glm::vec3 totalLighting = glm::vec3(0);
 			if (primRayIntersect.isHit && primRayIntersect.material != nullptr) {
 				// Ambient light
 				glm::vec3 matColour = primRayIntersect.material->getColour();
-				totalLighting = glm::vec3(ambient.r * matColour.r, ambient.g * matColour.g, ambient.b * matColour.b);
+				glm::vec3 totalLighting = glm::vec3(ambient.r * matColour.r, ambient.g * matColour.g, ambient.b * matColour.b);
 
 				// Add each individual light contribution
 				// TODO: shadow ray to see if we actually get the light
@@ -132,10 +156,11 @@ void A4_Render(
 						totalLighting += primRayIntersect.getLighting(light);
 					}
 				}
+
+				image(x, y, 0) = totalLighting.r;
+				image(x, y, 1) = totalLighting.g;
+				image(x, y, 2) = totalLighting.b;
 			}
-			image(x, y, 0) = totalLighting.r;
-			image(x, y, 1) = totalLighting.g;
-			image(x, y, 2) = totalLighting.b;
 
 			// TODO: remove. make a white border and cross hairs
 			//if (y == 0 || y == imageHeight/2 || y == imageHeight-1 || x == 0 || x == imageWidth/2 || x == imageWidth-1) {
