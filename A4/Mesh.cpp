@@ -117,7 +117,7 @@ Intersect Mesh::checkIntersectionTriangle(const Ray & ray, const Triangle & tria
 Intersect Mesh::checkIntersection(const Ray & ray) {
 
 	Intersect closestIntersect = Intersect();
-	//if (boundingBox.checkIntersection(ray).isHit) {
+	if (boundingBox.checkIntersection(ray).isHit) {
 
 		// Iterate over all the triangles to find the closest one hit
 		closestIntersect = Intersect(ray, false, std::numeric_limits<double>::max(), glm::vec3(0));
@@ -127,7 +127,7 @@ Intersect Mesh::checkIntersection(const Ray & ray) {
 				closestIntersect = curIntersect;
 			}
 		}
-	//}
+	}
 
 	return closestIntersect;
 }

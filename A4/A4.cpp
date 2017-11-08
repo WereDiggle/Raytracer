@@ -152,9 +152,9 @@ void A4_Render(
 				for (Light * light : lights) {
 					Ray shadowRay = Ray(primRayIntersect.pointHit, light->position);
 					Intersect shadowIntersect = root->castRay(shadowRay);
-					//if (!shadowIntersect.isHit) {
+					if (!shadowIntersect.isHit) {
 						totalLighting += primRayIntersect.getLighting(light);
-					//}
+					}
 				}
 
 				image(x, y, 0) = totalLighting.r;
