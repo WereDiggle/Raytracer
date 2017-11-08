@@ -79,7 +79,7 @@ Intersect Mesh::checkIntersectionTriangle(const Ray & ray, const Triangle & tria
 	glm::vec3 A = v2 - v1;
 	glm::vec3 B = v3 - v1;
 
-	glm::vec3 triangleNormal = glm::cross(A, B);
+	glm::vec3 triangleNormal = glm::normalize(glm::cross(A, B));
 	//std::cout << "triangle normal: " << glm::to_string(triangleNormal) << std::endl;
 
 	// Calculate the intersection of the normal plane and the ray. Look in the box primitive code for examples. 

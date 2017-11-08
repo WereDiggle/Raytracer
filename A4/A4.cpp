@@ -8,7 +8,7 @@
 
 #include "A4.hpp"
 
-#define SUPER_SAMPLING 3
+#define SUPER_SAMPLING 1
 
 void A4_Render(
 		// What to render
@@ -136,6 +136,8 @@ void A4_Render(
 			// Will make it run a lot slower though :(
 			glm::vec3 sampledPixels[SUPER_SAMPLING*SUPER_SAMPLING];
 
+			bool useBackground = true;
+
 			//std::cout << std::endl;
 
 			for (int ys = 0; ys < SUPER_SAMPLING; ++ys) {
@@ -157,6 +159,7 @@ void A4_Render(
 					// Lighting Calculations
 					if (primRayIntersect.isHit && primRayIntersect.material != nullptr) {
 						// Ambient light
+						useBackground = false;
 						glm::vec3 matColour = primRayIntersect.material->getColour();
 						glm::vec3 totalLighting = glm::vec3(ambient.r * matColour.r, ambient.g * matColour.g, ambient.b * matColour.b);
 
@@ -177,16 +180,17 @@ void A4_Render(
 			}
 
 			// Average sampled pixels
-			glm::vec3 averageColour = glm::vec3(0);
-			for (int pix = 0; pix<SUPER_SAMPLING*SUPER_SAMPLING; ++pix) {
-				averageColour += sampledPixels[pix];
+			if (!useBackground) {
+				glm::vec3 averageColour = glm::vec3(0);
+				for (int pix = 0; pix<SUPER_SAMPLING*SUPER_SAMPLING; ++pix) {
+					averageColour += sampledPixels[pix];
+				}
+				averageColour = averageColour/(SUPER_SAMPLING*SUPER_SAMPLING);
+
+				image(x, y, 0) = averageColour.r;
+				image(x, y, 1) = averageColour.g;
+				image(x, y, 2) = averageColour.b;
 			}
-			averageColour = averageColour/(SUPER_SAMPLING*SUPER_SAMPLING);
-
-			image(x, y, 0) = averageColour.r;
-			image(x, y, 1) = averageColour.g;
-			image(x, y, 2) = averageColour.b;
-
 
 			// Progress calculations
 			int intermediate_time = clock();
