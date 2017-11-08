@@ -6,10 +6,12 @@
 
 // #include "cs488-framework/ObjFileDecoder.hpp"
 #include "Mesh.hpp"
+const std::string Mesh::assetFolder = "Assets";
 
 Mesh::Mesh( const std::string& fname )
 	: m_vertices()
 	, m_faces()
+	, boundingBox(NonhierBox(glm::vec3(), 0))
 {
 	std::string fpath = assetFolder + "/" + fname;
 	std::cout << "Creating a new mesh: " << fpath << std::endl;
@@ -33,6 +35,8 @@ Mesh::Mesh( const std::string& fname )
 			m_faces.push_back( Triangle( s1 - 1, s2 - 1, s3 - 1 ) );
 		} }
 
+	glm::vec3 boundingBoxMax = glm::vec3(std::numeric_limits<float>::min());
+	glm::vec3 boundingBoxMin = glm::vec3(std::numeric_limits<float>::max());
 	for (std::vector<glm::vec3>::iterator it = m_vertices.begin(); it != m_vertices.end(); ++it) {
 		boundingBoxMax = glm::vec3( glm::max(it->x, boundingBoxMax.x),
 									glm::max(it->y, boundingBoxMax.y),
@@ -42,6 +46,7 @@ Mesh::Mesh( const std::string& fname )
 									glm::min(it->y, boundingBoxMin.y),
 									glm::min(it->z, boundingBoxMin.z));
 	}
+	boundingBox = NonhierBox(boundingBoxMin, boundingBoxMax - boundingBoxMin);
 }
 
 std::ostream& operator<<(std::ostream& out, const Mesh& mesh)
@@ -111,13 +116,18 @@ Intersect Mesh::checkIntersectionTriangle(const Ray & ray, const Triangle & tria
 
 Intersect Mesh::checkIntersection(const Ray & ray) {
 
-	// Iterate over all the triangles to find the closest one hit
-	Intersect closestIntersect = Intersect(ray, false, std::numeric_limits<double>::max(), glm::vec3(0));
-	for (std::vector<Triangle>::iterator it = m_faces.begin(); it != m_faces.end(); ++it) {
-		Intersect curIntersect = checkIntersectionTriangle(ray, *it);
-		if (curIntersect.isHit && curIntersect.distanceHit < closestIntersect.distanceHit) {
-			closestIntersect = curIntersect;
+	Intersect closestIntersect = Intersect();
+	//if (boundingBox.checkIntersection(ray).isHit) {
+
+		// Iterate over all the triangles to find the closest one hit
+		closestIntersect = Intersect(ray, false, std::numeric_limits<double>::max(), glm::vec3(0));
+		for (std::vector<Triangle>::iterator it = m_faces.begin(); it != m_faces.end(); ++it) {
+			Intersect curIntersect = checkIntersectionTriangle(ray, *it);
+			if (curIntersect.isHit && curIntersect.distanceHit < closestIntersect.distanceHit) {
+				closestIntersect = curIntersect;
+			}
 		}
-	}
+	//}
+
 	return closestIntersect;
 }
