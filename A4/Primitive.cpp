@@ -26,6 +26,11 @@ Intersect Primitive::checkIntersection(const Ray & ray) {
     return Intersect();
 }
 
+/*
+Sphere
+#######################
+*/
+
 Sphere::~Sphere()
 {
 }
@@ -58,11 +63,56 @@ Intersect Sphere::checkIntersection(const Ray & ray) {
     }
 }
 
+/*
+Plane
+#######################
+
+a square plane from (0,0,0) to (1,1,0)
+With a normal pointing in (0,0,1)
+So it would be visible when looking down the z axis
+
+*/
+
+Plane::~Plane()
+{
+}
+
+Intersect Plane::checkIntersection(const Ray & ray) {
+
+    Intersect closestIntersect = Intersect();
+
+    // Intersects plane if dot product of direction and normal is negative
+    // distanceHit is positive along the ray
+    double dirNormDot, originPointNormDot;
+    if ((dirNormDot = glm::dot(ray.direction, axisNormals[4])) < 0 && (originPointNormDot = glm::dot(ray.origin, axisNormals[4])) > 0) {
+
+        double distanceHit = originPointNormDot/-dirNormDot;
+        
+        // Intersects face if intersect point within bounds
+        glm::vec3 pointHit = ray.pointAtDistance(distanceHit);
+
+        // for each axis that we need to check
+        bool withinBounds = pointHit.x >= 0 && pointHit.x <= 1.0 && pointHit.y >= 0 && pointHit.y <= 1.0;
+
+        // It's a hit!
+        if (withinBounds) {
+            closestIntersect = Intersect(ray, distanceHit > ray.minDistance, distanceHit, axisNormals[4]);
+        }
+    }
+    
+    return closestIntersect;
+}
+
+
+/*
+Cube
+#######################
+*/
+
 Cube::~Cube()
 {
 }
 
-// m_pos = (0,0,0) and m_dimensions = (1,1,1)
 Intersect Cube::checkIntersection(const Ray & ray) {
 
     // Find all planes that the ray intersects with
@@ -107,6 +157,7 @@ Intersect Cube::checkIntersection(const Ray & ray) {
     }
     return closestIntersect;
 }
+
 /*
 Non-heirarchical Sphere
 #######################
@@ -147,6 +198,11 @@ Intersect NonhierSphere::checkIntersection(const Ray & ray) {
         return Intersect();
     }
 }
+
+/*
+Non-heirarchical Sphere
+#######################
+*/
 
 NonhierBox::~NonhierBox()
 {

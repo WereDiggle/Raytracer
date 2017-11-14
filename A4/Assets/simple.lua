@@ -71,6 +71,13 @@ whiteCube:translate(-100, -100, 400)
 scene_root:add_child(whiteCube)
 whiteCube:set_material(whiteMat)
 
+bluePlane = gr.plane('testPlane')
+bluePlane:scale(100,100,100)
+bluePlane:rotate('y', 180)
+bluePlane:translate(0,0,0)
+scene_root:add_child(bluePlane)
+bluePlane:set_material(mat5)
+
 -- steldodec = gr.mesh( 'dodec', 'mickey.obj' )
 -- steldodec:rotate('x', '-90')
 -- steldodec:set_material(mat3)
@@ -85,7 +92,7 @@ red_light = gr.light({0, 800, 400.0}, {1, 0, 0}, {1, 0, 0})
 green_light = gr.light({400.0, -400.0, 400.0}, {0, 1, 0}, {1, 0.0, 0})
 blue_light = gr.light({-400, -400, 400.0}, {0, 0, 1}, {1, 0.0, 0})
 
-white_light = gr.light({0, 100, 0}, {1, 1, 1}, {1, 0, 0})
+white_light = gr.light({0, 200, 0}, {1, 1, 1}, {1, 0, 0})
 
 ambientLight = {0.3, 0.3, 0.3}
 

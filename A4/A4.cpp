@@ -199,22 +199,6 @@ void A4_Render(
 			std::cout << " [Elapsed Time: " << (intermediate_time - start_time)/double(CLOCKS_PER_SEC) << " seconds] \t" << '\r';
 			std::cout.flush();
 
-			// TODO: remove. make a white border and cross hairs
-			//if (y == 0 || y == imageHeight/2 || y == imageHeight-1 || x == 0 || x == imageWidth/2 || x == imageWidth-1) {
-			//	image(x, y, 0) = 1;
-			//	image(x, y, 1) = 1;
-			//	image(x, y, 2) = 1;
-			//}
-
-			/*
-			// Red: increasing from top to bottom
-			image(x, y, 0) = (double)y / h;
-			// Green: increasing from side to right
-			image(x, y, 1) = (double)x / w;
-			// Blue: in lower-side and upper-right corners
-			image(x, y, 2) = ((y < h/2 && x < w/2)
-						  || (y >= h/2 && x >= w/2)) ? 1.0 : 0.0;
-			*/
 		}
 	}
 	std::cout << std::endl;

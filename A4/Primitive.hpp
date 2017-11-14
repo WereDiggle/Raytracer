@@ -33,6 +33,15 @@ private:
   glm::vec3 points[2];
 };
 
+class Plane : public Primitive {
+public:
+  Plane() {
+  }
+  virtual ~Plane();
+  virtual Intersect checkIntersection(const Ray & ray);
+private:
+};
+
 class NonhierSphere : public Primitive {
 public:
   NonhierSphere(const glm::vec3& pos, double radius)
