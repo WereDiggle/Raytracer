@@ -97,6 +97,8 @@ Intersect Plane::checkIntersection(const Ray & ray) {
         // It's a hit!
         if (withinBounds) {
             closestIntersect = Intersect(ray, distanceHit > ray.minDistance, distanceHit, axisNormals[4]);
+            closestIntersect.textureU = pointHit.x;
+            closestIntersect.textureV = pointHit.y;
         }
     }
     

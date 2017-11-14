@@ -1,6 +1,8 @@
 #include <iostream>
 #include <glm/ext.hpp>
 
+#include "SceneNode.hpp"
+
 #include "Intersect.hpp"
 
 Intersect::Intersect(const Ray & ray, bool isHit, double distanceHit, const glm::vec3 & normalHit)
@@ -13,14 +15,27 @@ Intersect::Intersect(const Ray & ray, bool isHit, double distanceHit, const glm:
 Intersect::Intersect()
     : ray(ray), material(nullptr), isHit(false), distanceHit(-1.0), normalHit(glm::vec3(0)), pointHit(glm::vec3(0)), textureU(0), textureV(0) {}
 
-glm::vec3 Intersect::getLighting(Light * light) {
+glm::vec3 Intersect::getLighting(const std::list<Light *> & lights, SceneNode * root) {
     if (material == nullptr || !isHit) {
         return glm::vec3(0);
     }
 
-    // surfaceNormal, lightDirection, lightIntensity, lightDistance, lightFalloff, viewDirection
-    glm::vec3 pointToLight = light->position - pointHit;
-    return material->getLighting(glm::normalize(normalHit), glm::normalize(pointToLight), light->colour, glm::length(pointToLight), light->falloff, -ray.direction);
+    // Add each individual light contribution
+    glm::vec3 totalLighting = glm::vec3(0);
+    for (Light * light : lights) {
+        Ray shadowRay = Ray(pointHit, light->position);
+        // TODO: shadow rays only need to know if it hits any surface, not whichever is closest. 
+        Intersect shadowIntersect = root->castRay(shadowRay);
+        if (!shadowIntersect.isHit) {
+            glm::vec3 pointToLight = light->position - pointHit;
+            // surfaceNormal, lightDirection, lightIntensity, lightDistance, lightFalloff, viewDirection
+            totalLighting += material->getLighting(glm::normalize(normalHit), glm::normalize(pointToLight), light->colour, glm::length(pointToLight), light->falloff, -ray.direction);
+        }
+    }
+
+    return totalLighting;
+
+
 }
 
 Intersect Intersect::transformIntersect(const glm::mat4 & m) {

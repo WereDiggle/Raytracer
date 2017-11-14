@@ -1,10 +1,13 @@
 #pragma once
 
+#include <list>
 #include <glm/glm.hpp>
 
 #include "Ray.hpp"
 #include "Material.hpp"
 #include "Light.hpp"
+
+class SceneNode;
 
 // This class handles the information received when a Ray hits something
 class Intersect {
@@ -15,7 +18,7 @@ public:
     // used for when the intersection doesn't hit anything
     Intersect();
 
-    glm::vec3 getLighting(Light * light);
+    glm::vec3 getLighting(const std::list<Light *> & lights, SceneNode * root);
 
     Intersect transformIntersect(const glm::mat4 & m);
     

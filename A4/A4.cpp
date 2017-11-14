@@ -163,15 +163,7 @@ void A4_Render(
 						glm::vec3 matColour = primRayIntersect.material->getColour();
 						glm::vec3 totalLighting = glm::vec3(ambient.r * matColour.r, ambient.g * matColour.g, ambient.b * matColour.b);
 
-						// Add each individual light contribution
-						// TODO: move shadow code into Intersect.getLighting, also add the SceneNode as a param for getLighting
-						for (Light * light : lights) {
-							Ray shadowRay = Ray(primRayIntersect.pointHit, light->position);
-							Intersect shadowIntersect = root->castRay(shadowRay);
-							if (!shadowIntersect.isHit) {
-								totalLighting += primRayIntersect.getLighting(light);
-							}
-						}
+						totalLighting += primRayIntersect.getLighting(lights, root);
 
 						// Store the sampled pixels
 						sampledPixels[ys*SUPER_SAMPLING+xs] = totalLighting;
