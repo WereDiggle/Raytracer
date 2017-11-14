@@ -30,4 +30,7 @@ public:
     glm::vec3 normalHit;
 
     glm::vec3 pointHit;
+
+    double textureU;
+    double textureV;
 };

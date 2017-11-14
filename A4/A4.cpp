@@ -8,7 +8,7 @@
 
 #include "A4.hpp"
 
-#define SUPER_SAMPLING 2
+#define SUPER_SAMPLING 1
 
 void A4_Render(
 		// What to render

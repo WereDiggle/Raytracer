@@ -4,14 +4,14 @@
 #include "Intersect.hpp"
 
 Intersect::Intersect(const Ray & ray, bool isHit, double distanceHit, const glm::vec3 & normalHit)
-    : ray(ray), material(nullptr), isHit(isHit), distanceHit(distanceHit), normalHit(normalHit) {
+    : ray(ray), material(nullptr), isHit(isHit), distanceHit(distanceHit), normalHit(normalHit), textureU(0), textureV(0) {
         if (isHit) {
             pointHit = ray.pointAtDistance(distanceHit);
         }
     }
 
 Intersect::Intersect()
-    : ray(ray), material(nullptr), isHit(false), distanceHit(-1.0), normalHit(glm::vec3(0)), pointHit(glm::vec3(0)) {}
+    : ray(ray), material(nullptr), isHit(false), distanceHit(-1.0), normalHit(glm::vec3(0)), pointHit(glm::vec3(0)), textureU(0), textureV(0) {}
 
 glm::vec3 Intersect::getLighting(Light * light) {
     if (material == nullptr || !isHit) {
@@ -32,6 +32,8 @@ Intersect Intersect::transformIntersect(const glm::mat4 & m) {
     newIntersect.distanceHit = glm::length(newIntersect.ray.origin - newIntersect.pointHit);
     newIntersect.normalHit = glm::mat3(glm::transpose(glm::inverse(m))) * normalHit;
     newIntersect.material = material;
+    newIntersect.textureU = textureU;
+    newIntersect.textureV = textureV;
 
     return newIntersect;
 }

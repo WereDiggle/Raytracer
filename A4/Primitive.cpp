@@ -1,13 +1,22 @@
 #include "Primitive.hpp"
 #include "polyroots.hpp"
 
-#include <iostream>
-#include <glm/ext.hpp>
 
 /*
 Primitive
 #########
 */
+
+const glm::vec3 Primitive::axisNormals[6] = {
+        // x axis
+        glm::vec3(1, 0, 0), glm::vec3(-1, 0, 0),
+
+        // y axis
+        glm::vec3(0, 1, 0), glm::vec3(0, -1, 0),
+
+        // z axis
+        glm::vec3(0, 0, 1), glm::vec3(0, 0, -1)
+    };
 
 Primitive::~Primitive()
 {
@@ -21,10 +30,83 @@ Sphere::~Sphere()
 {
 }
 
+// Just nonhier sphere with m_pos = (0,0,0) and m_radius = 1
+Intersect Sphere::checkIntersection(const Ray & ray) {
+    //std::cout << "non hier sphere checkIntersection" << std::endl;
+    double a = 1.0;
+    double b = 2 * (glm::dot(ray.direction, ray.origin));
+    double c = glm::dot(ray.origin, ray.origin) - 1.0;
+    double roots[2];
+    size_t numRoots = quadraticRoots(a, b, c, roots);
+
+    double distanceHit = 0;
+    // Take the lowest non-negative root
+    if (numRoots == 2) {
+        distanceHit = (roots[0] > 0 && roots[0] < roots[1]) ? roots[0] : roots[1];
+    }
+    else if (numRoots == 1) {
+        distanceHit = roots[0];
+    }
+
+    if (distanceHit > ray.minDistance) {
+        glm::vec3 pointHit = ray.pointAtDistance(distanceHit);
+
+        return Intersect(ray, true, distanceHit, glm::normalize(ray.pointAtDistance(distanceHit)));
+    }
+    else {
+        return Intersect();
+    }
+}
+
 Cube::~Cube()
 {
 }
 
+// m_pos = (0,0,0) and m_dimensions = (1,1,1)
+Intersect Cube::checkIntersection(const Ray & ray) {
+
+    // Find all planes that the ray intersects with
+    // It's at most 3
+    int planesHit = 0;
+    Intersect closestIntersect = Intersect();
+    for (int i=0; i<6 && planesHit < 3; i++) {
+
+        // Intersects plane if dot product of direction and normal is negative
+        // distanceHit is positive along the ray
+        double dirNormDot, originPointNormDot;
+        if ((dirNormDot = glm::dot(ray.direction, axisNormals[i])) < 0 && (originPointNormDot = glm::dot((ray.origin - points[i%2]), axisNormals[i])) > 0) {
+
+            double distanceHit = originPointNormDot/-dirNormDot;
+            
+            // Intersects face if intersect point within bounds
+            glm::vec3 pointHit = ray.pointAtDistance(distanceHit);
+
+            // for each axis that we need to check
+            bool withinBounds = true;
+            if (withinBounds && axisNormals[i].x == 0) {
+                withinBounds = withinBounds && pointHit.x >= 0 && pointHit.x <= 1.0;
+            }
+            if (withinBounds && axisNormals[i].y == 0) {
+                withinBounds = withinBounds && pointHit.y >= 0 && pointHit.y <= 1.0;
+            }
+            if (withinBounds && axisNormals[i].z == 0) {
+                withinBounds = withinBounds && pointHit.z >= 0 && pointHit.z <= 1.0;
+            }
+
+            planesHit++;
+
+            // It's a hit!
+            if (withinBounds) {
+                // since we're using normals, the ray should only hit one face
+                closestIntersect = Intersect(ray, distanceHit > ray.minDistance, distanceHit, axisNormals[i]);
+                break;
+            }
+
+        }
+    
+    }
+    return closestIntersect;
+}
 /*
 Non-heirarchical Sphere
 #######################
@@ -43,13 +125,23 @@ Intersect NonhierSphere::checkIntersection(const Ray & ray) {
     double roots[2];
     size_t numRoots = quadraticRoots(a, b, c, roots);
 
+    double distanceHit = 0;
     // Take the lowest non-negative root
     if (numRoots == 2) {
-        double distanceHit = (roots[0] > 0 && roots[0] < roots[1]) ? roots[0] : roots[1];
-        return Intersect(ray, distanceHit > ray.minDistance, distanceHit, glm::normalize(ray.pointAtDistance(distanceHit) - m_pos));
+        distanceHit = (roots[0] > 0 && roots[0] < roots[1]) ? roots[0] : roots[1];
     }
     else if (numRoots == 1) {
-        return Intersect(ray, roots[0] > ray.minDistance, roots[0], glm::normalize(ray.pointAtDistance(roots[0]) - m_pos));
+        distanceHit = roots[0];
+    }
+
+    if (distanceHit > ray.minDistance) {
+        glm::vec3 pointHit = ray.pointAtDistance(distanceHit);
+
+        // This is wrong, should use angular arc distance or whatever 
+        double elevation = (pointHit.y/m_radius) + 0.5;
+        double azimuth = (pointHit.x/m_radius) + 0.5;
+
+        return Intersect(ray, true, distanceHit, glm::normalize(ray.pointAtDistance(distanceHit) - m_pos));
     }
     else {
         return Intersect();
@@ -61,68 +153,46 @@ NonhierBox::~NonhierBox()
 }
 
 Intersect NonhierBox::checkIntersection(const Ray & ray) {
-    // TODO: six planes constructed from m_pos and m_size
-    // TODO: move these to static const
-    // normals are just 6
-    // Even indices are positive faces
-    glm::vec3 normals[6] = {
-        // x axis
-        glm::vec3(1, 0, 0), glm::vec3(-1, 0, 0),
-
-        // y axis
-        glm::vec3(0, 1, 0), glm::vec3(0, -1, 0),
-
-        // z axis
-        glm::vec3(0, 0, 1), glm::vec3(0, 0, -1),
-    };
-
-    // index 0 for positive normals, index 1 for negative normals
-    glm::vec3 points[2] = {
-        m_pos+m_dimensions, m_pos,
-    };
 
     // Find all planes that the ray intersects with
     // It's at most 3
-    //std::cout << "non hier box check intersection " << std::endl;
-    //std::cout << "ray direction: " << glm::to_string(ray.direction) << std::endl;
     int planesHit = 0;
     Intersect closestIntersect = Intersect();
     for (int i=0; i<6 && planesHit < 3; i++) {
+
         // Intersects plane if dot product of direction and normal is negative
         // t is positive along the ray
-        // TODO: store and reuse these dot products for effieciency
-        if (glm::dot(ray.direction, normals[i]) < 0 && glm::dot((ray.origin - points[i%2]), normals[i]) > 0) {
+        double dirNormDot, originPointNormDot;
+        if ((dirNormDot = glm::dot(ray.direction, axisNormals[i])) < 0 && (originPointNormDot = glm::dot((ray.origin - points[i%2]), axisNormals[i])) > 0) {
 
-            double distanceHit = (glm::dot((ray.origin - points[i%2]), normals[i]))/(-glm::dot(ray.direction, normals[i]));
+            double distanceHit = originPointNormDot/-dirNormDot;
             
             // Intersects face if intersect point within bounds
             glm::vec3 pointHit = ray.pointAtDistance(distanceHit);
 
             // for each axis that we need to check
             bool withinBounds = true;
-            if (withinBounds && normals[i].x == 0) {
+            if (withinBounds && axisNormals[i].x == 0) {
                 withinBounds = withinBounds && pointHit.x >= m_pos.x && pointHit.x <= m_pos.x + m_dimensions.x;
             }
-            if (withinBounds && normals[i].y == 0) {
+            if (withinBounds && axisNormals[i].y == 0) {
                 withinBounds = withinBounds && pointHit.y >= m_pos.y && pointHit.y <= m_pos.y + m_dimensions.y;
             }
-            if (withinBounds && normals[i].z == 0) {
+            if (withinBounds && axisNormals[i].z == 0) {
                 withinBounds = withinBounds && pointHit.z >= m_pos.z && pointHit.z <= m_pos.z + m_dimensions.z;
             }
 
-            //std::cout << "ray intersected with plane " << glm::to_string(normals[i]) << " at " << glm::to_string(pointHit) << " " << withinBounds << std::endl;
             planesHit++;
 
             // It's a hit!
             if (withinBounds) {
-                // since we're using normals, the ray should only hit one face
-                closestIntersect = Intersect(ray, distanceHit > ray.minDistance, distanceHit, normals[i]);
+                // since we're using axisNormals, the ray should only hit one face
+                closestIntersect = Intersect(ray, distanceHit > ray.minDistance, distanceHit, axisNormals[i]);
                 break;
             }
 
         }
     
-    //std::cout << std::endl;
-}
+    }
     return closestIntersect;
 }
