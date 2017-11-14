@@ -55,13 +55,10 @@ Intersect SceneNode::checkIntersection(const Ray & ray) {
 
 Intersect SceneNode::castRay(const Ray & ray) {
 
-	// TODO: transform the ray
 	Ray transformedRay = ray.transformRay(invtrans);
 
 	// remember that checkIntersection is virtual, so it should call the derived checkIntersection if possible
 	Intersect rayIntersect = checkIntersection(transformedRay);
-
-	//std::cout << "before casting into children" << std::endl;
 
 	// recurse through all children, casting transformed rays at all of them
 	for (SceneNode * childNode : children) {
@@ -73,8 +70,27 @@ Intersect SceneNode::castRay(const Ray & ray) {
 		}
 	}
 
-	//std::cout << "after casting into children" << std::endl;
-	// TODO: transform the intersect back
+	return rayIntersect.transformIntersect(trans);
+}
+
+// ray casting for a shadow, we only need to know whether it hits a surface, not the closest surface it hits
+Intersect SceneNode::castShadowRay(const Ray & ray) {
+	Ray transformedRay = ray.transformRay(invtrans);
+
+	// remember that checkIntersection is virtual, so it should call the derived checkIntersection if possible
+	Intersect rayIntersect = checkIntersection(transformedRay);
+
+	if (!rayIntersect.isHit) {
+
+		// recurse through all children, casting transformed rays at all of them
+		for (SceneNode * childNode : children) {
+			Intersect curRayIntersect = childNode->castRay(transformedRay);
+			if (curRayIntersect.isHit) {
+				rayIntersect = curRayIntersect;
+				break;
+			}
+		}
+	}
 
 	return rayIntersect.transformIntersect(trans);
 }

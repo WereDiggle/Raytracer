@@ -24,8 +24,7 @@ glm::vec3 Intersect::getLighting(const std::list<Light *> & lights, SceneNode * 
     glm::vec3 totalLighting = glm::vec3(0);
     for (Light * light : lights) {
         Ray shadowRay = Ray(pointHit, light->position);
-        // TODO: shadow rays only need to know if it hits any surface, not whichever is closest. 
-        Intersect shadowIntersect = root->castRay(shadowRay);
+        Intersect shadowIntersect = root->castShadowRay(shadowRay);
         if (!shadowIntersect.isHit) {
             glm::vec3 pointToLight = light->position - pointHit;
             // surfaceNormal, lightDirection, lightIntensity, lightDistance, lightFalloff, viewDirection
