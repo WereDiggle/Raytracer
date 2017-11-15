@@ -4,6 +4,12 @@
 #include <cstring>
 #include <lodepng/lodepng.h>
 
+//---------------------------------------------------------------------------------------
+static double clamp(double x, double a, double b)
+{
+	return x < a ? a : (x > b ? b : x);
+}
+
 const uint Image::m_colorComponents = 3; // Red, blue, green
 
 //---------------------------------------------------------------------------------------
@@ -12,6 +18,34 @@ Image::Image()
     m_height(0),
     m_data(0)
 {
+}
+
+//---------------------------------------------------------------------------------------
+Image::Image(const std::string & filename)
+{
+	std::vector<unsigned char> image;
+
+  // Decode the image
+  unsigned error = lodepng::decode(image, m_width, m_height, filename, LCT_RGB);
+
+	size_t numElements = m_width * m_height * m_colorComponents;
+	m_data = new double[numElements];
+	memset(m_data, 0, numElements*sizeof(double));
+
+	if(error) {
+		std::cerr << "decoder error " << error << ": " << lodepng_error_text(error)
+				<< std::endl;
+	}
+
+	double color;
+	for (uint y(0); y < m_height; y++) {
+		for (uint x(0); x < m_width; x++) {
+			for (uint i(0); i < m_colorComponents; ++i) {
+        color = image[m_colorComponents * (m_width * y + x) + i]/255.0;
+				m_data[m_colorComponents * (m_width * y + x) + i] = clamp(color, 0.0, 1.0);
+			}
+		}
+	}
 }
 
 //---------------------------------------------------------------------------------------
@@ -86,12 +120,6 @@ double Image::operator()(uint x, uint y, uint i) const
 double & Image::operator()(uint x, uint y, uint i)
 {
   return m_data[m_colorComponents * (m_width * y + x) + i];
-}
-
-//---------------------------------------------------------------------------------------
-static double clamp(double x, double a, double b)
-{
-	return x < a ? a : (x > b ? b : x);
 }
 
 //---------------------------------------------------------------------------------------

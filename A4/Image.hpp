@@ -23,6 +23,9 @@ public:
 	// Copy an image.
 	Image(const Image & other);
 
+	// Construct an image from a given png file
+	Image(const std::string & filename);
+
 	~Image();
 
 	// Copy the data from one image to another.

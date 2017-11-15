@@ -28,7 +28,7 @@ glm::vec3 Intersect::getLighting(const std::list<Light *> & lights, SceneNode * 
         if (!shadowIntersect.isHit) {
             glm::vec3 pointToLight = light->position - pointHit;
             // surfaceNormal, lightDirection, lightIntensity, lightDistance, lightFalloff, viewDirection
-            totalLighting += material->getLighting(glm::normalize(normalHit), glm::normalize(pointToLight), light->colour, glm::length(pointToLight), light->falloff, -ray.direction);
+            totalLighting += material->getLighting(glm::normalize(normalHit), glm::normalize(pointToLight), light->colour, glm::length(pointToLight), light->falloff, -ray.direction, textureU, textureV);
         }
     }
 

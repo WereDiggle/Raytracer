@@ -158,6 +158,7 @@ void A4_Render(
 
 					// Lighting Calculations
 					if (primRayIntersect.isHit && primRayIntersect.material != nullptr) {
+
 						// Ambient light
 						useBackground = false;
 						glm::vec3 matColour = primRayIntersect.material->getColour();

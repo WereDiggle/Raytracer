@@ -8,6 +8,7 @@ PhongMaterial::PhongMaterial(
 	: m_kd(kd)
 	, m_ks(ks)
 	, m_shininess(shininess)
+	, testTexture(Image("nonhier.png"))
 {}
 
 PhongMaterial::~PhongMaterial()
@@ -20,7 +21,15 @@ glm::vec3 PhongMaterial::getColour() {
 
 glm::vec3 PhongMaterial::getLighting(const glm::vec3 & surfaceNormal, 
 									 const glm::vec3 & lightDirection, const glm::vec3 & lightIntensity, double lightDistance, double * lightFalloff,
-									 const glm::vec3 & viewDirection) {
+									 const glm::vec3 & viewDirection,
+									 double textureU, double textureV) {
+
+	// TODO: generalize, we know that the dimensions of the image are 512 by 512 in this case
+
+	int u = 256 * textureU;
+	int v = 256 * (1.0 - textureV);
+
+	glm::vec3 textureColour = glm::vec3(testTexture(u, v, 0), testTexture(u, v, 1), testTexture(u, v, 2));
 
 	double lightSurfaceDot = glm::dot(lightDirection, surfaceNormal);
 
@@ -33,9 +42,14 @@ glm::vec3 PhongMaterial::getLighting(const glm::vec3 & surfaceNormal,
 
 	double specularFactor = (glm::pow(glm::dot(reflectDirection, viewDirection), m_shininess))/lightSurfaceDot;
 
+	/*
 	glm::vec3 phongStuff = glm::vec3(m_kd.r + m_ks.r * specularFactor, 
 									 m_kd.g + m_ks.g * specularFactor, 
 									 m_kd.b + m_ks.b * specularFactor);
+									 */
+	glm::vec3 phongStuff = glm::vec3(textureColour.r + m_ks.r * specularFactor, 
+									 textureColour.g + m_ks.g * specularFactor, 
+									 textureColour.b + m_ks.b * specularFactor);
 
 	double falloffFactor = lightSurfaceDot/(lightFalloff[0] + lightFalloff[1]*lightDistance + lightFalloff[2]*lightDistance*lightDistance);
 
@@ -50,7 +64,10 @@ glm::vec3 PhongMaterial::getLighting(const glm::vec3 & surfaceNormal,
 	//std::cout << "lightIntensity: " << glm::to_string(lightIntensity) << std::endl;
 	//std::cout << "lightDistance: " << lightDistance << std::endl << std::endl;
 
+	/*
 	return glm::vec3(phongStuff.r * lightIntensity.r * falloffFactor, 
 					 phongStuff.g * lightIntensity.g * falloffFactor,
 					 phongStuff.b * lightIntensity.b * falloffFactor);
+					 */
+	return textureColour;
 }

@@ -92,7 +92,7 @@ red_light = gr.light({0, 800, 400.0}, {1, 0, 0}, {1, 0, 0})
 green_light = gr.light({400.0, -400.0, 400.0}, {0, 1, 0}, {1, 0.0, 0})
 blue_light = gr.light({-400, -400, 400.0}, {0, 0, 1}, {1, 0.0, 0})
 
-white_light = gr.light({0, 200, 0}, {1, 1, 1}, {1, 0, 0})
+white_light = gr.light({0, 200, -200}, {1, 1, 1}, {1, 0, 0})
 
 ambientLight = {0.3, 0.3, 0.3}
 
