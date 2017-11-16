@@ -2,10 +2,12 @@
 
 //---------------------------------------------------------------------------------------
 GeometryNode::GeometryNode(
-	const std::string & name, Primitive *prim, Material *mat )
+	const std::string & name, Primitive *prim, Material *mat, Texture *bitmap, Texture *bumpmap )
 	: SceneNode( name )
 	, m_material( mat )
 	, m_primitive( prim )
+	, m_bitmap( bitmap )
+	, m_bumpmap( bumpmap )
 {
 	m_nodeType = NodeType::GeometryNode;
 }
@@ -26,9 +28,19 @@ void GeometryNode::setMaterial( Material *mat )
 	m_material = mat;
 }
 
+void GeometryNode::setBitmap( Texture * bitmap ) {
+	m_bitmap = bitmap;
+}
+
+void GeometryNode::setBumpmap( Texture * bumpmap ) {
+	m_bumpmap = bumpmap;
+}
+
 Intersect GeometryNode::checkIntersection( const Ray & ray )
 {
 	Intersect intersect = m_primitive->checkIntersection(ray);
 	intersect.material = m_material;
+	intersect.bitmap = m_bitmap;
+	intersect.bumpmap = m_bumpmap;
 	return intersect;
 }

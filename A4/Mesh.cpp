@@ -121,7 +121,8 @@ Intersect Mesh::checkIntersection(const Ray & ray) {
 #else
 	Intersect closestIntersect = Intersect();
 
-	if (boundingBox.checkIntersection(ray).isHit) {
+	Intersect boundingIntersect = boundingBox.checkIntersection(ray);
+	if (boundingIntersect.isHit) {
 
 		// Iterate over all the triangles to find the closest one hit
 		closestIntersect = Intersect(ray, false, std::numeric_limits<double>::max(), glm::vec3(0));
@@ -131,6 +132,10 @@ Intersect Mesh::checkIntersection(const Ray & ray) {
 				closestIntersect = curIntersect;
 			}
 		}
+
+		// This is gonna look weird, but just use the bounding box uv
+		closestIntersect.textureU = boundingIntersect.textureU;
+		closestIntersect.textureV = boundingIntersect.textureV;
 	}
 
 	return closestIntersect;

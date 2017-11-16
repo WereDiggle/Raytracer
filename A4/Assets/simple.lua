@@ -8,6 +8,8 @@ mat5 = gr.material({0.0, 0.0, 1.0}, {0.5, 0.7, 0.5}, 10)
 
 whiteMat = gr.material({1,1,1}, {0.5,0.5,0.5}, 10)
 
+testTex = gr.bitmap("nonhier.png",2.0,2.0);
+
 scene_root = gr.node('root')
 
 -- testing phong lighting
@@ -71,12 +73,13 @@ whiteCube:translate(-100, -100, 400)
 scene_root:add_child(whiteCube)
 whiteCube:set_material(whiteMat)
 
-bluePlane = gr.plane('testPlane')
+bluePlane = gr.sphere('testPlane')
 bluePlane:scale(100,100,100)
-bluePlane:rotate('y', 180)
+--bluePlane:rotate('y', 180)
 bluePlane:translate(0,0,0)
 scene_root:add_child(bluePlane)
-bluePlane:set_material(mat5)
+bluePlane:set_material(whiteMat)
+bluePlane:set_bitmap(testTex)
 
 -- steldodec = gr.mesh( 'dodec', 'mickey.obj' )
 -- steldodec:rotate('x', '-90')
@@ -92,7 +95,7 @@ red_light = gr.light({0, 800, 400.0}, {1, 0, 0}, {1, 0, 0})
 green_light = gr.light({400.0, -400.0, 400.0}, {0, 1, 0}, {1, 0.0, 0})
 blue_light = gr.light({-400, -400, 400.0}, {0, 0, 1}, {1, 0.0, 0})
 
-white_light = gr.light({0, 200, -200}, {1, 1, 1}, {1, 0, 0})
+white_light = gr.light({0, 0, -300}, {1, 1, 1}, {1, 0, 0})
 
 ambientLight = {0.3, 0.3, 0.3}
 

@@ -15,26 +15,37 @@ Intersect::Intersect(const Ray & ray, bool isHit, double distanceHit, const glm:
 Intersect::Intersect()
     : ray(ray), material(nullptr), isHit(false), distanceHit(-1.0), normalHit(glm::vec3(0)), pointHit(glm::vec3(0)), textureU(0), textureV(0) {}
 
-glm::vec3 Intersect::getLighting(const std::list<Light *> & lights, SceneNode * root) {
+glm::vec3 Intersect::getLighting(const glm::vec3 & ambient, const std::list<Light *> & lights, SceneNode * root) {
     if (material == nullptr || !isHit) {
         return glm::vec3(0);
     }
 
+    // TODO: not entirely sure about this for ambient light
+    glm::vec3 matColour = material->getColour();
+    glm::vec3 totalLighting = glm::vec3(ambient.r * matColour.r, 
+                                        ambient.g * matColour.g, 
+                                        ambient.b * matColour.b);
+
     // Add each individual light contribution
-    glm::vec3 totalLighting = glm::vec3(0);
     for (Light * light : lights) {
         Ray shadowRay = Ray(pointHit, light->position);
         Intersect shadowIntersect = root->castShadowRay(shadowRay);
         if (!shadowIntersect.isHit) {
             glm::vec3 pointToLight = light->position - pointHit;
-            // surfaceNormal, lightDirection, lightIntensity, lightDistance, lightFalloff, viewDirection
-            totalLighting += material->getLighting(glm::normalize(normalHit), glm::normalize(pointToLight), light->colour, glm::length(pointToLight), light->falloff, -ray.direction, textureU, textureV);
+            // surfaceNormal, lightDirection, lightIntensity, lightDistance, lightFalloff, viewDirection, u, v, bitmap, and bumpmap textures
+            totalLighting += material->getLighting(glm::normalize(normalHit), 
+                                                   glm::normalize(pointToLight), light->colour, glm::length(pointToLight), light->falloff, 
+                                                   -ray.direction, 
+                                                   textureU, textureV, bitmap, bumpmap);
         }
     }
 
-    return totalLighting;
+    glm::vec3 texColour = bitmap->getColour(textureU, textureV);
+    glm::vec3 totalColour = glm::vec3(texColour.r * totalLighting.r,
+                                      texColour.g * totalLighting.g,
+                                      texColour.b * totalLighting.b);
 
-
+    return totalColour;
 }
 
 Intersect Intersect::transformIntersect(const glm::mat4 & m) {
@@ -48,6 +59,8 @@ Intersect Intersect::transformIntersect(const glm::mat4 & m) {
     newIntersect.material = material;
     newIntersect.textureU = textureU;
     newIntersect.textureV = textureV;
+    newIntersect.bitmap = bitmap;
+    newIntersect.bumpmap = bumpmap;
 
     return newIntersect;
 }

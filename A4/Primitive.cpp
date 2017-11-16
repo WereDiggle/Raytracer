@@ -53,10 +53,21 @@ Intersect Sphere::checkIntersection(const Ray & ray) {
         distanceHit = roots[0];
     }
 
+
     if (distanceHit > ray.minDistance) {
         glm::vec3 pointHit = ray.pointAtDistance(distanceHit);
 
-        return Intersect(ray, true, distanceHit, glm::normalize(ray.pointAtDistance(distanceHit)));
+        double azimuth = glm::atan(-pointHit.z, pointHit.x);
+        double elevation = glm::asin(glm::clamp(pointHit.y, -1.0f, 1.0f));
+
+        double u = (azimuth/2.0)/glm::pi<double>() + 0.5;
+        double v = elevation/glm::pi<double>() + 0.5;
+
+        Intersect retIntersect = Intersect(ray, true, distanceHit, glm::normalize(ray.pointAtDistance(distanceHit)));
+        retIntersect.textureU = u;
+        retIntersect.textureV = v;
+
+        return retIntersect;
     }
     else {
         return Intersect();
@@ -133,16 +144,24 @@ Intersect Cube::checkIntersection(const Ray & ray) {
             // Intersects face if intersect point within bounds
             glm::vec3 pointHit = ray.pointAtDistance(distanceHit);
 
+            double u, v = 0;
+
             // for each axis that we need to check
+            // Two of these will be true
             bool withinBounds = true;
             if (withinBounds && axisNormals[i].x == 0) {
                 withinBounds = withinBounds && pointHit.x >= 0 && pointHit.x <= 1.0;
+                u = pointHit.z;
+                v = pointHit.x;
             }
             if (withinBounds && axisNormals[i].y == 0) {
                 withinBounds = withinBounds && pointHit.y >= 0 && pointHit.y <= 1.0;
+                u = pointHit.x;
+                v = pointHit.y;
             }
             if (withinBounds && axisNormals[i].z == 0) {
                 withinBounds = withinBounds && pointHit.z >= 0 && pointHit.z <= 1.0;
+                u = pointHit.z;
             }
 
             planesHit++;
@@ -151,11 +170,11 @@ Intersect Cube::checkIntersection(const Ray & ray) {
             if (withinBounds) {
                 // since we're using normals, the ray should only hit one face
                 closestIntersect = Intersect(ray, distanceHit > ray.minDistance, distanceHit, axisNormals[i]);
+                closestIntersect.textureU = u;
+                closestIntersect.textureV = v;
                 break;
             }
-
         }
-    
     }
     return closestIntersect;
 }
@@ -228,16 +247,26 @@ Intersect NonhierBox::checkIntersection(const Ray & ray) {
             // Intersects face if intersect point within bounds
             glm::vec3 pointHit = ray.pointAtDistance(distanceHit);
 
+            double u, v = 0;
+            double xTexture = (pointHit.x - m_pos.x)/m_dimensions.x;
+            double yTexture = (pointHit.y - m_pos.y)/m_dimensions.y;
+            double zTexture = (pointHit.z - m_pos.z)/m_dimensions.z;
+
             // for each axis that we need to check
             bool withinBounds = true;
             if (withinBounds && axisNormals[i].x == 0) {
                 withinBounds = withinBounds && pointHit.x >= m_pos.x && pointHit.x <= m_pos.x + m_dimensions.x;
+                u = zTexture;
+                v = xTexture;
             }
             if (withinBounds && axisNormals[i].y == 0) {
                 withinBounds = withinBounds && pointHit.y >= m_pos.y && pointHit.y <= m_pos.y + m_dimensions.y;
+                u = xTexture;
+                v = yTexture;
             }
             if (withinBounds && axisNormals[i].z == 0) {
                 withinBounds = withinBounds && pointHit.z >= m_pos.z && pointHit.z <= m_pos.z + m_dimensions.z;
+                u = zTexture;
             }
 
             planesHit++;
@@ -246,6 +275,8 @@ Intersect NonhierBox::checkIntersection(const Ray & ray) {
             if (withinBounds) {
                 // since we're using axisNormals, the ray should only hit one face
                 closestIntersect = Intersect(ray, distanceHit > ray.minDistance, distanceHit, axisNormals[i]);
+                closestIntersect.textureU = u;
+                closestIntersect.textureV = v;
                 break;
             }
 

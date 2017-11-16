@@ -51,6 +51,7 @@
 #include "GeometryNode.hpp"
 #include "JointNode.hpp"
 #include "Primitive.hpp"
+#include "Texture.hpp"
 #include "Material.hpp"
 #include "PhongMaterial.hpp"
 #include "A4.hpp"
@@ -86,6 +87,12 @@ static MeshMap mesh_map;
 // allocated by Lua to represent nodes.
 struct gr_node_ud {
   SceneNode* node;
+};
+
+// The "userdata" type for a texture. Objects of this type will be
+// allocated by Lua to represent textures.
+struct gr_texture_ud {
+  Texture* texture;
 };
 
 // The "userdata" type for a material. Objects of this type will be
@@ -368,6 +375,51 @@ int gr_render_cmd(lua_State* L)
 	return 0;
 }
 
+// Create a bumpmap texture
+extern "C"
+int gr_bumpmap_texture_cmd(lua_State* L)
+{
+  GRLUA_DEBUG_CALL;
+  
+  gr_texture_ud* data = (gr_texture_ud*)lua_newuserdata(L, sizeof(gr_texture_ud));
+  data->texture = 0;
+
+	const char* obj_fname = luaL_checkstring(L, 1);
+  std::string sfname( obj_fname );
+  double tileU = luaL_checknumber(L, 2);
+  double tileV = luaL_checknumber(L, 3);
+  
+  data->texture = new BumpmapTexture(sfname, tileU, tileV);
+
+  luaL_newmetatable(L, "gr.texture");
+  lua_setmetatable(L, -2);
+  
+  return 1;
+}
+
+// Create a bitmap texture
+extern "C"
+int gr_bitmap_texture_cmd(lua_State* L)
+{
+  GRLUA_DEBUG_CALL;
+  
+  gr_texture_ud* data = (gr_texture_ud*)lua_newuserdata(L, sizeof(gr_texture_ud));
+  data->texture = 0;
+
+  const char* obj_fname = luaL_checkstring(L, 1);
+  std::string sfname( obj_fname );
+
+  double tileU = luaL_checknumber(L, 2);
+  double tileV = luaL_checknumber(L, 3);
+  
+  data->texture = new BitmapTexture(sfname, tileU, tileV);
+
+  luaL_newmetatable(L, "gr.texture");
+  lua_setmetatable(L, -2);
+  
+  return 1;
+}
+
 // Create a material
 extern "C"
 int gr_material_cmd(lua_State* L)
@@ -433,6 +485,51 @@ int gr_node_set_material_cmd(lua_State* L)
   Material* material = matdata->material;
 
   self->setMaterial(material);
+
+  return 0;
+}
+
+// Set a material's bitmap texture
+extern "C"
+int gr_node_set_bumpmap_texture_cmd(lua_State* L)
+{
+  GRLUA_DEBUG_CALL;
+  
+  gr_node_ud* selfdata = (gr_node_ud*)luaL_checkudata(L, 1, "gr.node");
+  luaL_argcheck(L, selfdata != 0, 1, "Node expected");
+
+  GeometryNode* self = dynamic_cast<GeometryNode*>(selfdata->node);
+
+  luaL_argcheck(L, self != 0, 1, "Geometry Node expected");
+  
+  gr_texture_ud* texdata = (gr_texture_ud*)luaL_checkudata(L, 2, "gr.texture");
+  luaL_argcheck(L, texdata != 0, 2, "Texture expected");
+
+  Texture* texture = texdata->texture;
+
+  self->setBumpmap(texture);
+
+  return 0;
+}
+
+// Set a material's bitmap texture
+extern "C"
+int gr_node_set_bitmap_texture_cmd(lua_State* L)
+{
+  GRLUA_DEBUG_CALL;
+  
+  gr_node_ud* selfdata = (gr_node_ud*)luaL_checkudata(L, 1, "gr.node");
+  luaL_argcheck(L, selfdata != 0, 1, "Node expected");
+
+  GeometryNode* self = dynamic_cast<GeometryNode*>(selfdata->node);
+  luaL_argcheck(L, self != 0, 1, "Geometry Node expected");
+  
+  gr_texture_ud* texdata = (gr_texture_ud*)luaL_checkudata(L, 2, "gr.texture");
+  luaL_argcheck(L, texdata != 0, 2, "Texture expected");
+
+  Texture* texture = texdata->texture;
+
+  self->setBitmap(texture);
 
   return 0;
 }
@@ -545,6 +642,8 @@ static const luaL_Reg grlib_functions[] = {
   {"render", gr_render_cmd},
   // New for project
   {"plane", gr_plane_cmd},
+  {"bitmap", gr_bitmap_texture_cmd},
+  {"bumpmap", gr_bumpmap_texture_cmd},
   {0, 0}
 };
 
@@ -564,6 +663,8 @@ static const luaL_Reg grlib_node_methods[] = {
   {"__gc", gr_node_gc_cmd},
   {"add_child", gr_node_add_child_cmd},
   {"set_material", gr_node_set_material_cmd},
+  {"set_bitmap", gr_node_set_bitmap_texture_cmd},
+  {"set_bumpmap", gr_node_set_bumpmap_texture_cmd},
   {"scale", gr_node_scale_cmd},
   {"rotate", gr_node_rotate_cmd},
   {"translate", gr_node_translate_cmd},

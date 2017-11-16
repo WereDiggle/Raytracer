@@ -161,10 +161,8 @@ void A4_Render(
 
 						// Ambient light
 						useBackground = false;
-						glm::vec3 matColour = primRayIntersect.material->getColour();
-						glm::vec3 totalLighting = glm::vec3(ambient.r * matColour.r, ambient.g * matColour.g, ambient.b * matColour.b);
 
-						totalLighting += primRayIntersect.getLighting(lights, root);
+						glm::vec3 totalLighting = primRayIntersect.getLighting(ambient, lights, root);
 
 						// Store the sampled pixels
 						sampledPixels[ys*SUPER_SAMPLING+xs] = totalLighting;
