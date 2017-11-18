@@ -68,7 +68,7 @@ BumpmapTexture::BumpmapTexture()
 }
 
 BumpmapTexture::BumpmapTexture(const std::string& filename, double tileU, double tileV, double depth)
-    : tileU(tileU), tileV(tileV), data(Image(filename))
+    : tileU(tileU), tileV(tileV), depth(depth), data(Image(filename))
 {
 }
 
@@ -129,9 +129,11 @@ glm::vec3 BumpmapTexture::getNormal(const glm::vec3 & normal, const glm::vec3 & 
     bumpNormal = glm::normalize(glm::cross(AC, AB));
 
     // Combine the bumpNormal with the given normal
-	glm::vec3 side = glm::normalize(glm::cross(normal, upV));
-    glm::vec3 up = glm::normalize(glm::cross(side, normal));
-    
+	glm::vec3 side = glm::normalize(glm::cross(upV, normal));
+    glm::vec3 up = glm::normalize(glm::cross(normal, side));
+ 
+    //std::cout << "side: " << glm::to_string(side) << ", up: " << glm::to_string(up) << std::endl;
+   
 	glm::mat4 bumpToWorldMat = glm::mat4(0);
     // Remeber, it's [col][row]
     bumpToWorldMat[3][3] = 1.0f;

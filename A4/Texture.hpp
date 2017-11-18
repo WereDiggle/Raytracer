@@ -52,7 +52,7 @@ class BumpmapTexture : public Texture {
     double tileU;
     double tileV;
 
-    double depth = 10.0;
+    double depth;
 
     Image data;
 
