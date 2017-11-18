@@ -388,8 +388,9 @@ int gr_bumpmap_texture_cmd(lua_State* L)
   std::string sfname( obj_fname );
   double tileU = luaL_checknumber(L, 2);
   double tileV = luaL_checknumber(L, 3);
+  double depth = luaL_checknumber(L, 4);
   
-  data->texture = new BumpmapTexture(sfname, tileU, tileV);
+  data->texture = new BumpmapTexture(sfname, tileU, tileV, depth);
 
   luaL_newmetatable(L, "gr.texture");
   lua_setmetatable(L, -2);

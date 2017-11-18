@@ -8,7 +8,13 @@ mat5 = gr.material({0.0, 0.0, 1.0}, {0.5, 0.7, 0.5}, 10)
 
 whiteMat = gr.material({1,1,1}, {0.5,0.5,0.5}, 10)
 
-testTex = gr.bitmap("nonhier.png",2.0,2.0);
+grass = gr.bitmap("grass.png",2.0,2.0)
+grassBumps = gr.bumpmap("grass.png",2.0,2.0, 10)
+bumps = gr.bumpmap("testBumps.png", 1.0, 1.0, 10)
+bumps2 = gr.bumpmap("testBumps2.png", 1.0, 1.0, 10)
+bumps3 = gr.bumpmap("testBumps3.png", 1.0, 1.0, 10)
+bumps4 = gr.bumpmap("testBumps4.png", 1.0, 1.0, 10)
+bumps5 = gr.bumpmap("testBumps5.png", 1.0, 1.0, 10)
 
 scene_root = gr.node('root')
 
@@ -21,9 +27,7 @@ scene_root = gr.node('root')
 -- s1 = gr.nh_sphere('s1', {0, 0, 0}, 25)
 -- scene_root:add_child(s1)
 -- s1:set_material(mat1)
-
--- Test box
--- phongBox = gr.nh_box('phongBox', {-50, -50, -50}, 100);
+-- Test box -- phongBox = gr.nh_box('phongBox', {-50, -50, -50}, 100);
 -- scene_root:add_child(phongBox)
 -- phongBox:set_material(whiteMat)
 
@@ -33,76 +37,55 @@ scene_root = gr.node('root')
 -- triangle:set_material(whiteMat)
 
 -- Test cube 
-cube = gr.mesh('cube', 'cube.obj')
-cube:scale(100, 100, 100)
-cube:rotate('z', 45)
-cube:translate(200, 100, 300)
-cube:set_material(mat1)
-scene_root:add_child(cube)
--- -- 
--- -- gray sphere, first
--- -- s2 = gr.nh_sphere('s2', {100, 0, 0}, 25)
--- -- scene_root:add_child(s2)
--- -- s2:set_material(mat2)
--- -- 
--- -- orangy sphere, fifth
--- s3 = gr.nh_sphere('s3', {0, -1200, 0}, 1000)
--- scene_root:add_child(s3)
--- s3:set_material(mat3)
--- -- 
--- -- red sphere, third
--- s4 = gr.nh_sphere('s4', {100, 50, 0}, 50)
--- s3:add_child(s4)
--- s4:set_material(mat4)
--- 
+--cube = gr.mesh('cube', 'cube.obj')
+--cube:scale(100, 100, 100)
+--cube:rotate('z', 45)
+--cube:translate(200, 100, 300)
+--cube:set_material(mat1)
+--cube:set_bitmap(grass)
+--scene_root:add_child(cube)
+--
+---- red box 
+--redBox = gr.nh_box('s4', {0, 0, 0}, 100)
+--redBox:scale(2, 2, 1)
+--redBox:rotate('z', 45)
+--redBox:rotate('y', 45)
+--redBox:translate(-100, 150, 200)
+--scene_root:add_child(redBox)
+--redBox:set_material(mat4)
+--redBox:set_bitmap(grass)
+--
+--whiteCube = gr.cube('s4')
+--whiteCube:scale(200, 200, 200)
+--whiteCube:rotate('z', 45)
+--whiteCube:rotate('y', 45)
+--whiteCube:translate(-100, -100, 400)
+--scene_root:add_child(whiteCube)
+--whiteCube:set_material(whiteMat)
+--whiteCube:set_bitmap(grass)
 
--- red box 
-redBox = gr.nh_box('s4', {0, 0, 0}, 100)
-redBox:scale(2, 2, 1)
-redBox:rotate('z', 45)
-redBox:rotate('y', 45)
-redBox:translate(-100, 150, 200)
-scene_root:add_child(redBox)
-redBox:set_material(mat4)
-
-whiteCube = gr.cube('s4')
-whiteCube:scale(200, 200, 200)
-whiteCube:rotate('z', 45)
-whiteCube:rotate('y', 45)
-whiteCube:translate(-100, -100, 400)
-scene_root:add_child(whiteCube)
-whiteCube:set_material(whiteMat)
-
-bluePlane = gr.sphere('testPlane')
+bluePlane = gr.plane('testPlane')
 bluePlane:scale(100,100,100)
 --bluePlane:rotate('y', 180)
-bluePlane:translate(0,0,0)
+--bluePlane:rotate('z', 180)
+bluePlane:translate(-50,-50,0)
 scene_root:add_child(bluePlane)
 bluePlane:set_material(whiteMat)
-bluePlane:set_bitmap(testTex)
-
--- steldodec = gr.mesh( 'dodec', 'mickey.obj' )
--- steldodec:rotate('x', '-90')
--- steldodec:set_material(mat3)
--- scene_root:add_child(steldodec)
--- 
--- -- blue sphere, second
--- s5 = gr.nh_sphere('s5', {100, 0, -100}, 25)
--- scene_root:add_child(s5)
--- s5:set_material(mat5)
+bluePlane:set_bumpmap(bumps)
+--bluePlane:set_bitmap(grass)
 
 red_light = gr.light({0, 800, 400.0}, {1, 0, 0}, {1, 0, 0})
 green_light = gr.light({400.0, -400.0, 400.0}, {0, 1, 0}, {1, 0.0, 0})
 blue_light = gr.light({-400, -400, 400.0}, {0, 0, 1}, {1, 0.0, 0})
 
-white_light = gr.light({0, 0, -300}, {1, 1, 1}, {1, 0, 0})
+white_light = gr.light({0, 200, 100}, {1, 1, 1}, {1, 0, 0})
 
 ambientLight = {0.3, 0.3, 0.3}
 
 lights = {white_light}
 
 gr.render(scene_root, 'simple.png', 512, 512,
-	  {0, 0, -300}, {0, 0, 0}, {0, 1, 0}, 60,
+	  {0, 0, 200}, {0, 0, 0}, {0, 1, 0}, 60,
 	  ambientLight, lights)
 
 --gr.render(scene_root, 'simple_back.png', 512, 512,

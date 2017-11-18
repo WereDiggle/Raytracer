@@ -26,6 +26,10 @@ Intersect Primitive::checkIntersection(const Ray & ray) {
     return Intersect();
 }
 
+glm::vec3 Primitive::getUpV(double u, double v) {
+    return glm::vec3(0, 1, 0);
+}
+
 /*
 Sphere
 #######################

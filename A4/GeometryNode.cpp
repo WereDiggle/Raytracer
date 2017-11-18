@@ -42,5 +42,13 @@ Intersect GeometryNode::checkIntersection( const Ray & ray )
 	intersect.material = m_material;
 	intersect.bitmap = m_bitmap;
 	intersect.bumpmap = m_bumpmap;
+
+	// Modify the normal Hit with the bumpmap
+	if (intersect.isHit) {
+		//std::cout << "old normal: " << glm::to_string(intersect.normalHit);
+		intersect.normalHit = m_bumpmap->getNormal(intersect.normalHit, m_primitive->getUpV(intersect.textureU, intersect.textureU), intersect.textureU, intersect.textureV);
+		//std::cout << ", new normal: " << glm::to_string(intersect.normalHit) << std::endl;
+	}
+
 	return intersect;
 }

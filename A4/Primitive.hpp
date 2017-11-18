@@ -13,6 +13,7 @@ protected:
 public:
   virtual ~Primitive();
   virtual Intersect checkIntersection(const Ray & ray);
+  virtual glm::vec3 getUpV(double u, double v);
 };
 
 class Sphere : public Primitive {

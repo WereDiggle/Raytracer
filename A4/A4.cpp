@@ -65,8 +65,6 @@ void A4_Render(
 
 	double xFactor = aspectRatio * fovFactor;
 
-	// TODO: Assume camera pointing directly down z axis for now
-	// TODO: get side vec by cross product of up vector and direction of view vector
 	glm::vec3 viewDirection = view - eye;
 	glm::vec3 side = glm::cross(viewDirection, up);
 	glm::vec3 newUp = glm::cross(side, viewDirection);
@@ -79,13 +77,13 @@ void A4_Render(
 	std::cout << "newUp: " << glm::to_string(newUp) << std::endl;
 	std::cout << "viewDirection: " << glm::to_string(viewDirection) << std::endl;
 
-	// TODO: construct a camera-to-world transformation matrix, so that the camera can look from any angle
-	glm::mat4 cameraToWorldMat = glm::mat4(1);
+	glm::mat4 cameraToWorldMat = glm::mat4(0);
 	// Remeber, it's [col][row]
 	// Set translation 
 	cameraToWorldMat[3][0] = eye.x;
 	cameraToWorldMat[3][1] = eye.y;
 	cameraToWorldMat[3][2] = eye.z;
+	cameraToWorldMat[3][3] = 1.0f;
 
 	// Set rotation
 	// side
