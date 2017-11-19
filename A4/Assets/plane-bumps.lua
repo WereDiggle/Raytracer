@@ -1,5 +1,3 @@
--- A simple scene with five spheres
-
 mat1 = gr.material({0.7, 1.0, 0.7}, {0.5, 0.7, 0.5}, 10)
 mat2 = gr.material({0.5, 0.5, 0.5}, {0.5, 0.7, 0.5}, 10)
 mat3 = gr.material({1.0, 0.6, 0.1}, {0.5, 0.7, 0.5}, 10)
@@ -8,7 +6,7 @@ mat5 = gr.material({0.0, 0.0, 1.0}, {0.5, 0.7, 0.5}, 10)
 
 whiteMat = gr.material({1,1,1}, {0.5,0.5,0.5}, 10)
 
---grass = gr.bitmap("grass.png",2.0,2.0)
+grass = gr.bitmap("grass.png",2.0,2.0)
 grassBumps = gr.bumpmap("grass.png",2.0,2.0, 10)
 bumps = gr.bumpmap("testBumps.png", 1.0, 1.0, 10)
 bumps2 = gr.bumpmap("testBumps2.png", 1.0, 1.0, 10)
@@ -42,6 +40,7 @@ bottom_plane:rotate('x', -90)
 bottom_plane:translate(0,-100,0)
 bottom_plane:set_material(whiteMat)
 bottom_plane:set_bumpmap(bumps3)
+bottom_plane:set_bitmap(grass)
 scene_root:add_child(bottom_plane)
 
 left_plane = gr.plane('left_plane')
@@ -73,6 +72,6 @@ ambientLight = {0, 0, 0}
 
 lights = {white_light, white_light2}
 
-gr.render(scene_root, 'plane-bumps.png', 192, 108,
+gr.render(scene_root, 'plane-bumps.png', 1920, 1080,
 	  {0, 99, 200}, {0, -100, -100}, {0, 1, 0}, 60,
 	  ambientLight, lights)

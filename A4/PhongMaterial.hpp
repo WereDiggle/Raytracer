@@ -9,9 +9,9 @@ class PhongMaterial : public Material {
 
 public:
 
-  PhongMaterial(const glm::vec3& kd, const glm::vec3& ks, double shininess);
+  PhongMaterial(const glm::vec3& kd, const glm::vec3& ks, double shininess, double reflection = 0);
   glm::vec3 getColour();
-  glm::vec3 getColour(double u, double v);
+  double getReflection();
   glm::vec3 getLighting(const glm::vec3 & surfaceNormal, 
                         const glm::vec3 & lightDirection, const glm::vec3 & lightIntensity, double lightDistance, double * lightFalloff, 
                         const glm::vec3 & viewDirection,
@@ -23,5 +23,6 @@ private:
   glm::vec3 m_ks;
 
   double m_shininess;
+  double m_reflection;
   Texture * testTexture;
 };

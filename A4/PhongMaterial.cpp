@@ -4,35 +4,29 @@
 #include "PhongMaterial.hpp"
 
 PhongMaterial::PhongMaterial(
-	const glm::vec3& kd, const glm::vec3& ks, double shininess )
+	const glm::vec3& kd, const glm::vec3& ks, double shininess, double reflection)
 	: m_kd(kd)
 	, m_ks(ks)
 	, m_shininess(shininess)
-	, testTexture(new BitmapTexture("grass.png", 2.0, 2.0))
+	, m_reflection(reflection)
 {}
 
 PhongMaterial::~PhongMaterial()
 {
-	delete testTexture;
 }
 
 glm::vec3 PhongMaterial::getColour() {
 	return m_kd;
 }
 
-// TODO: remove, don't use this
-glm::vec3 PhongMaterial::getColour(double u, double v) {
-	glm::vec3 textureColour = testTexture->getColour(u, v);
-	return glm::vec3(textureColour.r * m_kd.r, textureColour.g * m_kd.g, textureColour.b * m_kd.b);
+double PhongMaterial::getReflection() {
+	return m_reflection;
 }
 
-// TODO: remove all the texture stuff, do that stuff in the Intersect class.
 glm::vec3 PhongMaterial::getLighting(const glm::vec3 & surfaceNormal, 
 									 const glm::vec3 & lightDirection, const glm::vec3 & lightIntensity, double lightDistance, double * lightFalloff,
 									 const glm::vec3 & viewDirection,
 									 double textureU, double textureV, Texture * bitmap, Texture * bumpmap) {
-
-	//glm::vec3 textureColour = testTexture->getColour(textureU, textureV);
 
 	double lightSurfaceDot = glm::dot(lightDirection, surfaceNormal);
 

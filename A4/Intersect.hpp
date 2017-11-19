@@ -19,7 +19,9 @@ public:
     // used for when the intersection doesn't hit anything
     Intersect();
 
-    glm::vec3 getLighting(const glm::vec3 & ambient, const std::list<Light *> & lights, SceneNode * root);
+    Ray getReflectionRay();
+
+    glm::vec3 getLighting(const glm::vec3 & ambient, const std::list<Light *> & lights, SceneNode * root, int depth = 0);
 
     Intersect transformIntersect(const glm::mat4 & m);
     
