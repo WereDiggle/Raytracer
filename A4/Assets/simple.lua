@@ -8,7 +8,7 @@ mat5 = gr.material({0.0, 0.0, 1.0}, {0.5, 0.7, 0.5}, 10)
 
 whiteMat = gr.material({1,1,1}, {0.5,0.5,0.5}, 10)
 
-grass = gr.bitmap("grass.png",2.0,2.0)
+--grass = gr.bitmap("grass.png",2.0,2.0)
 grassBumps = gr.bumpmap("grass.png",2.0,2.0, 10)
 bumps = gr.bumpmap("testBumps.png", 1.0, 1.0, 10)
 bumps2 = gr.bumpmap("testBumps2.png", 1.0, 1.0, 10)
@@ -88,50 +88,50 @@ gr.render(scene_root, 'simple01.png', 512, 512,
 	  {0, 0, 200}, {0, 0, 0}, {0, 1, 0}, 60,
 	  ambientLight, lights)
 
-bluePlane:rotate('z', 15)
-
-gr.render(scene_root, 'simple02.png', 512, 512,
-	  {0, 0, 200}, {0, 0, 0}, {0, 1, 0}, 60,
-	  ambientLight, lights)
-
-bluePlane:rotate('z', 15)
-
-gr.render(scene_root, 'simple03.png', 512, 512,
-	  {0, 0, 200}, {0, 0, 0}, {0, 1, 0}, 60,
-	  ambientLight, lights)
-
-bluePlane:rotate('z', 15)
-
-gr.render(scene_root, 'simple04.png', 512, 512,
-	  {0, 0, 200}, {0, 0, 0}, {0, 1, 0}, 60,
-	  ambientLight, lights)
-
-bluePlane:rotate('z', 15)
-
-gr.render(scene_root, 'simple05.png', 512, 512,
-	  {0, 0, 200}, {0, 0, 0}, {0, 1, 0}, 60,
-	  ambientLight, lights)
-
-bluePlane:rotate('z', 15)
-
-gr.render(scene_root, 'simple06.png', 512, 512,
-	  {0, 0, 200}, {0, 0, 0}, {0, 1, 0}, 60,
-	  ambientLight, lights)
-
-bluePlane:rotate('z', 15)
-
-gr.render(scene_root, 'simple07.png', 512, 512,
-	  {0, 0, 200}, {0, 0, 0}, {0, 1, 0}, 60,
-	  ambientLight, lights)
-
-bluePlane:rotate('z', 15)
-
-gr.render(scene_root, 'simple08.png', 512, 512,
-	  {0, 0, 200}, {0, 0, 0}, {0, 1, 0}, 60,
-	  ambientLight, lights)
-
-bluePlane:rotate('z', 15)
-
-gr.render(scene_root, 'simple09.png', 512, 512,
-	  {0, 0, 200}, {0, 0, 0}, {0, 1, 0}, 60,
-	  ambientLight, lights)
+--bluePlane:rotate('z', 15)
+--
+--gr.render(scene_root, 'simple02.png', 512, 512,
+--	  {0, 0, 200}, {0, 0, 0}, {0, 1, 0}, 60,
+--	  ambientLight, lights)
+--
+--bluePlane:rotate('z', 15)
+--
+--gr.render(scene_root, 'simple03.png', 512, 512,
+--	  {0, 0, 200}, {0, 0, 0}, {0, 1, 0}, 60,
+--	  ambientLight, lights)
+--
+--bluePlane:rotate('z', 15)
+--
+--gr.render(scene_root, 'simple04.png', 512, 512,
+--	  {0, 0, 200}, {0, 0, 0}, {0, 1, 0}, 60,
+--	  ambientLight, lights)
+--
+--bluePlane:rotate('z', 15)
+--
+--gr.render(scene_root, 'simple05.png', 512, 512,
+--	  {0, 0, 200}, {0, 0, 0}, {0, 1, 0}, 60,
+--	  ambientLight, lights)
+--
+--bluePlane:rotate('z', 15)
+--
+--gr.render(scene_root, 'simple06.png', 512, 512,
+--	  {0, 0, 200}, {0, 0, 0}, {0, 1, 0}, 60,
+--	  ambientLight, lights)
+--
+--bluePlane:rotate('z', 15)
+--
+--gr.render(scene_root, 'simple07.png', 512, 512,
+--	  {0, 0, 200}, {0, 0, 0}, {0, 1, 0}, 60,
+--	  ambientLight, lights)
+--
+--bluePlane:rotate('z', 15)
+--
+--gr.render(scene_root, 'simple08.png', 512, 512,
+--	  {0, 0, 200}, {0, 0, 0}, {0, 1, 0}, 60,
+--	  ambientLight, lights)
+--
+--bluePlane:rotate('z', 15)
+--
+--gr.render(scene_root, 'simple09.png', 512, 512,
+--	  {0, 0, 200}, {0, 0, 0}, {0, 1, 0}, 60,
+--	  ambientLight, lights)

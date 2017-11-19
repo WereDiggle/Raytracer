@@ -34,7 +34,7 @@ BitmapTexture::BitmapTexture()
 }
 
 BitmapTexture::BitmapTexture(const std::string& filename, double tileU, double tileV)
-    : tileU(tileU), tileV(tileV), data(Image(filename))
+    : tileU(tileU), tileV(tileV), data(Image("Assets/"+filename))
 {
 }
 
@@ -68,7 +68,7 @@ BumpmapTexture::BumpmapTexture()
 }
 
 BumpmapTexture::BumpmapTexture(const std::string& filename, double tileU, double tileV, double depth)
-    : tileU(tileU), tileV(tileV), depth(depth), data(Image(filename))
+    : tileU(tileU), tileV(tileV), depth(depth), data(Image("Assets/"+filename))
 {
 }
 

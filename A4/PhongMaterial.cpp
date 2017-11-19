@@ -8,7 +8,7 @@ PhongMaterial::PhongMaterial(
 	: m_kd(kd)
 	, m_ks(ks)
 	, m_shininess(shininess)
-	, testTexture(new BitmapTexture("nonhier.png", 2.0, 2.0))
+	, testTexture(new BitmapTexture("grass.png", 2.0, 2.0))
 {}
 
 PhongMaterial::~PhongMaterial()
