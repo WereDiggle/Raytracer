@@ -74,7 +74,7 @@ Intersect SceneNode::castRay(const Ray & ray) {
 }
 
 // ray casting for a shadow, we only need to know whether it hits a surface, not the closest surface it hits
-Intersect SceneNode::castShadowRay(const Ray & ray) {
+Intersect SceneNode::castOnceRay(const Ray & ray) {
 	Ray transformedRay = ray.transformRay(invtrans);
 
 	// remember that checkIntersection is virtual, so it should call the derived checkIntersection if possible

@@ -184,7 +184,7 @@ void A4_Render(
 			// Progress calculations
 			int intermediate_time = clock();
 			std::cout << std::setfill('0') << std::setw(5) << std::fixed << std::setprecision(2);
-			std::cout << "Progress: " << 100.0*(y*imageHeight + x)/imageHeight/imageWidth << "%";
+			std::cout << "Progress: " << (100.0*(y*imageWidth + x))/(imageHeight*imageWidth) << "%";
 			std::cout << " [Elapsed Time: " << (intermediate_time - start_time)/double(CLOCKS_PER_SEC) << " seconds] \t" << '\r';
 			std::cout.flush();
 

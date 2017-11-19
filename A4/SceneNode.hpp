@@ -26,7 +26,7 @@ public:
 
     virtual Intersect castRay(const Ray & ray);
 
-    virtual Intersect castShadowRay(const Ray & ray);
+    virtual Intersect castOnceRay(const Ray & ray);
 
     virtual Intersect checkIntersection(const Ray & ray);
     
