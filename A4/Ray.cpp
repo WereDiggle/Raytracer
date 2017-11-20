@@ -1,5 +1,9 @@
 #include "Ray.hpp"
 
+Ray::Ray()
+    : origin(glm::vec3(0)), point(glm::vec3(0,0,-1))
+    {}
+
 Ray::Ray(const glm::vec3 & origin, const glm::vec3 & point)
     : origin(origin), point(point) {
         direction = glm::normalize(point - origin);

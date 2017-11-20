@@ -2,12 +2,18 @@
 
 //---------------------------------------------------------------------------------------
 GeometryNode::GeometryNode(
-	const std::string & name, Primitive *prim, Material *mat, Texture *bitmap, Texture *bumpmap )
+	const std::string & name, Primitive *prim, Material *mat, Texture *bitmap, Texture *bumpmap, 
+	double reflectiveness, double diffuse, double transparency, double refraction )
 	: SceneNode( name )
 	, m_material( mat )
 	, m_primitive( prim )
 	, m_bitmap( bitmap )
 	, m_bumpmap( bumpmap )
+	, m_reflectiveness( reflectiveness )
+	, m_diffuse( diffuse )
+	, m_transparency( transparency )
+	, m_refraction( refraction )
+
 {
 	m_nodeType = NodeType::GeometryNode;
 }
@@ -36,6 +42,19 @@ void GeometryNode::setBumpmap( Texture * bumpmap ) {
 	m_bumpmap = bumpmap;
 }
 
+void GeometryNode::setReflectiveness(double reflectiveness) {
+	m_reflectiveness = glm::clamp(reflectiveness, 0.0, 1.0);
+}
+
+void GeometryNode::setTransparency(double transparency, double refraction) {
+	m_transparency = glm::clamp(transparency, 0.0, 1.0);
+	m_refraction = refraction;
+}
+
+void GeometryNode::setDiffuse(double diffuse) {
+	m_diffuse = glm::clamp(diffuse, 0.0, 1.0);
+}
+
 Intersect GeometryNode::checkIntersection( const Ray & ray )
 {
 	Intersect intersect = m_primitive->checkIntersection(ray);
@@ -49,6 +68,13 @@ Intersect GeometryNode::checkIntersection( const Ray & ray )
 		intersect.normalHit = m_bumpmap->getNormal(intersect.normalHit, m_primitive->getUpV(intersect.textureU, intersect.textureU), intersect.textureU, intersect.textureV);
 		//std::cout << ", new normal: " << glm::to_string(intersect.normalHit) << std::endl;
 	}
+
+	double denom = m_reflectiveness + m_transparency + m_diffuse;
+	intersect.reflectiveness = m_reflectiveness/denom;
+	intersect.transparency = m_transparency/denom;
+	intersect.diffuse = m_diffuse/denom;
+
+	intersect.refraction = m_refraction;
 
 	return intersect;
 }

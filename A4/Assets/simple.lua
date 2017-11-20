@@ -11,9 +11,6 @@ magenta = gr.material({1.0, 0.0, 1.0}, {0.5, 0.7, 0.5}, 10)
 
 whiteMat = gr.material({1,1,1}, {0.5,0.5,0.5}, 10)
 
-mirror = gr.reflect_material({1,1,1}, {0.5,0.5,0.5}, 10, 1)
-
-
 grass = gr.bitmap("grass.png",2.0,2.0)
 grassBumps = gr.bumpmap("grass.png",2.0,2.0, 10)
 bumps = gr.bumpmap("testBumps.png", 1.0, 1.0, 10)
@@ -73,21 +70,25 @@ scene_root:add_child(right_plane)
 
 sphere = gr.sphere('sphere')
 sphere:scale(50,50,50)
-sphere:set_material(mirror)
+sphere:translate(0,0,0)
+sphere:set_material(red)
+sphere:set_transparency(1, 1.1)
+--sphere:set_reflectiveness(0.2)
+sphere:set_diffuse(0)
 scene_root:add_child(sphere)
 
 red_light = gr.light({0, 800, 400.0}, {1, 0, 0}, {1, 0, 0})
 green_light = gr.light({400.0, -400.0, 400.0}, {0, 1, 0}, {1, 0.0, 0})
 blue_light = gr.light({-400, -400, 400.0}, {0, 0, 1}, {1, 0.0, 0})
 
-white_light = gr.light({-80, -80, -80}, {1, 1, 1}, {1, 0, 0})
+white_light = gr.light({-80, 80, 80}, {1, 1, 1}, {1, 0, 0})
 white_light2 = gr.light({80, -80, -80}, {1, 1, 1}, {1, 0, 0})
 
-ambientLight = {0, 0, 0}
+ambientLight = {0.1, 0.1, 0.1}
 
 lights = {white_light, white_light2}
 
-gr.render(scene_root, 'simple.png', 512, 512,
+gr.render(scene_root, 'simple.png', 256, 256,
 	  {0, 0, 90}, {0, 0, 0}, {0, 1, 0}, 100,
 	  ambientLight, lights)
 

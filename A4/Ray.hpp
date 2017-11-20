@@ -4,6 +4,7 @@
 
 class Ray {
 public:
+    Ray();
     Ray(const glm::vec3 & origin, const glm::vec3 & point);
 
     glm::vec3 pointAtDistance(double distance) const;
@@ -15,5 +16,5 @@ public:
     glm::vec3 origin;
     glm::vec3 point;
     //double maxDistance;
-    double minDistance = 0.01;
+    double minDistance = 0.001;
 };

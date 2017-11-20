@@ -1,14 +1,14 @@
 #include <iostream>
 #include <glm/ext.hpp>
+#include <glm/gtx/component_wise.hpp>
 
 #include "PhongMaterial.hpp"
 
 PhongMaterial::PhongMaterial(
-	const glm::vec3& kd, const glm::vec3& ks, double shininess, double reflection)
+	const glm::vec3& kd, const glm::vec3& ks, double shininess)
 	: m_kd(kd)
 	, m_ks(ks)
 	, m_shininess(shininess)
-	, m_reflection(reflection)
 {}
 
 PhongMaterial::~PhongMaterial()
@@ -19,8 +19,8 @@ glm::vec3 PhongMaterial::getColour() {
 	return m_kd;
 }
 
-double PhongMaterial::getReflection() {
-	return m_reflection;
+static glm::vec3 blend(const glm::vec3 & a, const glm::vec3 b) {
+    return glm::vec3(a.r * b.r, a.g * b.g, a.b * b.b);
 }
 
 glm::vec3 PhongMaterial::getLighting(const glm::vec3 & surfaceNormal, 
@@ -39,14 +39,9 @@ glm::vec3 PhongMaterial::getLighting(const glm::vec3 & surfaceNormal,
 
 	double specularFactor = (glm::pow(glm::dot(reflectDirection, viewDirection), m_shininess))/lightSurfaceDot;
 
-	glm::vec3 phongStuff = glm::vec3(m_kd.r + m_ks.r * specularFactor, 
-									 m_kd.g + m_ks.g * specularFactor, 
-									 m_kd.b + m_ks.b * specularFactor);
-									/*
-	glm::vec3 phongStuff = glm::vec3(textureColour.r * m_kd.r + m_ks.r * specularFactor, 
-									 textureColour.g * m_kd.g + m_ks.g * specularFactor, 
-									 textureColour.b * m_kd.b + m_ks.b * specularFactor);
-									 */
+	glm::vec3 textureColour = bitmap->getColour(textureU, textureV);
+
+	glm::vec3 phongStuff = blend(textureColour, m_kd) + specularFactor*m_ks;
 
 	double falloffFactor = lightSurfaceDot/(lightFalloff[0] + lightFalloff[1]*lightDistance + lightFalloff[2]*lightDistance*lightDistance);
 

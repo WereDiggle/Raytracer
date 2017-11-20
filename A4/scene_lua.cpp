@@ -421,33 +421,6 @@ int gr_bitmap_texture_cmd(lua_State* L)
   return 1;
 }
 
-// Create a reflective material
-extern "C"
-int gr_reflect_material_cmd(lua_State* L)
-{
-  GRLUA_DEBUG_CALL;
-  
-  gr_material_ud* data = (gr_material_ud*)lua_newuserdata(L, sizeof(gr_material_ud));
-  data->material = 0;
-  
-  double kd[3], ks[3];
-  get_tuple(L, 1, kd, 3);
-  get_tuple(L, 2, ks, 3);
-
-  double shininess = luaL_checknumber(L, 3);
-  double reflection = luaL_checknumber(L, 4);
-  
-  data->material = new PhongMaterial(glm::vec3(kd[0], kd[1], kd[2]),
-                                     glm::vec3(ks[0], ks[1], ks[2]),
-                                     shininess,
-                                     reflection);
-
-  luaL_newmetatable(L, "gr.material");
-  lua_setmetatable(L, -2);
-  
-  return 1;
-}
-
 // Create a material
 extern "C"
 int gr_material_cmd(lua_State* L)
@@ -562,6 +535,64 @@ int gr_node_set_bitmap_texture_cmd(lua_State* L)
   return 0;
 }
 
+// Set a material's transparency
+extern "C"
+int gr_node_set_transparency_cmd(lua_State* L)
+{
+  GRLUA_DEBUG_CALL;
+  
+  gr_node_ud* selfdata = (gr_node_ud*)luaL_checkudata(L, 1, "gr.node");
+  luaL_argcheck(L, selfdata != 0, 1, "Node expected");
+
+  GeometryNode* self = dynamic_cast<GeometryNode*>(selfdata->node);
+  luaL_argcheck(L, self != 0, 1, "Geometry Node expected");
+  
+  double transparency = luaL_checknumber(L, 2);
+  double refraction = luaL_checknumber(L, 3);
+
+  self->setTransparency(transparency, refraction);
+
+  return 0;
+}
+
+// Set a material's reflectiveness 
+extern "C"
+int gr_node_set_reflectiveness_cmd(lua_State* L)
+{
+  GRLUA_DEBUG_CALL;
+  
+  gr_node_ud* selfdata = (gr_node_ud*)luaL_checkudata(L, 1, "gr.node");
+  luaL_argcheck(L, selfdata != 0, 1, "Node expected");
+
+  GeometryNode* self = dynamic_cast<GeometryNode*>(selfdata->node);
+  luaL_argcheck(L, self != 0, 1, "Geometry Node expected");
+  
+  double reflectiveness = luaL_checknumber(L, 2);
+
+  self->setReflectiveness(reflectiveness);
+
+  return 0;
+}
+
+// Set a material's diffuse
+extern "C"
+int gr_node_set_diffuse_cmd(lua_State* L)
+{
+  GRLUA_DEBUG_CALL;
+  
+  gr_node_ud* selfdata = (gr_node_ud*)luaL_checkudata(L, 1, "gr.node");
+  luaL_argcheck(L, selfdata != 0, 1, "Node expected");
+
+  GeometryNode* self = dynamic_cast<GeometryNode*>(selfdata->node);
+  luaL_argcheck(L, self != 0, 1, "Geometry Node expected");
+  
+  double diffuse = luaL_checknumber(L, 2);
+
+  self->setDiffuse(diffuse);
+
+  return 0;
+}
+
 // Add a scaling transformation to a node.
 extern "C"
 int gr_node_scale_cmd(lua_State* L)
@@ -661,7 +692,6 @@ static const luaL_Reg grlib_functions[] = {
   {"sphere", gr_sphere_cmd},
   {"joint", gr_joint_cmd},
   {"material", gr_material_cmd},
-  {"reflect_material", gr_reflect_material_cmd},
   // New for assignment 4
   {"cube", gr_cube_cmd},
   {"nh_sphere", gr_nh_sphere_cmd},
@@ -694,6 +724,9 @@ static const luaL_Reg grlib_node_methods[] = {
   {"set_material", gr_node_set_material_cmd},
   {"set_bitmap", gr_node_set_bitmap_texture_cmd},
   {"set_bumpmap", gr_node_set_bumpmap_texture_cmd},
+  {"set_transparency", gr_node_set_transparency_cmd},
+  {"set_diffuse", gr_node_set_diffuse_cmd},
+  {"set_reflectiveness", gr_node_set_reflectiveness_cmd},
   {"scale", gr_node_scale_cmd},
   {"rotate", gr_node_rotate_cmd},
   {"translate", gr_node_translate_cmd},

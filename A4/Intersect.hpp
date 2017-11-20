@@ -21,6 +21,8 @@ public:
 
     Ray getReflectionRay();
 
+    bool getRefractionRay(Ray & refractedRay);
+
     glm::vec3 getLighting(const glm::vec3 & ambient, const std::list<Light *> & lights, SceneNode * root, int depth = 0);
 
     Intersect transformIntersect(const glm::mat4 & m);
@@ -42,4 +44,9 @@ public:
 
     Texture* bitmap;
     Texture* bumpmap;
+
+    double reflectiveness;
+    double diffuse;
+    double transparency;
+    double refraction;
 };

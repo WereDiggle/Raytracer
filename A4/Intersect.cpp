@@ -1,5 +1,6 @@
 #include <iostream>
 #include <glm/ext.hpp>
+#include <glm/gtx/component_wise.hpp>
 
 #include "SceneNode.hpp"
 
@@ -21,59 +22,98 @@ Ray Intersect::getReflectionRay() {
     return Ray(pointHit, pointHit + (ray.direction - 2 * glm::dot(ray.direction, normalHit) * normalHit));
 }
 
+bool Intersect::getRefractionRay(Ray & refractedRay) {
+    // ray direction and normal are both unit vectors, so the dot product should just be the cos of the angle between them
+    double incidentCos = glm::clamp(glm::dot(ray.direction, glm::normalize(normalHit)), -1.0f, 1.0f);
+    double refractionIndex = refraction;
+    glm::vec3 refractionNorm = normalHit;
+
+    // We're going into the surface from vacuum
+    if (incidentCos < 0) {
+        refractionIndex = 1.0/refractionIndex;
+        incidentCos = -incidentCos;
+    }
+    // We're exiting the surface into vacuum
+    else {
+        refractionNorm = -refractionNorm; 
+    }
+
+    double refractedFactor = 1.0 - refractionIndex * refractionIndex * (1.0 - incidentCos * incidentCos);
+
+    glm::vec3 refractedDirection;
+    if (refractedFactor < 0) {
+        // Total internal refraction, use the reflection direction
+        // don't shoot two rays in the same direction, just use the reflection case
+        return false;
+    }
+    else {
+        refractedDirection = refractionIndex * ray.direction + (refractionIndex * incidentCos - glm::sqrt(refractedFactor)) * refractionNorm;
+        refractedRay = Ray(pointHit, pointHit + refractedDirection);
+        return true;
+    }
+}
+
+static glm::vec3 blend(const glm::vec3 & a, const glm::vec3 b) {
+    return glm::vec3(a.r * b.r, a.g * b.g, a.b * b.b);
+}
+
 glm::vec3 Intersect::getLighting(const glm::vec3 & ambient, const std::list<Light *> & lights, SceneNode * root, int depth) {
     if (material == nullptr || !isHit) {
         return glm::vec3(0);
     }
 
-    if (glm::length(normalHit) < 0.9) {
-        std::cout << "intersect normal too small" << std::endl;
-    }
-    else if (glm::length(normalHit) > 1.1) {
-        std::cout << "intersect normal too big" << std::endl;
-    }
+    glm::vec3 totalLighting = glm::vec3(0);
 
-    // TODO: not entirely sure about this for ambient light
-    glm::vec3 matColour = material->getColour();
-    glm::vec3 totalLighting = glm::vec3(ambient.r * matColour.r, 
-                                        ambient.g * matColour.g, 
-                                        ambient.b * matColour.b);
-
-    // TODO: handle partial reflection. For now just do total reflection, so ignore shadow rays for total reflection
+    double transparencyPortion = transparency;
+    double reflectivenessPortion = reflectiveness;
+    double diffusePortion = diffuse;
 
     // online handle reflection if we haven't reached the end of ray casting depth yet
-    if (material->getReflection() > 0 && depth > 0) {
-        //std::cout << "is reflection ray" << std::endl;
+    if (transparencyPortion > 0) {
+        Ray refractionRay;
+        if (getRefractionRay(refractionRay)) {
+            // Refraction happened
+            Intersect refractionIntersect = root->castRay(refractionRay);
+            totalLighting += transparencyPortion * refractionIntersect.getLighting(ambient, lights, root, depth - 1);
+        }
+        else {
+            // Nope, actually reflection happened
+            reflectivenessPortion += transparencyPortion;
+        }
+    }
+    if (reflectivenessPortion > 0 && depth > 0) {
         Ray reflectionRay = getReflectionRay();
         // root->castRay will not recurse, that all has to happen here, in getLighting
         Intersect reflectionIntersect = root->castRay(reflectionRay);
-        totalLighting += reflectionIntersect.getLighting(ambient, lights, root, depth - 1);
+        totalLighting += reflectivenessPortion * reflectionIntersect.getLighting(ambient, lights, root, depth - 1);
     }
-    else {
+    if (diffusePortion > 0) {
+
+        glm::vec3 matColour = material->getColour();
+        glm::vec3 totalDiffuseLighting = blend(ambient, matColour);
 
         // Add each individual light contribution
         for (Light * light : lights) {
+
             Ray shadowRay = Ray(pointHit, light->position);
             Intersect shadowIntersect = root->castRay(shadowRay);
-            // Apply lighting if the shadow ray doesn't hit anything or the closest thing the shadow ray hits 
             glm::vec3 pointToLight = light->position - pointHit;
             double lightDistance = glm::length(pointToLight);
+
+            // Apply lighting if the shadow ray doesn't hit anything or the closest thing the shadow ray hits 
             if (!shadowIntersect.isHit || shadowIntersect.distanceHit >= lightDistance) {
                 // surfaceNormal, lightDirection, lightIntensity, lightDistance, lightFalloff, viewDirection, u, v, bitmap, and bumpmap textures
-                totalLighting += material->getLighting(glm::normalize(normalHit), 
-                                                    glm::normalize(pointToLight), light->colour, lightDistance, light->falloff, 
-                                                    -ray.direction, 
-                                                    textureU, textureV, bitmap, bumpmap);
+                totalDiffuseLighting += material->getLighting(glm::normalize(normalHit), 
+                                                              glm::normalize(pointToLight), light->colour, lightDistance, light->falloff, 
+                                                              -ray.direction, 
+                                                              textureU, textureV, bitmap, bumpmap);
             }
         }
+
+        totalLighting += diffusePortion * totalDiffuseLighting;
     }
 
-    glm::vec3 texColour = bitmap->getColour(textureU, textureV);
-    glm::vec3 totalColour = glm::vec3(texColour.r * totalLighting.r,
-                                      texColour.g * totalLighting.g,
-                                      texColour.b * totalLighting.b);
-
-    return totalColour;
+    return totalLighting;
 }
 
 Intersect Intersect::transformIntersect(const glm::mat4 & m) {
@@ -89,6 +129,10 @@ Intersect Intersect::transformIntersect(const glm::mat4 & m) {
     newIntersect.textureV = textureV;
     newIntersect.bitmap = bitmap;
     newIntersect.bumpmap = bumpmap;
+    newIntersect.reflectiveness = reflectiveness;
+    newIntersect.diffuse = diffuse;
+    newIntersect.transparency = transparency;
+    newIntersect.refraction = refraction;
 
     return newIntersect;
 }
