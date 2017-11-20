@@ -13,6 +13,7 @@ protected:
 public:
   virtual ~Primitive();
   virtual Intersect checkIntersection(const Ray & ray);
+  virtual Intersect checkDoubleSidedIntersection(const Ray & ray);
   virtual glm::vec3 getUpV(double u, double v);
 };
 
@@ -20,6 +21,7 @@ class Sphere : public Primitive {
 public:
   virtual ~Sphere();
   virtual Intersect checkIntersection(const Ray & ray);
+  virtual Intersect checkDoubleSidedIntersection(const Ray & ray);
 };
 
 class Cube : public Primitive {
@@ -30,6 +32,7 @@ public:
   }
   virtual ~Cube();
   virtual Intersect checkIntersection(const Ray & ray);
+  virtual Intersect checkDoubleSidedIntersection(const Ray & ray);
 private:
   glm::vec3 points[2];
 };
@@ -40,6 +43,7 @@ public:
   }
   virtual ~Plane();
   virtual Intersect checkIntersection(const Ray & ray);
+  virtual Intersect checkDoubleSidedIntersection(const Ray & ray);
 private:
 };
 
@@ -51,6 +55,7 @@ public:
   }
   virtual ~NonhierSphere();
   virtual Intersect checkIntersection(const Ray & ray);
+  virtual Intersect checkDoubleSidedIntersection(const Ray & ray);
 
 private:
   glm::vec3 m_pos;
@@ -75,6 +80,7 @@ public:
   
   virtual ~NonhierBox();
   virtual Intersect checkIntersection(const Ray & ray);
+  virtual Intersect checkDoubleSidedIntersection(const Ray & ray);
 
 private:
   glm::vec3 points[2];

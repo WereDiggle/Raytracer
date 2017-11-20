@@ -70,18 +70,18 @@ scene_root:add_child(right_plane)
 
 sphere = gr.sphere('sphere')
 sphere:scale(50,50,50)
-sphere:translate(0,0,0)
+sphere:translate(0,0,90)
 sphere:set_material(red)
-sphere:set_transparency(1, 1.1)
+--sphere:set_transparency(1, 1.1)
 --sphere:set_reflectiveness(0.2)
-sphere:set_diffuse(0)
+--sphere:set_diffuse(0)
 scene_root:add_child(sphere)
 
 red_light = gr.light({0, 800, 400.0}, {1, 0, 0}, {1, 0, 0})
 green_light = gr.light({400.0, -400.0, 400.0}, {0, 1, 0}, {1, 0.0, 0})
 blue_light = gr.light({-400, -400, 400.0}, {0, 0, 1}, {1, 0.0, 0})
 
-white_light = gr.light({-80, 80, 80}, {1, 1, 1}, {1, 0, 0})
+white_light = gr.light({0, 0, 90}, {1, 1, 1}, {1, 0, 0})
 white_light2 = gr.light({80, -80, -80}, {1, 1, 1}, {1, 0, 0})
 
 ambientLight = {0.1, 0.1, 0.1}

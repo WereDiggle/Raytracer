@@ -21,6 +21,7 @@ public:
 	void setDiffuse(double diffuse);
 
 	virtual Intersect checkIntersection( const Ray & ray );
+	virtual Intersect checkDoubleSidedIntersection( const Ray & ray);
 
 	Material *m_material;
 	Texture *m_bitmap;

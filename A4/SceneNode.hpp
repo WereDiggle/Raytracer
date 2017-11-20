@@ -24,10 +24,19 @@ public:
 
     virtual ~SceneNode();
 
+    // Cast a ray, returning the closest intersection where the normal of the surface faces opposite the ray direction
     virtual Intersect castRay(const Ray & ray);
 
+    // Cast a ray, returning if it hits any object along the path, not necessarily the closest. 
     virtual Intersect castOnceRay(const Ray & ray);
 
+    // Cast a ray, returning the closest object it hits, regardless of normal facing.
+    virtual Intersect castDoubleSidedRay(const Ray & ray);
+
+    // Check if it hits the object, regardless of normal facing
+    virtual Intersect checkDoubleSidedIntersection(const Ray & ray);
+
+    // Check if it hits the object, normal facing away
     virtual Intersect checkIntersection(const Ray & ray);
     
 	int totalSceneNodes() const;

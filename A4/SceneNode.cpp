@@ -53,6 +53,10 @@ Intersect SceneNode::checkIntersection(const Ray & ray) {
 	return Intersect();
 }
 
+Intersect SceneNode::checkDoubleSidedIntersection(const Ray & ray) {
+	return Intersect();
+}
+
 Intersect SceneNode::castRay(const Ray & ray) {
 
 	Ray transformedRay = ray.transformRay(invtrans);
@@ -71,6 +75,27 @@ Intersect SceneNode::castRay(const Ray & ray) {
 	}
 
 	return rayIntersect.transformIntersect(trans);
+}
+
+Intersect SceneNode::castDoubleSidedRay(const Ray & ray) {
+
+	Ray transformedRay = ray.transformRay(invtrans);
+
+	// remember that checkIntersection is virtual, so it should call the derived checkIntersection if possible
+	Intersect rayIntersect = checkDoubleSidedIntersection(transformedRay);
+
+	// recurse through all children, casting transformed rays at all of them
+	for (SceneNode * childNode : children) {
+		Intersect curRayIntersect = childNode->castDoubleSidedRay(transformedRay);
+		if (curRayIntersect.isHit) {
+			if (!rayIntersect.isHit || curRayIntersect.distanceHit < rayIntersect.distanceHit) {
+				rayIntersect = curRayIntersect;
+			}
+		}
+	}
+
+	return rayIntersect.transformIntersect(trans);
+
 }
 
 // ray casting for a shadow, we only need to know whether it hits a surface, not the closest surface it hits
