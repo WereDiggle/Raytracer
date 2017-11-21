@@ -43,7 +43,6 @@ public:
 
 };
 
-// TODO: actually implement
 class BumpmapTexture : public Texture {
 
     double getBumpHeight(int u, int v);
@@ -65,4 +64,27 @@ public:
 
     virtual glm::vec3 getNormal(const glm::vec3 & normal, const glm::vec3 & upV, double u, double v);
 
+};
+
+class RippleTexture : public Texture {
+
+    // Center of the ripple, between 0 and 1
+    double centerU;
+    double centerV;
+
+    // Size of the ripple
+    double scaleU;
+    double scaleV;
+
+    // Amplitude of wave
+    double waveHeight;
+
+public:
+
+    RippleTexture();
+    RippleTexture(double centerU, double centerV, double scaleU, double scaleV, double waveHeight);
+
+    ~RippleTexture();
+
+    virtual glm::vec3 getNormal(const glm::vec3 & normal, const glm::vec3 & upV, double u, double v);
 };

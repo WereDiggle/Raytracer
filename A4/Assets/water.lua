@@ -77,23 +77,15 @@ right_plane:set_material(magenta)
 right_plane:set_bitmap(tile)
 scene_root:add_child(right_plane)
 
-cube = gr.cube('cube')
-cube:scale(100,100,100)
-cube:translate(-80,-80,-80)
-cube:set_material(green)
-cube:set_transparency(1, 1.1)
---cube:set_reflectiveness(0.2)
-cube:set_diffuse(0.2)
-scene_root:add_child(cube)
-
-sphere = gr.sphere('sphere')
-sphere:scale(25,25,25)
-sphere:translate(75,-75,-75)
-sphere:set_material(red)
-sphere:set_transparency(1, 1.5)
---sphere:set_reflectiveness(0.2)
-sphere:set_diffuse(0.2)
-scene_root:add_child(sphere)
+water_surface = gr.plane('water_surface')
+water_surface:translate(-0.5, -0.5, 0)
+water_surface:scale(200, 200, 200)
+water_surface:rotate('x', -90)
+water_surface:translate(0,-30,0)
+water_surface:set_material(cyan)
+water_surface:set_transparency(1, 1.3)
+water_surface:set_diffuse(0.2)
+scene_root:add_child(water_surface)
 
 red_light = gr.light({0, 800, 400.0}, {1, 0, 0}, {1, 0, 0})
 green_light = gr.light({400.0, -400.0, 400.0}, {0, 1, 0}, {1, 0.0, 0})
@@ -106,45 +98,6 @@ ambientLight = {0.1, 0.1, 0.1}
 
 lights = {white_light}
 
-gr.render(scene_root, 'simple1.png', 256, 256,
-	  {0, 0, 90}, {0, 0, 0}, {0, 1, 0}, 100,
+gr.render(scene_root, 'water.png', 256, 256,
+	  {0, 0, 90}, {0, -100, -100}, {0, 1, 0}, 100,
 	  ambientLight, lights)
-
---gr.debug_render(scene_root, 'simple1.png', 256, 256,
---	  {0, 0, 90}, {0, 0, 0}, {0, 1, 0}, 100,
---	  ambientLight, lights, 128, 128)
-
---gr.render(scene_root, 'simple2.png', 256, 256,
---	  {0, 0, 90}, {0, 0, 0}, {0, 1, 0}, 100,
---	  ambientLight, lights)
-
---glass_pane = gr.plane('glass_pane')
---glass_pane:translate(-0.5, -0.5, 0)
---glass_pane:scale(200, 200, 200)
---glass_pane:rotate('x', -90)
---glass_pane:translate(0,-60,0)
---glass_pane:set_material(cyan)
---glass_pane:set_transparency(1, 1.1)
---glass_pane:set_diffuse(0.2)
---scene_root:add_child(glass_pane)
---
---gr.render(scene_root, 'water_refraction_1.png', 256, 256,
---	  {0, 0, 90}, {0, 0, 0}, {0, 1, 0}, 100,
---	  ambientLight, lights)
---
---glass_pane:set_transparency(1, 1.2);
---
---gr.render(scene_root, 'water_refraction_2.png', 256, 256,
---	  {0, 0, 90}, {0, 0, 0}, {0, 1, 0}, 100,
---	  ambientLight, lights)
---
---glass_pane:set_transparency(1, 1.3);
---
---gr.render(scene_root, 'water_refraction_3.png', 256, 256,
---	  {0, 0, 90}, {0, 0, 0}, {0, 1, 0}, 100,
---	  ambientLight, lights)
-
---gr.debug_render(scene_root, 'simple.png', 256, 256,
---			{0, 0, 90}, {0, 0, 0}, {0, 1, 0}, 100,
---			ambientLight, lights, 100, 150)
-

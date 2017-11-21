@@ -59,7 +59,6 @@ glm::vec3 BitmapTexture::getColour(double u, double v)
 
 //-----------------------------------------------------
 // Bumpmap Texture class 
-// TODO: Actually implement
 //-----------------------------------------------------
 
 BumpmapTexture::BumpmapTexture()
@@ -104,8 +103,7 @@ glm::vec3 BumpmapTexture::getNormal(const glm::vec3 & normal, const glm::vec3 & 
     glm::vec3 AB, AC, bumpNormal;
     // Determine which triangle to use
     // Calculate the normal from a triangle formed by three points
-    if (texU + texV <= 1.0) {
-        //std::cout << "lower left triangle                                   " << std::endl;
+    if (texU + texV <= 1.0) { //std::cout << "lower left triangle                                   " << std::endl;
         heightA = getBumpHeight(indexU, indexV);
         heightB = getBumpHeight(indexU, indexV-1);
         heightC = getBumpHeight(indexU+1, indexV);
@@ -154,4 +152,36 @@ glm::vec3 BumpmapTexture::getNormal(const glm::vec3 & normal, const glm::vec3 & 
     bumpToWorldMat[2][2] = normal.z;
 
     return glm::vec3(bumpToWorldMat * glm::vec4(bumpNormal, 0));
+}
+
+//-----------------------------------------------------
+// Ripple Texture class 
+// TODO: try this maybe z=(cos( 0.5sqrt(x^2+y^2)-6n)/(0.5(x^2+y^2)+1+2n), n={0...10} 
+//      Courtesy of youtube video
+// TODO: try this maybe (a/(1+r)) * cos((b/log(r+2))*r), where a and b are constants, and r is the distance from the center of the ripple
+//      Thanks reddit
+//-----------------------------------------------------
+
+RippleTexture::RippleTexture()
+    : centerU(0.5), centerV(0.5), waveHeight(1) 
+{
+}
+
+RippleTexture::RippleTexture(double centerU, double centerV, double scaleU, double scaleV, double waveHeight)
+    : centerU(glm::clamp(centerU, 0.0, 1.0)), centerV(glm::clamp(centerV, 0.0, 1.0)), scaleU(scaleU), scaleV(scaleV), waveHeight(waveHeight) 
+{
+}
+
+RippleTexture::~RippleTexture() {}
+
+glm::vec3 RippleTexture::getNormal(const glm::vec3 & normal, const glm::vec3 & upV, double u, double v)
+{
+    // Getting the derivative might be harder with more complex functions
+    // TODO: remember how to do derivatives
+
+    // Get 3d direction of derivative at u and v
+
+    // Cross with direction of (u,v,0) to get a side vector
+
+    // Cross side vector with derivative to get normal, ie perpendicular, on the same plane as the direction of (u,v)
 }
