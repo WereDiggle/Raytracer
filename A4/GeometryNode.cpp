@@ -84,8 +84,11 @@ Intersect GeometryNode::checkIntersection( const Ray & ray )
 
 	intersect.refraction = m_refraction;
 
-	if (glm::dot(ray.direction, intersect.normalHit) < 0) {
+	// If the normal is facing away, flip it. 
+	if (glm::dot(ray.direction, intersect.normalHit) > 0) {
+		//std::cout << "normal direction: " << glm::to_string(intersect.normalHit) << std::endl;
 		intersect.normalHit = -intersect.normalHit;
+		//std::cout << "reverse normal direction: " << glm::to_string(intersect.normalHit) << std::endl;
 		intersect.refraction = 1.0/m_refraction;
 	}
 

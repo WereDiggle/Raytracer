@@ -25,7 +25,11 @@ void A4_Render(
 
 		// Lighting parameters
 		const glm::vec3 & ambient,
-		const std::list<Light *> & lights
+		const std::list<Light *> & lights,
+
+		// debug parameters
+		int debugX,
+		int debugY
 ) {
 
   // Fill in raytracing code here...
@@ -46,6 +50,11 @@ void A4_Render(
 	}
 	std::cout << "\t}" << std::endl;
 	std:: cout <<")" << std::endl;
+
+	if (debugX >= 0 && debugY >= 0) {
+		std::cout << "\t" << "debugX: " << debugX << std::endl;
+		std::cout << "\t" << "debugY: " << debugY << std::endl;
+	}
 
 	size_t h = image.height();
 	size_t w = image.width();
@@ -105,9 +114,24 @@ void A4_Render(
 
 	srand(451);
 
+	// Set up debug variables
+	int xStart = 0;
+	int yStart = 0;
+
+	int xEnd = imageWidth;
+	int yEnd = imageHeight;
+
+	if (debugX >=0 && debugY >= 0) {
+		xStart = debugX;
+		yStart = debugY;
+		xEnd = xStart+1;
+		yEnd = yStart+1;
+	}
+
+
 	// Generate the background
-	for (int y = 0; y < imageHeight; ++y) {
-		for (int x = 0; x < imageWidth; ++x) {
+	for (int y = yStart; y < yEnd; ++y) {
+		for (int x = xStart; x < xEnd; ++x) {
 
 			int prob = rand() % 100;
 			int r = rand() % 100;
@@ -127,8 +151,10 @@ void A4_Render(
 		}
 	}
 
-	for (int y = 0; y < imageHeight; ++y) {
-		for (int x = 0; x < imageWidth; ++x) {
+	std::cout << "RAY TRACER START" << std::endl << std::endl;
+
+	for (int y = yStart; y < yEnd; ++y) {
+		for (int x = xStart; x < xEnd; ++x) {
 
 			// Sampling. Not actually n^2 since SUPER_SAMPLING should be a small constant number
 			// Will make it run a lot slower though :(
@@ -160,7 +186,7 @@ void A4_Render(
 						// Ambient light
 						useBackground = false;
 
-						glm::vec3 totalLighting = primRayIntersect.getLighting(ambient, lights, root, 1);
+						glm::vec3 totalLighting = primRayIntersect.getLighting(ambient, lights, root);
 
 						// Store the sampled pixels
 						sampledPixels[ys*SUPER_SAMPLING+xs] = totalLighting;

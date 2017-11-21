@@ -327,6 +327,55 @@ int gr_light_cmd(lua_State* L)
   return 1;
 }
 
+// Render a debug pixel
+extern "C"
+int gr_debug_render_cmd(lua_State* L)
+{
+  GRLUA_DEBUG_CALL;
+  
+  gr_node_ud* root = (gr_node_ud*)luaL_checkudata(L, 1, "gr.node");
+  luaL_argcheck(L, root != 0, 1, "Root node expected");
+
+  const char* filename = luaL_checkstring(L, 2);
+
+  int width = luaL_checknumber(L, 3);
+  int height = luaL_checknumber(L, 4);
+
+  glm::vec3 eye;
+  glm::vec3 view, up;
+  
+  get_tuple(L, 5, &eye[0], 3);
+  get_tuple(L, 6, &view[0], 3);
+  get_tuple(L, 7, &up[0], 3);
+
+  double fov = luaL_checknumber(L, 8);
+  double debugX = luaL_checknumber(L, 11);
+  double debugY = luaL_checknumber(L, 11);
+
+  double ambient_data[3];
+  get_tuple(L, 9, ambient_data, 3);
+  glm::vec3 ambient(ambient_data[0], ambient_data[1], ambient_data[2]);
+
+  luaL_checktype(L, 10, LUA_TTABLE);
+  int light_count = int(lua_rawlen(L, 10));
+  
+  luaL_argcheck(L, light_count >= 1, 10, "Tuple of lights expected");
+  std::list<Light*> lights;
+  for (int i = 1; i <= light_count; i++) {
+    lua_rawgeti(L, 10, i);
+    gr_light_ud* ldata = (gr_light_ud*)luaL_checkudata(L, -1, "gr.light");
+    luaL_argcheck(L, ldata != 0, 10, "Light expected");
+
+    lights.push_back(ldata->light);
+    lua_pop(L, 1);
+  }
+
+	Image im( width, height);
+	A4_Render(root->node, im, eye, view, up, fov, ambient, lights, debugX, debugY);
+
+	return 0;
+}
+
 // Render a scene
 extern "C"
 int gr_render_cmd(lua_State* L)
@@ -700,6 +749,7 @@ static const luaL_Reg grlib_functions[] = {
   {"light", gr_light_cmd},
   {"render", gr_render_cmd},
   // New for project
+  {"debug_render", gr_debug_render_cmd},
   {"plane", gr_plane_cmd},
   {"bitmap", gr_bitmap_texture_cmd},
   {"bumpmap", gr_bumpmap_texture_cmd},

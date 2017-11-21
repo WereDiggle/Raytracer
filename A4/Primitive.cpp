@@ -52,10 +52,13 @@ Intersect Sphere::checkIntersection(const Ray & ray) {
     double roots[2];
     size_t numRoots = quadraticRoots(a, b, c, roots);
 
-    double distanceHit = 0;
+    double distanceHit = ray.minDistance;
     // Take the lowest non-negative root
     if (numRoots == 2) {
-        distanceHit = (roots[0] > 0 && roots[0] < roots[1]) ? roots[0] : roots[1];
+        distanceHit = glm::min(roots[0], roots[1]);
+        if (distanceHit <= ray.minDistance) {
+            distanceHit = glm::max(roots[0], roots[1]);
+        }
     }
     else if (numRoots == 1) {
         distanceHit = roots[0];
@@ -88,27 +91,35 @@ Intersect Sphere::checkIntersection(const Ray & ray) {
 
 Intersect Sphere::checkDoubleSidedIntersection(const Ray & ray) {
 
+    //std::cout << "Sphere checkDoubleSidedIntersection" << std::endl;
+
     double a = 1.0;
     double b = 2 * (glm::dot(ray.direction, ray.origin));
     double c = glm::dot(ray.origin, ray.origin) - 1.0;
     double roots[2];
     size_t numRoots = quadraticRoots(a, b, c, roots);
 
-    double distanceHit = 0;
+    double distanceHit = ray.minDistance;
     // Take the lowest non-negative root
     if (numRoots == 2) {
-        distanceHit = (roots[0] > 0 && roots[0] < roots[1]) ? roots[0] : roots[1];
+        distanceHit = glm::min(roots[0], roots[1]);
+        if (distanceHit <= ray.minDistance) {
+            distanceHit = glm::max(roots[0], roots[1]);
+        }
     }
     else if (numRoots == 1) {
         distanceHit = roots[0];
     }
 
+    //std::cout << "roots[0]: " << roots[0] << ", roots[1]: " << roots[1] << std::endl;
+    //std::cout << "Sphere checkDoubleSidedIntersection distanceHit: " << distanceHit << std::endl;
     if (distanceHit > ray.minDistance) {
         glm::vec3 pointHit = ray.pointAtDistance(distanceHit);
         glm::vec3 normalHit = glm::normalize(pointHit);
 
         // In the case of the perpendicular, it's not a hit
         if (glm::dot(ray.direction, normalHit) != 0)  {
+            //std::cout << "Sphere checkDoubleSidedIntersection hit" << std::endl;
 
             double azimuth = glm::atan(-pointHit.z, pointHit.x);
             double elevation = glm::asin(glm::clamp(pointHit.y, -1.0f, 1.0f));
@@ -126,6 +137,7 @@ Intersect Sphere::checkDoubleSidedIntersection(const Ray & ray) {
 
     return Intersect();
 }
+
 /*
 Plane
 #######################

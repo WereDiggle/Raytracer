@@ -6,6 +6,8 @@
 
 #include "Intersect.hpp"
 
+const int Intersect::MAX_DEPTH = 20;
+
 Intersect::Intersect(const Ray & ray, bool isHit, double distanceHit, const glm::vec3 & normalHit)
     : ray(ray), material(nullptr), isHit(isHit), distanceHit(distanceHit), normalHit(normalHit), textureU(0), textureV(0) {
         if (isHit) {
@@ -30,8 +32,8 @@ bool Intersect::getRefractionRay(Ray & refractedRay) {
 
     // We're going into the surface from vacuum
     if (incidentCos < 0) {
-        refractionIndex = 1.0/refractionIndex;
         incidentCos = -incidentCos;
+        refractionIndex = 1.0/refractionIndex;
     }
     // We're exiting the surface into vacuum
     else {
@@ -42,12 +44,14 @@ bool Intersect::getRefractionRay(Ray & refractedRay) {
 
     glm::vec3 refractedDirection;
     if (refractedFactor < 0) {
+        //std::cout << "TOTAL Internal refraction" << std::endl;
         // Total internal refraction, use the reflection direction
         // don't shoot two rays in the same direction, just use the reflection case
         return false;
     }
     else {
         refractedDirection = refractionIndex * ray.direction + (refractionIndex * incidentCos - glm::sqrt(refractedFactor)) * refractionNorm;
+        //std::cout << "refraction ray from: " << glm::to_string(pointHit) << " to " << glm::to_string(pointHit + refractedDirection) << std::endl;
         refractedRay = Ray(pointHit, pointHit + refractedDirection);
         return true;
     }
@@ -62,6 +66,8 @@ glm::vec3 Intersect::getLighting(const glm::vec3 & ambient, const std::list<Ligh
         return glm::vec3(0);
     }
 
+    //std::cout << std::endl << "ray depth: " << depth << std::endl;
+
     glm::vec3 totalLighting = glm::vec3(0);
 
     double transparencyPortion = transparency;
@@ -69,26 +75,31 @@ glm::vec3 Intersect::getLighting(const glm::vec3 & ambient, const std::list<Ligh
     double diffusePortion = diffuse;
 
     // online handle reflection if we haven't reached the end of ray casting depth yet
-    if (transparencyPortion > 0) {
+    if (transparencyPortion > 0 && depth < MAX_DEPTH) {
         Ray refractionRay;
         if (getRefractionRay(refractionRay)) {
             // Refraction happened
+            //std::cout << "original ray direction: " << glm::to_string(ray.direction) << std::endl;
+            //std::cout << "refracted ray direction: " << glm::to_string(refractionRay.direction) << std::endl;
             Intersect refractionIntersect = root->castRay(refractionRay);
-            totalLighting += transparencyPortion * refractionIntersect.getLighting(ambient, lights, root, depth - 1);
+            //std::cout << "refracted ray hits: " << glm::to_string(refractionIntersect.pointHit) << std::endl;
+            totalLighting += transparencyPortion * refractionIntersect.getLighting(ambient, lights, root, depth + 1);
         }
         else {
             // Nope, actually reflection happened
             reflectivenessPortion += transparencyPortion;
         }
     }
-    if (reflectivenessPortion > 0 && depth > 0) {
+    if (reflectivenessPortion > 0 && depth < MAX_DEPTH) {
+        //std::cout << "reflection ray" << std::endl;
         Ray reflectionRay = getReflectionRay();
         // root->castRay will not recurse, that all has to happen here, in getLighting
         Intersect reflectionIntersect = root->castRay(reflectionRay);
-        totalLighting += reflectivenessPortion * reflectionIntersect.getLighting(ambient, lights, root, depth - 1);
+        totalLighting += reflectivenessPortion * reflectionIntersect.getLighting(ambient, lights, root, depth + 1);
     }
     if (diffusePortion > 0) {
 
+        //std::cout << "ray hit a diffuse surface at: " << glm::to_string(pointHit) << std::endl;
         glm::vec3 matColour = material->getColour();
         glm::vec3 totalDiffuseLighting = blend(ambient, matColour);
 
@@ -101,13 +112,14 @@ glm::vec3 Intersect::getLighting(const glm::vec3 & ambient, const std::list<Ligh
             double lightDistance = glm::length(pointToLight);
 
             // Apply lighting if the shadow ray doesn't hit anything or the closest thing the shadow ray hits 
-            if (!shadowIntersect.isHit || shadowIntersect.distanceHit >= lightDistance) {
+            // TODO: turn shadows back on, also make them work better with transparent objects
+            //if (!shadowIntersect.isHit || shadowIntersect.distanceHit >= lightDistance) {
                 // surfaceNormal, lightDirection, lightIntensity, lightDistance, lightFalloff, viewDirection, u, v, bitmap, and bumpmap textures
                 totalDiffuseLighting += material->getLighting(glm::normalize(normalHit), 
                                                               glm::normalize(pointToLight), light->colour, lightDistance, light->falloff, 
                                                               -ray.direction, 
                                                               textureU, textureV, bitmap, bumpmap);
-            }
+            //}
         }
 
         totalLighting += diffusePortion * totalDiffuseLighting;

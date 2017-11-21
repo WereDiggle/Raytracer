@@ -13,6 +13,8 @@ class SceneNode;
 // This class handles the information received when a Ray hits something
 class Intersect {
 
+    static const int MAX_DEPTH;
+
 public:
     Intersect(const Ray & ray, bool isHit, double distanceHit, const glm::vec3 & normalHit);
 
