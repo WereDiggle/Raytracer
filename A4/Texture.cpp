@@ -184,6 +184,31 @@ glm::vec3 BumpmapTexture::getNormal(const glm::vec3 & normal, const glm::vec3 & 
 }
 
 //-----------------------------------------------------
+// Noise Texture class 
+// TODO: try this maybe z=(cos( 0.5sqrt(x^2+y^2)-6n)/(0.5(x^2+y^2)+1+2n), n={0...10} 
+//      Courtesy of youtube video
+// TODO: try this maybe (a/(1+r)) * cos((b/log(r+2))*r), where a and b are constants, and r is the distance from the center of the ripple
+//      Thanks reddit
+//-----------------------------------------------------
+
+NoiseTexture::NoiseTexture() 
+{
+}
+
+NoiseTexture::NoiseTexture(uint width, uint height)
+{
+}
+
+NoiseTexture::~NoiseTexture()
+{
+}
+
+glm::vec3 NoiseTexture::getColour(double u, double v)
+{
+    return glm::vec3();
+}
+
+//-----------------------------------------------------
 // Ripple Texture class 
 // TODO: try this maybe z=(cos( 0.5sqrt(x^2+y^2)-6n)/(0.5(x^2+y^2)+1+2n), n={0...10} 
 //      Courtesy of youtube video

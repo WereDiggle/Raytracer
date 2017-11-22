@@ -70,6 +70,20 @@ public:
 
 };
 
+class NoiseTexture : public Texture {
+
+public:
+
+    NoiseTexture();
+
+    NoiseTexture(uint width, uint height);
+
+    ~NoiseTexture();
+
+    virtual glm::vec3 getColour(double u, double v);
+
+};
+
 class RippleTexture : public Texture {
 
     // Center of the ripple, between 0 and 1

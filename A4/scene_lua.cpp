@@ -424,7 +424,27 @@ int gr_render_cmd(lua_State* L)
 	return 0;
 }
 
-// Create a bumpmap texture
+// Create a noise texture
+extern "C"
+int gr_noise_texture_cmd(lua_State* L)
+{
+  GRLUA_DEBUG_CALL;
+  
+  gr_texture_ud* data = (gr_texture_ud*)lua_newuserdata(L, sizeof(gr_texture_ud));
+  data->texture = 0;
+
+  uint width = luaL_checknumber(L, 1);
+  uint height = luaL_checknumber(L, 2);
+  
+  data->texture = new NoiseTexture(width, height);
+
+  luaL_newmetatable(L, "gr.texture");
+  lua_setmetatable(L, -2);
+  
+  return 1;
+}
+
+// Create a ripple texture
 extern "C"
 int gr_ripple_texture_cmd(lua_State* L)
 {
@@ -777,6 +797,7 @@ static const luaL_Reg grlib_functions[] = {
   {"bitmap", gr_bitmap_texture_cmd},
   {"bumpmap", gr_bumpmap_texture_cmd},
   {"ripple", gr_ripple_texture_cmd},
+  {"noise", gr_noise_texture_cmd},
   {0, 0}
 };
 
