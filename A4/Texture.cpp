@@ -24,6 +24,35 @@ glm::vec3 Texture::getNormal(const glm::vec3 & normal, const glm::vec3 & upV, do
     return normal;
 }
 
+glm::mat4 Texture::getBumpToWorldMat(const glm::vec3 & normal, const glm::vec3 & upV)
+{
+
+	glm::vec3 side = glm::normalize(glm::cross(upV, normal));
+    glm::vec3 up = glm::normalize(glm::cross(normal, side));
+ 
+    glm::mat4 bumpToWorldMat = glm::mat4(0);
+
+    // Remeber, it's [col][row]
+    bumpToWorldMat[3][3] = 1.0f;
+	// Set rotation
+	// side
+	bumpToWorldMat[0][0] = side.x;
+	bumpToWorldMat[0][1] = side.y;
+	bumpToWorldMat[0][2] = side.z;
+
+	// up
+	bumpToWorldMat[1][0] = up.x;
+	bumpToWorldMat[1][1] = up.y;
+	bumpToWorldMat[1][2] = up.z;
+
+	// view direction
+	bumpToWorldMat[2][0] = normal.x;
+	bumpToWorldMat[2][1] = normal.y;
+    bumpToWorldMat[2][2] = normal.z;
+
+    return bumpToWorldMat;
+}
+
 //-----------------------------------------------------
 // Bitmap Texture class 
 //-----------------------------------------------------
@@ -151,7 +180,7 @@ glm::vec3 BumpmapTexture::getNormal(const glm::vec3 & normal, const glm::vec3 & 
 	bumpToWorldMat[2][1] = normal.y;
     bumpToWorldMat[2][2] = normal.z;
 
-    return glm::vec3(bumpToWorldMat * glm::vec4(bumpNormal, 0));
+    return glm::normalize(glm::vec3(bumpToWorldMat * glm::vec4(bumpNormal, 0)));
 }
 
 //-----------------------------------------------------
@@ -174,14 +203,38 @@ RippleTexture::RippleTexture(double centerU, double centerV, double scaleU, doub
 
 RippleTexture::~RippleTexture() {}
 
+double RippleTexture::getDerivative(double t)
+{
+    // TODO: Right now just use cos(t), whose derivative is -sin(t)
+    return waveHeight * -glm::sin(t);
+}
+
 glm::vec3 RippleTexture::getNormal(const glm::vec3 & normal, const glm::vec3 & upV, double u, double v)
 {
     // Getting the derivative might be harder with more complex functions
     // TODO: remember how to do derivatives
+    glm::dvec3 center = glm::dvec3(scaleU*centerU, scaleV*centerV, 0.0);
+    glm::dvec3 uv = glm::dvec3(scaleU*u, scaleV*v, 0.0) - center;
+    glm::dvec3 uvDirection = glm::normalize(uv);
+
+    double t = glm::length(uv); 
+    double dw_dt = getDerivative(t);
 
     // Get 3d direction of derivative at u and v
+    glm::dvec3 dw_dtDirection = glm::normalize(glm::dvec3(uvDirection.x, uvDirection.y, dw_dt));
 
     // Cross with direction of (u,v,0) to get a side vector
+    // This side vector needs always be the same sign
+    glm::dvec3 uvSide = glm::cross(uvDirection, dw_dtDirection);
 
     // Cross side vector with derivative to get normal, ie perpendicular, on the same plane as the direction of (u,v)
+    glm::dvec3 waveNormal = glm::normalize(glm::cross(uvSide, dw_dtDirection));
+
+    // Surface should not be perturbed inside out
+    if (glm::dot(waveNormal, glm::dvec3(0,0,1.0)) < 0) {
+        //std::cout << "wave normal is pointing downwards" << std::endl;
+        waveNormal = -waveNormal;
+    }
+
+    return glm::normalize(glm::vec3(getBumpToWorldMat(normal, upV) * glm::vec4(waveNormal, 0)));
 }

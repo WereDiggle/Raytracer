@@ -8,6 +8,10 @@
 // Class for handling UV mapping
 class Texture {
 
+protected:
+
+    glm::mat4 getBumpToWorldMat(const glm::vec3 & normal, const glm::vec3 & upV);
+
 public:
 
     // construct the Texture from a png file
@@ -78,6 +82,8 @@ class RippleTexture : public Texture {
 
     // Amplitude of wave
     double waveHeight;
+
+    double getDerivative(double t);
 
 public:
 

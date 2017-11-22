@@ -21,6 +21,7 @@ bumps2 = gr.bumpmap("testBumps2.png", 1.0, 1.0, 10)
 bumps3 = gr.bumpmap("testBumps3.png", 1.0, 1.0, 20)
 bumps4 = gr.bumpmap("testBumps4.png", 1.0, 1.0, 10)
 bumps5 = gr.bumpmap("testBumps5.png", 1.0, 1.0, 10)
+waves = gr.ripple(0.5,0.5,20,20,0.25)
 
 scene_root = gr.node('root')
 
@@ -84,14 +85,16 @@ water_surface:rotate('x', -90)
 water_surface:translate(0,-30,0)
 water_surface:set_material(cyan)
 water_surface:set_transparency(1, 1.3)
-water_surface:set_diffuse(0.2)
+water_surface:set_reflectiveness(0.1);
+water_surface:set_diffuse(0.5)
+water_surface:set_bumpmap(waves)
 scene_root:add_child(water_surface)
 
 red_light = gr.light({0, 800, 400.0}, {1, 0, 0}, {1, 0, 0})
 green_light = gr.light({400.0, -400.0, 400.0}, {0, 1, 0}, {1, 0.0, 0})
 blue_light = gr.light({-400, -400, 400.0}, {0, 0, 1}, {1, 0.0, 0})
 
-white_light = gr.light({-80, 80, 80}, {1, 1, 1}, {1, 0, 0})
+white_light = gr.light({-80, 0, 0}, {1, 1, 1}, {1, 0, 0})
 white_light2 = gr.light({80, 80, -80}, {1, 1, 1}, {1, 0, 0})
 
 ambientLight = {0.1, 0.1, 0.1}
@@ -99,5 +102,5 @@ ambientLight = {0.1, 0.1, 0.1}
 lights = {white_light}
 
 gr.render(scene_root, 'water.png', 256, 256,
-	  {0, 0, 90}, {0, -100, -100}, {0, 1, 0}, 100,
+	  {0, 90, 90}, {0, -100, -100}, {0, 1, 0}, 100,
 	  ambientLight, lights)
