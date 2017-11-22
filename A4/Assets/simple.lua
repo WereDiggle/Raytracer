@@ -106,7 +106,7 @@ ambientLight = {0.1, 0.1, 0.1}
 
 lights = {white_light}
 
-gr.render(scene_root, 'simple1.png', 256, 256,
+gr.render(scene_root, 'simple.png', 256, 256,
 	  {0, 0, 90}, {0, 0, 0}, {0, 1, 0}, 100,
 	  ambientLight, lights)
 

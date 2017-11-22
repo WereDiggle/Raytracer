@@ -102,5 +102,5 @@ ambientLight = {0.1, 0.1, 0.1}
 lights = {white_light}
 
 gr.render(scene_root, 'water.png', 256, 256,
-	  {0, 90, 90}, {0, -100, -100}, {0, 1, 0}, 100,
+	  {0, 50, 90}, {0, -100, -100}, {0, 1, 0}, 100,
 	  ambientLight, lights)
