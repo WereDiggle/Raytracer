@@ -11,6 +11,8 @@ magenta = gr.material({1.0, 0.0, 1.0}, {0.5, 0.7, 0.5}, 10)
 
 whiteMat = gr.material({1,1,1}, {0.5,0.5,0.5}, 10)
 
+flatWhite = gr.material({1,1,1}, {0,0,0}, 1)
+
 grass = gr.bitmap("grass.png",2.0,2.0)
 tile = gr.bitmap("bad_tile.png",10,10)
 number_cells = gr.bitmap("number_cells.png",1,1)
@@ -34,13 +36,13 @@ scene_root = gr.node('root')
 --front_plane:set_bitmap(tile)
 --scene_root:add_child(front_plane)
 --
---back_plane = gr.plane('back_plane')
---back_plane:translate(-0.5, -0.5, 0)
---back_plane:scale(200, 200, 200)
---back_plane:translate(0,0,-100)
---back_plane:set_material(whiteMat)
---back_plane:set_bitmap(noise)
---scene_root:add_child(back_plane)
+back_plane = gr.plane('back_plane')
+back_plane:translate(-0.5, -0.5, 0)
+back_plane:scale(200, 200, 200)
+back_plane:translate(0,0,-100)
+back_plane:set_material(flatWhite)
+back_plane:set_bitmap(noise)
+scene_root:add_child(back_plane)
 --
 --top_plane = gr.plane('top_plane')
 --top_plane:translate(-0.5, -0.5, 0)
@@ -85,10 +87,12 @@ blue_light = gr.light({-400, -400, 400.0}, {0, 0, 1}, {1, 0.0, 0})
 white_light = gr.light({-80, 80, 80}, {1, 1, 1}, {1, 0, 0})
 white_light2 = gr.light({80, 80, -80}, {1, 1, 1}, {1, 0, 0})
 
+eye_light = gr.light({0, 0, 0}, {1, 1, 1}, {1, 0, 0})
+
 ambientLight = {0.1, 0.1, 0.1}
 
-lights = {white_light, white_light2}
+lights = {eye_light}
 
-gr.render(scene_root, 'boat_hi_res.png', 1920, 1080,
-	  {-50, 50, -100}, {0, 0, 0}, {0, 1, 0}, 100,
+gr.render(scene_root, 'simple.png', 256, 256,
+	  {0, 0, -20}, {0, 0, -100}, {0, 1, 0}, 100,
 	  ambientLight, lights)

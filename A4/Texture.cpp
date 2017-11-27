@@ -219,19 +219,41 @@ glm::vec3 NoiseTexture::getRandomColour(int u, int v)
     return randomColour[indexV*latticeWidth + indexU];
 }
 
+// Linearly interpolates the colour value between 4 points in a square
+glm::vec3 NoiseTexture::mix2D(const glm::vec3 & topLeft, 
+                              const glm::vec3 & topRight, 
+                              const glm::vec3 & bottomLeft, 
+                              const glm::vec3 & bottomRight, 
+                              double tx, double ty)
+{
+    glm::vec3 top = glm::mix(topLeft, topRight, tx);
+    glm::vec3 bottom = glm::mix(bottomLeft, bottomRight, tx);
+
+    glm::vec3 center = glm::mix(bottom, top, ty);
+
+    // TODO: just use the r value for now, It's a huge waste of space, but whatever.
+    return glm::vec3(center.r);
+}
+
 glm::vec3 NoiseTexture::getColour(double u, double v)
 {
     double texU = latticeWidth * glm::clamp(u, 0.0, 1.0);
     double texV = latticeHeight * glm::clamp(v, 0.0, 1.0);
 
     double floorU, floorV;
-    double tU = std::modf(texU, &floorU);
-    double tV = std::modf(texV, &floorV);
+    double tU = glm::smoothstep(0.0, 1.0, std::modf(texU, &floorU));
+    double tV = glm::smoothstep(0.0, 1.0, std::modf(texV, &floorV));
 
     int indexU = (int) floorU;
     int indexV = (int) floorV;
 
-    return glm::mix(randomColour[indexU], randomColour[(indexU+1)%latticeWidth], glm::smoothstep(0.0, 1.0, tU));
+    glm::vec3 topLeft = getRandomColour(indexU, indexV+1);
+    glm::vec3 topRight = getRandomColour(indexU+1, indexV+1);
+    glm::vec3 bottomLeft = getRandomColour(indexU, indexV);
+    glm::vec3 bottomRight = getRandomColour(indexU+1, indexV);
+
+    // 1d: return glm::mix(randomColour[indexU], randomColour[(indexU+1)%latticeWidth], glm::smoothstep(0.0, 1.0, tU));
+    return mix2D(topLeft, topRight, bottomLeft, bottomRight, tU, tV);
 }
 
 //-----------------------------------------------------

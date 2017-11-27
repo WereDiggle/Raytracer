@@ -73,10 +73,18 @@ public:
 
 class NoiseTexture : public Texture {
 
+protected:
+
     std::vector<glm::vec3> randomColour;
 
     int latticeWidth;
     int latticeHeight;
+
+    glm::vec3 mix2D(const glm::vec3 & topLeft, 
+                                const glm::vec3 & topRight, 
+                                const glm::vec3 & bottomLeft, 
+                                const glm::vec3 & bottomRight, 
+                                double tx, double ty);
 
     glm::vec3 getRandomColour(int u, int v);
 
