@@ -76,6 +76,7 @@ class NoiseTexture : public Texture {
 protected:
 
     std::vector<glm::vec3> randomColour;
+    std::vector<int> permutationTable;
 
     int latticeWidth;
     int latticeHeight;
@@ -86,7 +87,11 @@ protected:
                                 const glm::vec3 & bottomRight, 
                                 double tx, double ty);
 
-    glm::vec3 getRandomColour(int u, int v);
+    glm::vec3 getRandomColour(double u, double v, int frequency = 1);
+
+    glm::vec3 getRandomColour(int u, int v, int frequency = 1);
+
+    glm::vec3 getFractalSumColour(double u, double v, int layers);
 
 public:
 

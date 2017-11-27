@@ -1,4 +1,5 @@
 #include <iostream>
+#include <algorithm>
 #include <cmath>
 #include <cstdlib>
 
@@ -196,27 +197,69 @@ NoiseTexture::NoiseTexture()
 NoiseTexture::NoiseTexture(int width, int height)
     : latticeWidth(width), latticeHeight(height)
 {
-    srand(451);
+    srand(420);
 
     // TODO: implement 2d, and then 3d, but for now, just 1d
-    for (int i = 0; i<width*height; ++i) {
+    for (int i = 0; i<256; ++i) {
         float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
         float g = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
         float b = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
         randomColour.push_back(glm::vec3(r,g,b));
+        permutationTable.push_back(i);
     }
+
+    // Shuffle our permutation table
+    std::vector<int> secondPermutationTable = permutationTable; 
+
+    std::random_shuffle(permutationTable.begin(), permutationTable.end());
+    std::random_shuffle(secondPermutationTable.begin(), secondPermutationTable.end());
+    permutationTable.insert(permutationTable.end(), secondPermutationTable.begin(), secondPermutationTable.end());
+
 }
 
 NoiseTexture::~NoiseTexture()
 {
 }
 
-// u and v will wrap instead of clamp to the right range
-glm::vec3 NoiseTexture::getRandomColour(int u, int v)
+glm::vec3 NoiseTexture::getFractalSumColour(double u, double v, int layers)
 {
-    int indexU = u % latticeWidth;
-    int indexV = v % latticeHeight;
-    return randomColour[indexV*latticeWidth + indexU];
+    glm::vec3 noiseTotal = glm::vec3(0);
+    double noiseMax = 0;
+    for (int i=0; i<layers; ++i) {
+        double amplitude = glm::exp2((double)-i);
+        noiseTotal += amplitude * getRandomColour(u, v, glm::exp2((double)i));
+        noiseMax += amplitude;
+    }
+
+    return noiseTotal / noiseMax;
+}
+
+glm::vec3 NoiseTexture::getRandomColour(double u, double v, int frequency)
+{
+    double texU = latticeWidth * frequency * glm::clamp(u, 0.0, 1.0);
+    double texV = latticeHeight * frequency * glm::clamp(v, 0.0, 1.0);
+
+    double floorU, floorV;
+    double tU = glm::smoothstep(0.0, 1.0, std::modf(texU, &floorU));
+    double tV = glm::smoothstep(0.0, 1.0, std::modf(texV, &floorV));
+
+    int indexU = (int) floorU;
+    int indexV = (int) floorV;
+
+    glm::vec3 topLeft = getRandomColour(indexU, indexV+1);
+    glm::vec3 topRight = getRandomColour(indexU+1, indexV+1);
+    glm::vec3 bottomLeft = getRandomColour(indexU, indexV);
+    glm::vec3 bottomRight = getRandomColour(indexU+1, indexV);
+
+    return mix2D(topLeft, topRight, bottomLeft, bottomRight, tU, tV);
+}
+
+// u and v will wrap instead of clamp to the right range
+glm::vec3 NoiseTexture::getRandomColour(int u, int v, int frequency)
+{
+    int indexU = (u % (latticeWidth * frequency)) % 256;
+    int indexV = (v % (latticeHeight * frequency)) % 256;
+    return randomColour[permutationTable[permutationTable[indexU] + indexV]];
 }
 
 // Linearly interpolates the colour value between 4 points in a square
@@ -231,7 +274,7 @@ glm::vec3 NoiseTexture::mix2D(const glm::vec3 & topLeft,
 
     glm::vec3 center = glm::mix(bottom, top, ty);
 
-    // TODO: just use the r value for now, It's a huge waste of space, but whatever.
+    // TODO: just use the r value for now, It's a huge waste 2f space, but whatever.
     return glm::vec3(center.r);
 }
 
@@ -253,7 +296,8 @@ glm::vec3 NoiseTexture::getColour(double u, double v)
     glm::vec3 bottomRight = getRandomColour(indexU+1, indexV);
 
     // 1d: return glm::mix(randomColour[indexU], randomColour[(indexU+1)%latticeWidth], glm::smoothstep(0.0, 1.0, tU));
-    return mix2D(topLeft, topRight, bottomLeft, bottomRight, tU, tV);
+    // 2d: return mix2D(topLeft, topRight, bottomLeft, bottomRight, tU, tV);
+    return glm::vec3(getFractalSumColour(u, v, 5).r);
 }
 
 //-----------------------------------------------------
