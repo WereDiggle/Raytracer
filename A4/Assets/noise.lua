@@ -27,15 +27,6 @@ noise = gr.noise(10, 10)
 
 scene_root = gr.node('root')
 
---front_plane = gr.plane('front_plane')
---front_plane:translate(-0.5, -0.5, 0)
---front_plane:scale(200, 200, 200)
---front_plane:rotate('y', 180)
---front_plane:translate(0,0,100)
---front_plane:set_material(red)
---front_plane:set_bitmap(tile)
---scene_root:add_child(front_plane)
---
 back_plane = gr.plane('back_plane')
 back_plane:translate(-0.5, -0.5, 0)
 back_plane:scale(200, 200, 200)
@@ -43,42 +34,6 @@ back_plane:translate(0,0,-100)
 back_plane:set_material(flatWhite)
 back_plane:set_bitmap(noise)
 scene_root:add_child(back_plane)
---
---top_plane = gr.plane('top_plane')
---top_plane:translate(-0.5, -0.5, 0)
---top_plane:scale(200, 200, 200)
---top_plane:rotate('x', 90)
---top_plane:translate(0,100,0)
---top_plane:set_material(green)
---top_plane:set_bitmap(tile)
---scene_root:add_child(top_plane)
---
---bottom_plane = gr.plane('bottom_plane')
---bottom_plane:translate(-0.5, -0.5, 0)
---bottom_plane:scale(200, 200, 200)
---bottom_plane:rotate('x', -90)
---bottom_plane:translate(0,-100,0)
---bottom_plane:set_material(cyan)
---bottom_plane:set_bitmap(tile)
---scene_root:add_child(bottom_plane)
---
---left_plane = gr.plane('left_plane')
---left_plane:translate(-0.5, -0.5, 0)
---left_plane:scale(200, 200, 200)
---left_plane:rotate('y', 90)
---left_plane:translate(-100,0,0)
---left_plane:set_material(blue)
---left_plane:set_bitmap(tile)
---scene_root:add_child(left_plane)
---
---right_plane = gr.plane('right_plane')
---right_plane:translate(-0.5, -0.5, 0)
---right_plane:scale(200, 200, 200)
---right_plane:rotate('y', -90)
---right_plane:translate(100,0,0)
---right_plane:set_material(magenta)
---right_plane:set_bitmap(tile)
---scene_root:add_child(right_plane)
 
 red_light = gr.light({0, 800, 400.0}, {1, 0, 0}, {1, 0, 0})
 green_light = gr.light({400.0, -400.0, 400.0}, {0, 1, 0}, {1, 0.0, 0})
@@ -93,6 +48,6 @@ ambientLight = {0.1, 0.1, 0.1}
 
 lights = {eye_light}
 
-gr.render(scene_root, 'simple.png', 1920, 1080,
+gr.render(scene_root, 'fractal_noise.png', 512, 512,
 	  {0, 0, -20}, {0, 0, -100}, {0, 1, 0}, 100,
 	  ambientLight, lights)

@@ -297,7 +297,7 @@ glm::vec3 NoiseTexture::getColour(double u, double v)
 
     // 1d: return glm::mix(randomColour[indexU], randomColour[(indexU+1)%latticeWidth], glm::smoothstep(0.0, 1.0, tU));
     // 2d: return mix2D(topLeft, topRight, bottomLeft, bottomRight, tU, tV);
-    return glm::vec3(getFractalSumColour(u, v, 5).r);
+    return glm::vec3(getFractalSumColour(u, v, 7).r);
 }
 
 //-----------------------------------------------------
