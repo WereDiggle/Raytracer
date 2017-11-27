@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cmath>
+#include <cstdlib>
 
 #include "Texture.hpp"
 
@@ -185,27 +186,52 @@ glm::vec3 BumpmapTexture::getNormal(const glm::vec3 & normal, const glm::vec3 & 
 
 //-----------------------------------------------------
 // Noise Texture class 
-// TODO: try this maybe z=(cos( 0.5sqrt(x^2+y^2)-6n)/(0.5(x^2+y^2)+1+2n), n={0...10} 
-//      Courtesy of youtube video
-// TODO: try this maybe (a/(1+r)) * cos((b/log(r+2))*r), where a and b are constants, and r is the distance from the center of the ripple
-//      Thanks reddit
 //-----------------------------------------------------
 
 NoiseTexture::NoiseTexture() 
 {
+    NoiseTexture(256,256);
 }
 
-NoiseTexture::NoiseTexture(uint width, uint height)
+NoiseTexture::NoiseTexture(int width, int height)
+    : latticeWidth(width), latticeHeight(height)
 {
+    srand(451);
+
+    // TODO: implement 2d, and then 3d, but for now, just 1d
+    for (int i = 0; i<width*height; ++i) {
+        float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+        float g = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+        float b = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+        randomColour.push_back(glm::vec3(r,g,b));
+    }
 }
 
 NoiseTexture::~NoiseTexture()
 {
 }
 
+// u and v will wrap instead of clamp to the right range
+glm::vec3 NoiseTexture::getRandomColour(int u, int v)
+{
+    int indexU = u % latticeWidth;
+    int indexV = v % latticeHeight;
+    return randomColour[indexV*latticeWidth + indexU];
+}
+
 glm::vec3 NoiseTexture::getColour(double u, double v)
 {
-    return glm::vec3();
+    double texU = latticeWidth * glm::clamp(u, 0.0, 1.0);
+    double texV = latticeHeight * glm::clamp(v, 0.0, 1.0);
+
+    double floorU, floorV;
+    double tU = std::modf(texU, &floorU);
+    double tV = std::modf(texV, &floorV);
+
+    int indexU = (int) floorU;
+    int indexV = (int) floorV;
+
+    return glm::mix(randomColour[indexU], randomColour[(indexU+1)%latticeWidth], glm::smoothstep(0.0, 1.0, tU));
 }
 
 //-----------------------------------------------------

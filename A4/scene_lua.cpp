@@ -433,8 +433,8 @@ int gr_noise_texture_cmd(lua_State* L)
   gr_texture_ud* data = (gr_texture_ud*)lua_newuserdata(L, sizeof(gr_texture_ud));
   data->texture = 0;
 
-  uint width = luaL_checknumber(L, 1);
-  uint height = luaL_checknumber(L, 2);
+  int width = luaL_checknumber(L, 1);
+  int height = luaL_checknumber(L, 2);
   
   data->texture = new NoiseTexture(width, height);
 

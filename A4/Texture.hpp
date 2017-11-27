@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 #include <glm/ext.hpp>
 
 #include "Image.hpp"
@@ -72,11 +73,18 @@ public:
 
 class NoiseTexture : public Texture {
 
+    std::vector<glm::vec3> randomColour;
+
+    int latticeWidth;
+    int latticeHeight;
+
+    glm::vec3 getRandomColour(int u, int v);
+
 public:
 
     NoiseTexture();
 
-    NoiseTexture(uint width, uint height);
+    NoiseTexture(int width, int height);
 
     ~NoiseTexture();
 
