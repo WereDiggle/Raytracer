@@ -152,10 +152,10 @@ void A4_Render(
 		}
 	}
 
-	// Photon mapping
-	PhotonMap testPhotonMap = PhotonMap(100);
-	testPhotonMap.emitLight(root);
-	return;
+	// TODO: Photon mapping
+	// PhotonMap testPhotonMap = PhotonMap(100);
+	// testPhotonMap.emitLight(root);
+	// return;
 
 
 	std::cout << "RAY TRACER START" << std::endl << std::endl;

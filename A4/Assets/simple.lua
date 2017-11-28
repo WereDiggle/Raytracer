@@ -93,6 +93,6 @@ ambientLight = {0.1, 0.1, 0.1}
 
 lights = {eye_light}
 
-gr.render(scene_root, 'simple.png', 1920, 1080,
+gr.render(scene_root, 'simple.png', 256, 256,
 	  {0, 0, -20}, {0, 0, -100}, {0, 1, 0}, 100,
 	  ambientLight, lights)
