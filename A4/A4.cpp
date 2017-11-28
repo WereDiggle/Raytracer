@@ -218,7 +218,10 @@ void A4_Render(
 			int intermediate_time = clock();
 			std::cout << std::setfill('0') << std::setw(5) << std::fixed << std::setprecision(2);
 			std::cout << "Progress: " << (100.0*(y*imageWidth + x))/(imageHeight*imageWidth) << "%";
-			std::cout << " [Elapsed Time: " << (intermediate_time - start_time)/double(CLOCKS_PER_SEC) << " seconds] \t" << '\r';
+			double elapsedSeconds = (intermediate_time - start_time)/double(CLOCKS_PER_SEC);
+			int minutes = (int)elapsedSeconds / 60;
+			double seconds = elapsedSeconds - minutes*60;
+			std::cout << " [Elapsed Time: " << minutes << " minutes, " << seconds << " seconds] \t" << '\r';
 			std::cout.flush();
 
 		}
