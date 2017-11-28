@@ -5,6 +5,7 @@
 #include <glm/ext.hpp>
 
 #include "Ray.hpp"
+#include "PhotonMap.hpp"
 
 #include "A4.hpp"
 
@@ -150,6 +151,12 @@ void A4_Render(
 			}
 		}
 	}
+
+	// Photon mapping
+	PhotonMap testPhotonMap = PhotonMap(100);
+	testPhotonMap.emitLight(root);
+	return;
+
 
 	std::cout << "RAY TRACER START" << std::endl << std::endl;
 
