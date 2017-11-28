@@ -186,12 +186,12 @@ scene_root:add_child(water_surface)
 -- duck
 yellow_rubber = gr.material({1.0, 1.0, 0.0}, {0.2,0.2,0.2}, 10)
 
-duck = gr.mesh('Scout_the_duck', 'duck.obj')
-duck:scale(10,10,10)
-duck:rotate('y', 135)
-duck:translate(0, -45, -50)
-duck:set_material(yellow_rubber)
-scene_root:add_child(duck)
+--duck = gr.mesh('Scout_the_duck', 'duck.obj')
+--duck:scale(10,10,10)
+--duck:rotate('y', 135)
+--duck:translate(0, -45, -50)
+--duck:set_material(yellow_rubber)
+--scene_root:add_child(duck)
 
 white_light = gr.light({-50, 90, 50}, {1, 1, 1}, {1, 0, 0})
 white_light1 = gr.light({-50, 99, -50}, {0.25, 0.25, 0.25}, {1, 0, 0})

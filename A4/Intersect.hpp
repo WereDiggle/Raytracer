@@ -15,6 +15,8 @@ class Intersect {
 
     static const int MAX_DEPTH;
 
+    static const double MIN_CONTRIBUTION;
+
 public:
     Intersect(const Ray & ray, bool isHit, double distanceHit, const glm::vec3 & normalHit);
 
@@ -25,7 +27,7 @@ public:
 
     bool getRefractionRay(Ray & refractedRay);
 
-    glm::vec3 getLighting(const glm::vec3 & ambient, const std::list<Light *> & lights, SceneNode * root, int depth = 0);
+    glm::vec3 getLighting(const glm::vec3 & ambient, const std::list<Light *> & lights, SceneNode * root, int depth = 0, double contribution = 1.0);
 
     Intersect transformIntersect(const glm::mat4 & m);
     

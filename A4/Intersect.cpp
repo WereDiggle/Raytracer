@@ -6,7 +6,9 @@
 
 #include "Intersect.hpp"
 
-const int Intersect::MAX_DEPTH = 20;
+const int Intersect::MAX_DEPTH = 10;
+
+const double Intersect::MIN_CONTRIBUTION = 0.01;
 
 Intersect::Intersect(const Ray & ray, bool isHit, double distanceHit, const glm::vec3 & normalHit)
     : ray(ray), material(nullptr), isHit(isHit), distanceHit(distanceHit), normalHit(normalHit), textureU(0), textureV(0) {
@@ -61,7 +63,7 @@ static glm::vec3 blend(const glm::vec3 & a, const glm::vec3 b) {
     return glm::vec3(a.r * b.r, a.g * b.g, a.b * b.b);
 }
 
-glm::vec3 Intersect::getLighting(const glm::vec3 & ambient, const std::list<Light *> & lights, SceneNode * root, int depth) {
+glm::vec3 Intersect::getLighting(const glm::vec3 & ambient, const std::list<Light *> & lights, SceneNode * root, int depth, double contribution) {
     if (material == nullptr || !isHit) {
         return glm::vec3(0);
     }
@@ -75,7 +77,7 @@ glm::vec3 Intersect::getLighting(const glm::vec3 & ambient, const std::list<Ligh
     double diffusePortion = diffuse;
 
     // online handle reflection if we haven't reached the end of ray casting depth yet
-    if (transparencyPortion > 0 && depth < MAX_DEPTH) {
+    if (transparencyPortion > 0 && depth < MAX_DEPTH && contribution > MIN_CONTRIBUTION) {
         Ray refractionRay;
         if (getRefractionRay(refractionRay)) {
             // Refraction happened
@@ -83,19 +85,19 @@ glm::vec3 Intersect::getLighting(const glm::vec3 & ambient, const std::list<Ligh
             //std::cout << "refracted ray direction: " << glm::to_string(refractionRay.direction) << std::endl;
             Intersect refractionIntersect = root->castRay(refractionRay);
             //std::cout << "refracted ray hits: " << glm::to_string(refractionIntersect.pointHit) << std::endl;
-            totalLighting += transparencyPortion * refractionIntersect.getLighting(ambient, lights, root, depth + 1);
+            totalLighting += transparencyPortion * refractionIntersect.getLighting(ambient, lights, root, depth + 1, contribution * transparencyPortion);
         }
         else {
             // Nope, actually reflection happened
             reflectivenessPortion += transparencyPortion;
         }
     }
-    if (reflectivenessPortion > 0 && depth < MAX_DEPTH) {
+    if (reflectivenessPortion > 0 && depth < MAX_DEPTH && contribution > MIN_CONTRIBUTION) {
         //std::cout << "reflection ray" << std::endl;
         Ray reflectionRay = getReflectionRay();
         // root->castRay will not recurse, that all has to happen here, in getLighting
         Intersect reflectionIntersect = root->castRay(reflectionRay);
-        totalLighting += reflectivenessPortion * reflectionIntersect.getLighting(ambient, lights, root, depth + 1);
+        totalLighting += reflectivenessPortion * reflectionIntersect.getLighting(ambient, lights, root, depth + 1, contribution * reflectivenessPortion);
     }
     if (diffusePortion > 0) {
 
