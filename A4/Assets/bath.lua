@@ -15,9 +15,12 @@ flatWhite = gr.material({1,1,1}, {0,0,0}, 1)
 light_gray = gr.material({0.7, 0.7, 0.7}, {0,0,0}, 1)
 
 grass = gr.bitmap("grass.png",2.0,2.0)
-tile = gr.bitmap("bad_tile.png",10,10)
 number_cells = gr.bitmap("number_cells.png",1,1)
 
+spider_tank = gr.bitmap("spider_tank.png",1,1)
+spider_tank_bumps = gr.bumpmap("spider_tank.png",1,1, 2000)
+
+tile = gr.bumpmap("tile.png", 10, 10, 2000)
 grassBumps = gr.bumpmap("grass.png",2.0,2.0, 10)
 bumps = gr.bumpmap("testBumps.png", 1.0, 1.0, 10)
 bumps2 = gr.bumpmap("testBumps2.png", 1.0, 1.0, 10)
@@ -31,56 +34,71 @@ scene_root = gr.node('root')
 -- Room
 front_plane = gr.plane('front_plane')
 front_plane:translate(-0.5, -0.5, 0)
-front_plane:scale(200, 200, 200)
+front_plane:scale(200, 200, 1)
 front_plane:rotate('y', 180)
 front_plane:translate(0,0,100)
 front_plane:set_material(flatWhite)
 front_plane:set_bitmap(noise)
+front_plane:set_bumpmap(tile)
 scene_root:add_child(front_plane)
 
 back_plane = gr.plane('back_plane')
 back_plane:translate(-0.5, -0.5, 0)
-back_plane:scale(200, 200, 200)
+back_plane:scale(200, 200, 1)
 back_plane:translate(0,0,-100)
 back_plane:set_material(flatWhite)
 back_plane:set_bitmap(noise)
+back_plane:set_bumpmap(tile)
 scene_root:add_child(back_plane)
 
 top_plane = gr.plane('top_plane')
 top_plane:translate(-0.5, -0.5, 0)
-top_plane:scale(200, 200, 200)
+top_plane:scale(200, 200, 1)
 top_plane:rotate('x', 90)
 top_plane:translate(0,100,0)
 top_plane:set_material(flatWhite)
-top_plane:set_bitmap(noise)
 scene_root:add_child(top_plane)
 
 bottom_plane = gr.plane('bottom_plane')
 bottom_plane:translate(-0.5, -0.5, 0)
-bottom_plane:scale(200, 200, 200)
+bottom_plane:scale(200, 200, 1)
 bottom_plane:rotate('x', -90)
 bottom_plane:translate(0,-100,0)
 bottom_plane:set_material(flatWhite)
 bottom_plane:set_bitmap(noise)
+bottom_plane:set_bumpmap(tile)
 scene_root:add_child(bottom_plane)
 
 left_plane = gr.plane('left_plane')
 left_plane:translate(-0.5, -0.5, 0)
-left_plane:scale(200, 200, 200)
+left_plane:scale(200, 200, 1)
 left_plane:rotate('y', 90)
 left_plane:translate(-100,0,0)
 left_plane:set_material(flatWhite)
 left_plane:set_bitmap(noise)
+left_plane:set_bumpmap(tile)
 scene_root:add_child(left_plane)
 
 right_plane = gr.plane('right_plane')
 right_plane:translate(-0.5, -0.5, 0)
-right_plane:scale(200, 200, 200)
+right_plane:scale(200, 200, 1)
 right_plane:rotate('y', -90)
 right_plane:translate(100,0,0)
 right_plane:set_material(flatWhite)
 right_plane:set_bitmap(noise)
+right_plane:set_bumpmap(tile)
 scene_root:add_child(right_plane)
+
+-- poster
+
+poster = gr.plane('poster')
+poster:translate(-0.5, -0.5, 0)
+poster:scale(747/10, 816/10, 1)
+poster:translate(0,0,-99)
+poster:set_material(flatWhite)
+poster:set_bitmap(spider_tank)
+poster:set_bumpmap(spider_tank_bumps)
+scene_root:add_child(poster)
 
 -- bath tub
 bath_mat = gr.material({0.9,0.9,0.9}, {0.9,0.9,0.9}, 10)
@@ -203,6 +221,6 @@ ambientLight = {0.1, 0.1, 0.1}
 
 lights = {white_light}
 
-gr.render(scene_root, 'bath.png', 256, 256,
+gr.render(scene_root, 'bath_hi_res_2.png', 1920, 1080,
 	  {0, 25, 25}, {0, -70, -50}, {0, 1, 0}, 90,
 	  ambientLight, lights)
