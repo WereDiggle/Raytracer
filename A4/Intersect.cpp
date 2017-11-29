@@ -3,12 +3,17 @@
 #include <glm/gtx/component_wise.hpp>
 
 #include "SceneNode.hpp"
+#include "PhotonMap.hpp"
 
 #include "Intersect.hpp"
 
 const int Intersect::MAX_DEPTH = 10;
 
 const double Intersect::MIN_CONTRIBUTION = 0.01;
+
+const bool Intersect::PHOTONS_ONLY = true;
+
+PhotonMap * Intersect::globalPhotonMap = nullptr;
 
 Intersect::Intersect(const Ray & ray, bool isHit, double distanceHit, const glm::vec3 & normalHit)
     : ray(ray), material(nullptr), isHit(isHit), distanceHit(distanceHit), normalHit(normalHit), textureU(0), textureV(0) {
@@ -24,6 +29,16 @@ Ray Intersect::getReflectionRay() {
     glm::vec3 reflection = (ray.direction - 2 * glm::dot(ray.direction, normalHit) * normalHit);
     //std::cout << "incident ray: " << glm::to_string(ray.direction) << ", normal: " << glm::to_string(normalHit) << ", reflection: " << glm::to_string(reflection) << std::endl;
     return Ray(pointHit, pointHit + (ray.direction - 2 * glm::dot(ray.direction, normalHit) * normalHit));
+}
+
+Ray Intersect::getRefractionRay() {
+    Ray retRay;
+    if (getRefractionRay(retRay)) {
+        return retRay;
+    }
+    else {
+        return getReflectionRay();
+    }
 }
 
 bool Intersect::getRefractionRay(Ray & refractedRay) {
@@ -101,6 +116,8 @@ glm::vec3 Intersect::getLighting(const glm::vec3 & ambient, const std::list<Ligh
     }
     if (diffusePortion > 0) {
 
+        // OLD WAY OF LIGHTING
+        /*
         //std::cout << "ray hit a diffuse surface at: " << glm::to_string(pointHit) << std::endl;
         glm::vec3 matColour = material->getColour();
         glm::vec3 totalDiffuseLighting = blend(ambient, matColour);
@@ -122,6 +139,18 @@ glm::vec3 Intersect::getLighting(const glm::vec3 & ambient, const std::list<Ligh
                                                               -ray.direction, 
                                                               textureU, textureV, bitmap, bumpmap);
             //}
+        }
+        */
+
+        // DEBUG CODE FOR PHOTONS
+        glm::vec3 totalDiffuseLighting;
+        if (PHOTONS_ONLY) {
+            // Grab all photons in sphere around pointHit
+            totalDiffuseLighting = globalPhotonMap->getFluxAroundPoint(0.5, pointHit);
+
+            //std::cout << "photon flux within range: " << glm::to_string(totalDiffuseLighting) << std::endl;
+
+            return totalDiffuseLighting;
         }
 
         totalLighting += diffusePortion * totalDiffuseLighting;

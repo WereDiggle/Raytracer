@@ -9,15 +9,22 @@
 #include "Light.hpp"
 
 class SceneNode;
+class PhotonMap;
 
 // This class handles the information received when a Ray hits something
 class Intersect {
 
+    bool getRefractionRay(Ray & refractedRay);
+
+public:
     static const int MAX_DEPTH;
 
     static const double MIN_CONTRIBUTION;
 
-public:
+    static const bool PHOTONS_ONLY;
+
+    static PhotonMap * globalPhotonMap;
+
     Intersect(const Ray & ray, bool isHit, double distanceHit, const glm::vec3 & normalHit);
 
     // used for when the intersection doesn't hit anything
@@ -25,7 +32,7 @@ public:
 
     Ray getReflectionRay();
 
-    bool getRefractionRay(Ray & refractedRay);
+    Ray getRefractionRay();
 
     glm::vec3 getLighting(const glm::vec3 & ambient, const std::list<Light *> & lights, SceneNode * root, int depth = 0, double contribution = 1.0);
 

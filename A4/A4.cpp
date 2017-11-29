@@ -34,7 +34,6 @@ void A4_Render(
 ) {
 
   // Fill in raytracing code here...
-  int start_time = clock();
 
   std::cout << "Calling A4_Render(\n" <<
 		  "\t" << *root <<
@@ -153,12 +152,12 @@ void A4_Render(
 	}
 
 	// TODO: Photon mapping
-	// PhotonMap testPhotonMap = PhotonMap(100);
-	// testPhotonMap.emitLight(root);
-	// return;
-
+	PhotonMap testPhotonMap = PhotonMap(100000);
+	testPhotonMap.emitLight(root, lights);
+	Intersect::globalPhotonMap = &testPhotonMap;
 
 	std::cout << "RAY TRACER START" << std::endl << std::endl;
+	int start_time = clock();
 
 	for (int y = yStart; y < yEnd; ++y) {
 		for (int x = xStart; x < xEnd; ++x) {
@@ -230,4 +229,5 @@ void A4_Render(
 	int stop_time = clock();
 	std::cout << "ray tracing took: " << (stop_time - start_time)/double(CLOCKS_PER_SEC) << " seconds" << std::endl;
 
+	Intersect::globalPhotonMap = nullptr;
 }

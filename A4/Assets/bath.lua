@@ -221,6 +221,6 @@ ambientLight = {0.1, 0.1, 0.1}
 
 lights = {white_light}
 
-gr.render(scene_root, 'bath_hi_res_2.png', 1920, 1080,
+gr.render(scene_root, 'bath.png', 256, 256,
 	  {0, 25, 25}, {0, -70, -50}, {0, 1, 0}, 90,
 	  ambientLight, lights)

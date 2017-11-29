@@ -2,6 +2,9 @@
 
 #include <glm/glm.hpp>
 #include <vector>
+#include <list>
+
+#include "Light.hpp"
 
 class SceneNode;
 
@@ -19,7 +22,7 @@ public:
     // how powerful the photon is in rgb
     glm::vec3 flux;
 
-    Photon(const glm::vec3 & postion, const glm::vec3 & incident, const glm::vec3 & flux);
+    Photon(const glm::vec3 & position, const glm::vec3 & incident, const glm::vec3 & flux);
 
     double getDistance(const glm::vec3 & point);
 };
@@ -113,4 +116,7 @@ public:
 
     void emitLight(SceneNode * root, const std::list<Light *> & lights);
 
+    std::vector<Photon*> getPhotonsAroundPoint(double range, const glm::vec3 & point);
+
+    glm::vec3 getFluxAroundPoint(double range, const glm::vec3 & point);
 };
