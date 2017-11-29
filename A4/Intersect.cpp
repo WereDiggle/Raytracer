@@ -146,7 +146,7 @@ glm::vec3 Intersect::getLighting(const glm::vec3 & ambient, const std::list<Ligh
         glm::vec3 totalDiffuseLighting;
         if (PHOTONS_ONLY) {
             // Grab all photons in sphere around pointHit
-            totalDiffuseLighting = globalPhotonMap->getFluxAroundPoint(0.5, pointHit);
+            totalDiffuseLighting = globalPhotonMap->getFluxAroundPoint(5, pointHit)/100.0;
 
             //std::cout << "photon flux within range: " << glm::to_string(totalDiffuseLighting) << std::endl;
 
