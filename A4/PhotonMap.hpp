@@ -16,10 +16,10 @@ public:
     // direction that it came from
     glm::vec3 incident;
 
-    // how powerful the photon is
-    double flux;
+    // how powerful the photon is in rgb
+    glm::vec3 flux;
 
-    Photon(const glm::vec3 & postion, const glm::vec3 & incident, double flux);
+    Photon(const glm::vec3 & postion, const glm::vec3 & incident, const glm::vec3 & flux);
 
     double getDistance(const glm::vec3 & point);
 };
@@ -47,6 +47,8 @@ struct lessThanZ {
 
 class PhotonNode {
 
+    char nextDimension(char dimension);
+
 public:
 
     glm::vec3 min;
@@ -59,9 +61,10 @@ public:
     PhotonNode(Photon * splitPhoton, PhotonNode * lesserNode = nullptr, PhotonNode * greaterNode = nullptr);
     PhotonNode(std::vector<Photon>::iterator first, std::vector<Photon>::iterator last, const glm::vec3 & parentMin, const glm::vec3 & parentMax, char dimension = 'x');
 
-    std::vector<Photon*> nearestNeighbours(int k, const glm::vec3 & point);
+    // Find all points within range distance of the given point
+    void nearestNeighbours(std::vector<Photon*> & nearestPhotons, double range, const glm::vec3 & point, char dimension = 'x');
 
-    Photon* nearestNeighbours(const glm::vec3 & point);
+    Photon* nearestNeighbour(const glm::vec3 & point, char dimension = 'x');
 
     // TODO: implement
     //~PhotonNode();
@@ -87,12 +90,13 @@ public:
 
     PhotonTree();
 
-    void buildTree(std::vector<Photon> newPhotons);
+    void buildTree(std::vector<Photon> newPhotons, const glm::vec3 & min, const glm::vec3 & max);
 
     // TODO: implement
     //~PhotonTree();
 
-    std::vector<Photon*> nearestNeighbours(int k, const glm::vec3 & point);
+    // Find all points within range distance of given point
+    std::vector<Photon*> nearestNeighbours(double range, const glm::vec3 & point);
 
 };
 
@@ -107,6 +111,6 @@ public:
 
     PhotonMap(int numPhotons);
 
-    void emitLight(SceneNode * root);
+    void emitLight(SceneNode * root, const std::list<Light *> & lights);
 
 };
