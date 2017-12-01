@@ -103,3 +103,7 @@ lights = {white_light_top}
 gr.render(scene_root, 'reflection_1.png', 256, 256,
 	  {-50, 0, 99}, {100, -50, -100}, {0, 1, 0}, 90,
 	  ambientLight, lights)
+
+gr.render(scene_root, 'reflection_hi_res.png', 1920, 1080,
+	  {-50, 0, 99}, {100, -50, -100}, {0, 1, 0}, 90,
+	  ambientLight, lights)

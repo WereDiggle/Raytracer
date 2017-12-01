@@ -162,13 +162,13 @@ glm::vec3 Intersect::getLighting(const glm::vec3 & ambient, const std::list<Ligh
 
                 // Apply lighting if the shadow ray doesn't hit anything or the closest thing the shadow ray hits 
                 // TODO: turn shadows back on, also make them work better with transparent objects
-                if (!shadowIntersect.isHit || shadowIntersect.distanceHit >= lightDistance) {
+                //if (!shadowIntersect.isHit || shadowIntersect.distanceHit >= lightDistance) {
                     // surfaceNormal, lightDirection, lightIntensity, lightDistance, lightFalloff, viewDirection, u, v, bitmap, and bumpmap textures
                     totalDiffuseLighting += material->getLighting(glm::normalize(normalHit), 
                                                                 glm::normalize(pointToLight), light->colour, lightDistance, light->falloff, 
                                                                 -ray.direction, 
                                                                 textureU, textureV, bitmap, bumpmap);
-                }
+                //}
             }
 
             totalLighting += diffusePortion * totalDiffuseLighting;
