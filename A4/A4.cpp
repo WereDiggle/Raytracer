@@ -6,10 +6,9 @@
 
 #include "Ray.hpp"
 #include "PhotonMap.hpp"
+#include "Settings.hpp"
 
 #include "A4.hpp"
-
-#define SUPER_SAMPLING 1
 
 void A4_Render(
 		// What to render
@@ -152,7 +151,7 @@ void A4_Render(
 	}
 
 	// TODO: Photon mapping
-	PhotonMap testPhotonMap = PhotonMap(100000);
+	PhotonMap testPhotonMap = PhotonMap(NUM_PHOTONS);
 	testPhotonMap.emitLight(root, lights);
 	Intersect::globalPhotonMap = &testPhotonMap;
 

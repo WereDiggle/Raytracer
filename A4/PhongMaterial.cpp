@@ -23,10 +23,8 @@ static glm::vec3 blend(const glm::vec3 & a, const glm::vec3 b) {
     return glm::vec3(a.r * b.r, a.g * b.g, a.b * b.b);
 }
 
-glm::vec3 PhongMaterial::getLighting(const glm::vec3 & surfaceNormal, 
-									 const glm::vec3 & lightDirection, const glm::vec3 & lightIntensity, double lightDistance, double * lightFalloff,
-									 const glm::vec3 & viewDirection,
-									 double textureU, double textureV, Texture * bitmap, Texture * bumpmap) {
+// Stands for bidirectional reflectance distribution function
+glm::vec3 PhongMaterial::BRDF(const glm::vec3 & surfaceNormal, const glm::vec3 & lightDirection, const glm::vec3 & viewDirection) {
 
 	double lightSurfaceDot = glm::dot(lightDirection, surfaceNormal);
 
@@ -34,14 +32,30 @@ glm::vec3 PhongMaterial::getLighting(const glm::vec3 & surfaceNormal,
 	if (lightSurfaceDot <= 0) {
 		return glm::vec3(0, 0, 0);
 	}
-	
+
 	glm::vec3 reflectDirection = glm::normalize( 2*lightSurfaceDot*surfaceNormal - lightDirection );
 
 	double specularFactor = (glm::pow(glm::dot(reflectDirection, viewDirection), m_shininess))/lightSurfaceDot;
 
+	return specularFactor*m_ks;
+}
+
+glm::vec3 PhongMaterial::getLighting(const glm::vec3 & surfaceNormal, 
+									 const glm::vec3 & lightDirection, const glm::vec3 & lightIntensity, double lightDistance, double * lightFalloff,
+									 const glm::vec3 & viewDirection,
+									 double textureU, double textureV, Texture * bitmap, Texture * bumpmap) {
+
+	double lightSurfaceDot = glm::dot(lightDirection, surfaceNormal);
+
+	if (lightSurfaceDot <= 0) {
+		return glm::vec3(0, 0, 0);
+	}
+
+	glm::vec3 specularStuff = BRDF(surfaceNormal, lightDirection, viewDirection);
+
 	glm::vec3 textureColour = bitmap->getColour(textureU, textureV);
 
-	glm::vec3 phongStuff = blend(textureColour, m_kd) + specularFactor*m_ks;
+	glm::vec3 phongStuff = blend(textureColour, m_kd) + specularStuff;
 
 	double falloffFactor = lightSurfaceDot/(lightFalloff[0] + lightFalloff[1]*lightDistance + lightFalloff[2]*lightDistance*lightDistance);
 

@@ -17,11 +17,6 @@ class Intersect {
     bool getRefractionRay(Ray & refractedRay);
 
 public:
-    static const int MAX_DEPTH;
-
-    static const double MIN_CONTRIBUTION;
-
-    static const bool PHOTONS_ONLY;
 
     static PhotonMap * globalPhotonMap;
 
@@ -30,9 +25,13 @@ public:
     // used for when the intersection doesn't hit anything
     Intersect();
 
+    glm::vec3 getColour();
+
     Ray getReflectionRay();
 
     Ray getRefractionRay();
+
+    Ray getDiffuseReflectionRay();
 
     glm::vec3 getLighting(const glm::vec3 & ambient, const std::list<Light *> & lights, SceneNode * root, int depth = 0, double contribution = 1.0);
 

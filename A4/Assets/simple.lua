@@ -14,7 +14,7 @@ whiteMat = gr.material({1,1,1}, {0.5,0.5,0.5}, 10)
 flatWhite = gr.material({1,1,1}, {0,0,0}, 1)
 
 grass = gr.bitmap("grass.png",2.0,2.0)
-tile = gr.bitmap("bad_tile.png",10,10)
+tile = gr.bumpmap("tile.png",10,10,2000)
 number_cells = gr.bitmap("number_cells.png",1,1)
 
 grassBumps = gr.bumpmap("grass.png",2.0,2.0, 10)

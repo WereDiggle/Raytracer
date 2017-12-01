@@ -8,6 +8,8 @@
 
 #include "SceneNode.hpp"
 #include "Intersect.hpp"
+#include "Material.hpp"
+#include "Settings.hpp"
 
 #include "PhotonMap.hpp"
 
@@ -115,6 +117,63 @@ void PhotonNode::nearestNeighbours(std::vector<Photon*> & nearestPhotons, double
 
     if (glm::distance(point, closestGreaterPoint) <= range) {
         greaterNode->nearestNeighbours(nearestPhotons, range, point, nextDimension(dimension));
+    }
+}
+
+void PhotonNode::nearestNeighbours(std::vector<Photon*> & nearestPhotons, int k, double range, const glm::vec3 & point, char dimension) {
+
+
+    // leaf node base case
+    if (lesserNode == nullptr && greaterNode == nullptr) {
+
+        if (glm::distance(splitPhoton->position, point) <= range) {
+
+            // There's room in the vector, easy
+            if (nearestPhotons.size() < k) {
+                nearestPhotons.push_back(splitPhoton); 
+            }
+            // Gonna have to remove someone
+            else if (glm::distance(point, splitPhoton->position) < glm::distance(point, nearestPhotons[k-1]->position)) {
+                nearestPhotons[k-1] = splitPhoton;
+
+                // make sure that the last element is the largest
+                std::nth_element(nearestPhotons.begin(), nearestPhotons.begin()+k-1, nearestPhotons.end(), lessThanDistance(point));
+            }
+        }
+        return;
+    }
+    // There's only one path to go
+    else if (greaterNode == nullptr) {
+        //std::cout << "PhotonNode nearestNeighbours greaterNode is nullptr" << std::endl;
+        return lesserNode->nearestNeighbours(nearestPhotons, range, point, nextDimension(dimension));
+    }
+    else if (lesserNode == nullptr) {
+        //std::cout << "PhotonNode nearestNeighbours lesserNode is nullptr" << std::endl;
+        return greaterNode->nearestNeighbours(nearestPhotons, range, point, nextDimension(dimension));
+    }
+
+
+    // Check lesser bounding box
+    glm::vec3 closestLesserPoint = glm::vec3(glm::clamp(point.x, lesserNode->min.x, lesserNode->max.x), 
+                                             glm::clamp(point.y, lesserNode->min.y, lesserNode->max.y), 
+                                             glm::clamp(point.z, lesserNode->min.z, lesserNode->max.z));
+
+    double lesserDistance = glm::distance(point, closestLesserPoint);
+
+    // This means that a point inside the bounding box COULD be within range. Otherwise, no point is within range
+    if (lesserDistance <= range && (nearestPhotons.size() < k || lesserDistance < glm::distance(point, nearestPhotons[k-1]->position))) {
+        lesserNode->nearestNeighbours(nearestPhotons, k, range, point, nextDimension(dimension));
+    }
+
+    // Check greater bounding box
+    glm::vec3 closestGreaterPoint = glm::vec3(glm::clamp(point.x, greaterNode->min.x, greaterNode->max.x), 
+                                              glm::clamp(point.y, greaterNode->min.y, greaterNode->max.y), 
+                                              glm::clamp(point.z, greaterNode->min.z, greaterNode->max.z));
+
+    double greaterDistance = glm::distance(point, closestGreaterPoint);
+
+    if (greaterDistance <= range && (nearestPhotons.size() < k || greaterDistance < glm::distance(point, nearestPhotons[k-1]->position))) {
+        greaterNode->nearestNeighbours(nearestPhotons, k, range, point, nextDimension(dimension));
     }
 }
 
@@ -231,8 +290,19 @@ void PhotonTree::buildTree(std::vector<Photon> newPhotons, const glm::vec3 & min
 std::vector<Photon*> PhotonTree::nearestNeighbours(double range, const glm::vec3 & point) {
     std::vector<Photon*> nearestPhotons;
 
-    root->nearestNeighbours(nearestPhotons, range, point); 
-    //std::cout << "Num Photons around point: " << nearestPhotons.size() << std::endl; 
+    if (range > 0.0) {
+        root->nearestNeighbours(nearestPhotons, range, point); 
+    }
+
+    return nearestPhotons;
+}
+
+std::vector<Photon*> PhotonTree::nearestNeighbours(int k, double range, const glm::vec3 & point) {
+    std::vector<Photon*> nearestPhotons;
+
+    if (k > 0 && range > 0.0) {
+        root->nearestNeighbours(nearestPhotons, k, range, point); 
+    }
 
     return nearestPhotons;
 }
@@ -245,7 +315,7 @@ PhotonMap::PhotonMap(int numPhotons)
 
 void PhotonMap::emitLight(SceneNode * root, const std::list<Light *> & lights)
 {
-    if (lights.size() == 0) {
+    if (lights.size() == 0 || numPhotons <= 0) {
         return;
     }
 
@@ -253,9 +323,13 @@ void PhotonMap::emitLight(SceneNode * root, const std::list<Light *> & lights)
     int start_time = clock();
 
     std::vector<Photon> allPhotons;
+    std::vector<Photon> causticPhotons;
 
     glm::vec3 min = glm::vec3(std::numeric_limits<float>::max());
     glm::vec3 max = glm::vec3(std::numeric_limits<float>::min());
+
+    glm::vec3 causticMin = glm::vec3(std::numeric_limits<float>::max());
+    glm::vec3 causticMax = glm::vec3(std::numeric_limits<float>::min());
 
     // Use the fibonacci sphere algorithm
     // https://stackoverflow.com/questions/9600801/evenly-distributing-n-points-on-a-sphere
@@ -265,43 +339,82 @@ void PhotonMap::emitLight(SceneNode * root, const std::list<Light *> & lights)
     srand(2017);
     std::cout << "EMITTING PHOTONS" << std::endl;
 
-    // We're dividing the number of photons over the number of lights in the scene
     double progress = 0.0;
-    for (int i=0; i < numPhotons/lights.size() ; ++i) {
-        double y = ((i * offset) - 1.0) + (offset / 2.0);
-        double r = glm::sqrt(1.0 - y*y);
 
-        double phi = i * increment;
+    // We're dividing the number of photons over the number of lights in the scene
+    // TODO: figure out how to split up the power of the lights
+    double totalLightPower = 0;
+    for (Light * light : lights) {
+        totalLightPower += light->colour.r + light->colour.g + light->colour.b;
+    }
 
-        double x = glm::cos(phi) * r;
-        double z = glm::sin(phi) * r;
+    for (Light * light : lights) {
 
-        glm::vec3 photonDirection = glm::vec3(x,y,z);
+        double photonPortion = (light->colour.r + light->colour.g + light->colour.b)/totalLightPower; 
+        int photonsForLight = (int) (numPhotons * photonPortion);
+        glm::vec3 fluxPerPhoton = PHOTON_LIGHT_SCALE * light->colour / photonsForLight;
 
-        int lightIndex = 0;
-        for (Light * light : lights) {
+        // We want to split up the power from the lights by emitting more photons for brighter lights, so we have photons closer in flux
+        for (int i=0; i < photonsForLight; ++i) {
+
+            double y = ((i * offset) - 1.0) + (offset / 2.0);
+            double r = glm::sqrt(1.0 - y*y);
+
+            double phi = i * increment;
+
+            double x = glm::cos(phi) * r;
+            double z = glm::sin(phi) * r;
+
+            glm::vec3 photonDirection = glm::vec3(x,y,z);
+
+            int lightIndex = 0;
+
             Ray photonRay = Ray(light->position, light->position + photonDirection);
 
             Intersect photonIntersect = root->castRay(photonRay);
 
-            // TODO: loop until we hit a diffuse surface. Use monte carlo.
+            // TODO: loop until we hit a diffuse surface. Use russian roulette.
             // We do not handle flux changing frequencies passing through coloured surfaces
             // ie. white light going through green glass
+            // Also we don't handle diffuse light reflections yet
 
             // reflectiveness, diffuse, and trasparency are probabilities that sum to 1.0
             // We'll just default to diffuse
 
-            for (int numRecursions=0; photonIntersect.isHit && numRecursions<Intersect::MAX_DEPTH; ++numRecursions) {
+            bool isCaustic = false;
+            for (int numRecursions=0; photonIntersect.isHit && numRecursions<MAX_DEPTH; ++numRecursions) {
 
                 double prob = static_cast <double> (rand()) / static_cast <double> (RAND_MAX);
+                glm::vec3 diffuseColour = photonIntersect.getColour();
+
+                double diffuseReflectiveness;
+
+                // We want all photons to bounce at least once
+                if (numRecursions == 0) {
+                    diffuseReflectiveness = photonIntersect.diffuse;
+                }
+                else {
+                    diffuseReflectiveness = 0.5 * photonIntersect.diffuse * glm::clamp(diffuseColour.r + diffuseColour.g + diffuseColour.b, 0.0f, 3.0f)/3.0f;
+                }
 
                 if (photonIntersect.reflectiveness > 0.0 && prob <= photonIntersect.reflectiveness) {
                     photonIntersect = root->castRay(photonIntersect.getReflectionRay());
+                    isCaustic = true;
                 }
                 else if (photonIntersect.transparency > 0.0 && prob <= photonIntersect.reflectiveness + photonIntersect.transparency) {
                     photonIntersect = root->castRay(photonIntersect.getRefractionRay());
+                    isCaustic = true;
+                }
+                else if (diffuseReflectiveness > 0.0 && prob <= photonIntersect.reflectiveness + photonIntersect.transparency + diffuseReflectiveness) {
+                    // TODO: diffuse reflection
+                    // Random direction for this photon that faces the same was as the normal, bump maps might do some weird stuff with this 
+                    photonIntersect = root->castRay(photonIntersect.getDiffuseReflectionRay());
+                    isCaustic = false;
                 }
                 else {
+                    if (numRecursions == 0) {
+                        std::cout << "This should not happen" << std::endl;
+                    }
                     break;
                 }
             }
@@ -310,34 +423,46 @@ void PhotonMap::emitLight(SceneNode * root, const std::list<Light *> & lights)
             // For now just use hard coded factors
             if (photonIntersect.isHit) {
                 //std::cout << "photonIntersect pointHit: " << glm::to_string(photonIntersect.pointHit) << std::endl;
-                Photon newPhoton = Photon(photonIntersect.pointHit, photonRay.direction, light->colour);
+                Photon newPhoton = Photon(photonIntersect.pointHit, -photonRay.direction, fluxPerPhoton);
                 //std::cout << "newPhoton position: " << glm::to_string(newPhoton.position) << std::endl;
-                allPhotons.push_back(newPhoton);
+                if (isCaustic) {
+                    causticPhotons.push_back(newPhoton);
 
-                min.x = glm::min(newPhoton.position.x, min.x);
-                min.y = glm::min(newPhoton.position.y, min.y);
-                min.z = glm::min(newPhoton.position.z, min.z);
+                    causticMin.x = glm::min(newPhoton.position.x, causticMin.x);
+                    causticMin.y = glm::min(newPhoton.position.y, causticMin.y);
+                    causticMin.z = glm::min(newPhoton.position.z, causticMin.z);
 
-                max.x = glm::max(newPhoton.position.x, max.x);
-                max.y = glm::max(newPhoton.position.y, max.y);
-                max.z = glm::max(newPhoton.position.z, max.z);
+                    causticMax.x = glm::max(newPhoton.position.x, causticMax.x);
+                    causticMax.y = glm::max(newPhoton.position.y, causticMax.y);
+                    causticMax.z = glm::max(newPhoton.position.z, causticMax.z);
+                }
+                else {
+                    allPhotons.push_back(newPhoton);
 
-                //std::cout << "calculating photon bounding box: min: " << glm::to_string(min) << ", max: " << glm::to_string(max) << std::endl;
+                    min.x = glm::min(newPhoton.position.x, min.x);
+                    min.y = glm::min(newPhoton.position.y, min.y);
+                    min.z = glm::min(newPhoton.position.z, min.z);
+
+                    max.x = glm::max(newPhoton.position.x, max.x);
+                    max.y = glm::max(newPhoton.position.y, max.y);
+                    max.z = glm::max(newPhoton.position.z, max.z);
+                }
             }
 
-			// Progress calculations
-			int intermediate_time = clock();
-			std::cout << std::setfill('0') << std::setw(5) << std::fixed << std::setprecision(2);
-			std::cout << "Progress: " << (progress/numPhotons) * 100 << "%";
-			double elapsedSeconds = (intermediate_time - start_time)/double(CLOCKS_PER_SEC);
-			int minutes = (int)elapsedSeconds / 60;
-			double seconds = elapsedSeconds - minutes*60;
-			std::cout << " [Elapsed Time: " << minutes << " minutes, " << seconds << " seconds] \t" << '\r';
-			std::cout.flush();
+            // Progress calculations
+            int intermediate_time = clock();
+            std::cout << std::setfill('0') << std::setw(5) << std::fixed << std::setprecision(2);
+            std::cout << "Progress: " << (progress/numPhotons) * 100 << "%";
+            double elapsedSeconds = (intermediate_time - start_time)/double(CLOCKS_PER_SEC);
+            int minutes = (int)elapsedSeconds / 60;
+            double seconds = elapsedSeconds - minutes*60;
+            std::cout << " [Elapsed Time: " << minutes << " minutes, " << seconds << " seconds] \t" << '\r';
+            std::cout.flush();
 
             progress += 1.0;
         }
     }
+
 
 	std::cout << std::endl;
 	int stop_time = clock();
@@ -346,15 +471,30 @@ void PhotonMap::emitLight(SceneNode * root, const std::list<Light *> & lights)
     // We have a vector of photons now, make the Photon tree
     std::cout << "BUILDING PHOTON TREE" << std::endl;
     photonTree.buildTree(allPhotons, min, max);
+    causticPhotonTree.buildTree(causticPhotons, causticMin, causticMax);
     int tree_time = clock();
     std::cout << "PHOTON TREE build time: " << (tree_time - stop_time)/double(CLOCKS_PER_SEC) << " seconds" << std::endl;
 }
 
 std::vector<Photon*> PhotonMap::getPhotonsAroundPoint(double range, const glm::vec3 & point) {
+    if (numPhotons <= 0) {
+        return std::vector<Photon*>();
+    }
     return photonTree.nearestNeighbours(range, point);
 }
 
+std::vector<Photon*> PhotonMap::getPhotonsAroundPoint(int k, double range, const glm::vec3 & point) {
+    if (numPhotons <= 0) {
+        return std::vector<Photon*>();
+    }
+    return photonTree.nearestNeighbours(k, range, point);
+}
+
 glm::vec3 PhotonMap::getFluxAroundPoint(double range, const glm::vec3 & point) {
+    if (numPhotons <= 0) {
+        return glm::vec3(0);
+    }
+
     std::vector<Photon*> nearestPhotons = getPhotonsAroundPoint(range, point);
     glm::vec3 totalFlux = glm::vec3(0);
     for (std::vector<Photon*>::iterator it = nearestPhotons.begin(); it != nearestPhotons.end(); ++it) {
@@ -362,4 +502,55 @@ glm::vec3 PhotonMap::getFluxAroundPoint(double range, const glm::vec3 & point) {
     }
 
     return totalFlux;
+}
+
+glm::vec3 PhotonMap::getFluxAroundPoint(int k, double range, const glm::vec3 & point) {
+    if (numPhotons <= 0) {
+        return glm::vec3(0);
+    }
+    
+    std::vector<Photon*> nearestPhotons = getPhotonsAroundPoint(k, range, point);
+    glm::vec3 totalFlux = glm::vec3(0);
+    for (std::vector<Photon*>::iterator it = nearestPhotons.begin(); it != nearestPhotons.end(); ++it) {
+        totalFlux += (*it)->flux;
+    }
+
+    return totalFlux;
+}
+
+glm::vec3 PhotonMap::getIrradiance(int k, double range, const glm::vec3 & point, const glm::vec3 & viewDirection, const glm::vec3 & surfaceNormal, Material * material) {
+    if (numPhotons <= 0) {
+        return glm::vec3(0);
+    }
+    std::vector<Photon*> nearestPhotons = getPhotonsAroundPoint(k, range, point);
+
+    if (nearestPhotons.size() <= 0) {
+        return glm::vec3(0);
+    }
+
+    // Surface area
+    std::nth_element(nearestPhotons.begin(), nearestPhotons.end()-1, nearestPhotons.end());
+    double radius = glm::max(glm::distance(point, (*(nearestPhotons.end()-1))->position), 0.5f);
+    double circleArea = glm::pi<double>() * radius * radius;
+
+    // Bidirectional reflectance distribution and photon flux
+    glm::vec3 sumIrradiance;
+    for (std::vector<Photon*>::iterator it = nearestPhotons.begin(); it != nearestPhotons.end(); ++it) {
+        // TODO: we're just multiplying by the flux of the photon for now. 
+        // Not sure if I should take the distance of the photon from the point or the incident into account
+        double diffuseBRDF = glm::clamp(glm::dot(surfaceNormal, (*it)->incident), 0.0f, 1.0f);
+
+        sumIrradiance += diffuseBRDF * (*it)->flux;
+    }
+
+    glm::vec3 avgIrradiance = sumIrradiance/circleArea;
+    if (avgIrradiance.r >= 0.0f || avgIrradiance.g >= 0.0f || avgIrradiance.b >= 0.0f) {
+        std::cout << "Bright Irradiance" << std::endl;
+        std::cout << "circleArea: " << circleArea << std::endl;
+        std::cout << "sumIrradiance: " << glm::to_string(sumIrradiance) << std::endl;
+        std::cout << "numPhotons: " << nearestPhotons.size() << std::endl;
+    }
+
+    return sumIrradiance/circleArea;
+
 }

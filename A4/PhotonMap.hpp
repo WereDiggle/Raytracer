@@ -7,6 +7,7 @@
 #include "Light.hpp"
 
 class SceneNode;
+class Material;
 
 // Stores info about a single photon interaction with a surface
 class Photon {
@@ -48,6 +49,20 @@ struct lessThanZ {
     }
 };
 
+// Compare object for distance
+struct lessThanDistance {
+
+    glm::vec3 point;
+
+    lessThanDistance(const glm::vec3 & newPoint) {
+        point = newPoint;
+    }
+
+    bool operator() (Photon * a, Photon * b) const {
+        return glm::distance(point, a->position) < glm::distance(point, b->position); 
+    }
+};
+
 class PhotonNode {
 
     char nextDimension(char dimension);
@@ -66,6 +81,9 @@ public:
 
     // Find all points within range distance of the given point
     void nearestNeighbours(std::vector<Photon*> & nearestPhotons, double range, const glm::vec3 & point, char dimension = 'x');
+
+    // Find up to k closest photons within range of point
+    void nearestNeighbours(std::vector<Photon*> & nearestPhotons, int k, double range, const glm::vec3 & point, char dimension = 'x');
 
     Photon* nearestNeighbour(const glm::vec3 & point, char dimension = 'x');
 
@@ -101,6 +119,9 @@ public:
     // Find all points within range distance of given point
     std::vector<Photon*> nearestNeighbours(double range, const glm::vec3 & point);
 
+    // Find up to k closest photons within range of point
+    std::vector<Photon*> nearestNeighbours(int k, double range, const glm::vec3 & point);
+
 };
 
 // Handles all emitting, storing, and gathering of photon info
@@ -110,13 +131,23 @@ class PhotonMap {
 
     PhotonTree photonTree;
 
+    PhotonTree causticPhotonTree;
+
 public:
 
     PhotonMap(int numPhotons);
 
     void emitLight(SceneNode * root, const std::list<Light *> & lights);
 
+    // Find all points within range distance of given point
     std::vector<Photon*> getPhotonsAroundPoint(double range, const glm::vec3 & point);
 
+    // Find up to numPhotons of the closest photons to point within a maximum range of maxRange
+    std::vector<Photon*> getPhotonsAroundPoint(int k, double range, const glm::vec3 & point);
+
     glm::vec3 getFluxAroundPoint(double range, const glm::vec3 & point);
+
+    glm::vec3 getFluxAroundPoint(int k, double range, const glm::vec3 & point);
+    
+    glm::vec3 getIrradiance(int k, double range, const glm::vec3 & point, const glm::vec3 & viewDirection, const glm::vec3 & surfaceNormal, Material * material);
 };

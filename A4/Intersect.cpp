@@ -4,14 +4,9 @@
 
 #include "SceneNode.hpp"
 #include "PhotonMap.hpp"
+#include "Settings.hpp"
 
 #include "Intersect.hpp"
-
-const int Intersect::MAX_DEPTH = 10;
-
-const double Intersect::MIN_CONTRIBUTION = 0.01;
-
-const bool Intersect::PHOTONS_ONLY = true;
 
 PhotonMap * Intersect::globalPhotonMap = nullptr;
 
@@ -39,6 +34,27 @@ Ray Intersect::getRefractionRay() {
     else {
         return getReflectionRay();
     }
+}
+
+Ray Intersect::getDiffuseReflectionRay() {
+
+    // theta in [0, 2PI]
+    double theta = static_cast <double> (rand()) / static_cast <double> (RAND_MAX);
+    theta *= 2*glm::pi<double>();
+
+    // phi in [-1, 1]
+    double phi = static_cast <double> (rand()) / static_cast <double> (RAND_MAX);
+    phi = 2*phi - 1;
+
+    double temp = glm::sqrt(1-phi*phi);
+    glm::vec3 randDirection = glm::normalize(glm::vec3(temp*glm::cos(theta), temp*glm::cos(theta), phi));
+
+    // completely random direction, check the dot product, if negative, flip the vector, by flip, I mean negate, it's random
+    if (glm::dot(normalHit, randDirection) <= 0) {
+        randDirection = -randDirection;
+    }
+
+    return Ray(pointHit, pointHit + randDirection);
 }
 
 bool Intersect::getRefractionRay(Ray & refractedRay) {
@@ -76,6 +92,10 @@ bool Intersect::getRefractionRay(Ray & refractedRay) {
 
 static glm::vec3 blend(const glm::vec3 & a, const glm::vec3 b) {
     return glm::vec3(a.r * b.r, a.g * b.g, a.b * b.b);
+}
+
+glm::vec3 Intersect::getColour() {
+    return blend(bitmap->getColour(textureU, textureV), material->getColour());
 }
 
 glm::vec3 Intersect::getLighting(const glm::vec3 & ambient, const std::list<Light *> & lights, SceneNode * root, int depth, double contribution) {
@@ -116,44 +136,44 @@ glm::vec3 Intersect::getLighting(const glm::vec3 & ambient, const std::list<Ligh
     }
     if (diffusePortion > 0) {
 
-        // OLD WAY OF LIGHTING
-        /*
-        //std::cout << "ray hit a diffuse surface at: " << glm::to_string(pointHit) << std::endl;
-        glm::vec3 matColour = material->getColour();
-        glm::vec3 totalDiffuseLighting = blend(ambient, matColour);
-
-        // Add each individual light contribution
-        for (Light * light : lights) {
-
-            Ray shadowRay = Ray(pointHit, light->position);
-            Intersect shadowIntersect = root->castRay(shadowRay);
-            glm::vec3 pointToLight = light->position - pointHit;
-            double lightDistance = glm::length(pointToLight);
-
-            // Apply lighting if the shadow ray doesn't hit anything or the closest thing the shadow ray hits 
-            // TODO: turn shadows back on, also make them work better with transparent objects
-            //if (!shadowIntersect.isHit || shadowIntersect.distanceHit >= lightDistance) {
-                // surfaceNormal, lightDirection, lightIntensity, lightDistance, lightFalloff, viewDirection, u, v, bitmap, and bumpmap textures
-                totalDiffuseLighting += material->getLighting(glm::normalize(normalHit), 
-                                                              glm::normalize(pointToLight), light->colour, lightDistance, light->falloff, 
-                                                              -ray.direction, 
-                                                              textureU, textureV, bitmap, bumpmap);
-            //}
-        }
-        */
-
         // DEBUG CODE FOR PHOTONS
-        glm::vec3 totalDiffuseLighting;
         if (PHOTONS_ONLY) {
-            // Grab all photons in sphere around pointHit
-            totalDiffuseLighting = globalPhotonMap->getFluxAroundPoint(5, pointHit)/100.0;
+            // Grab 10 photons in sphere around pointHit
+            glm::vec3 totalDiffuseLighting = globalPhotonMap->getFluxAroundPoint(PHOTON_GATHER_NUM, PHOTON_GATHER_RANGE, pointHit);
 
             //std::cout << "photon flux within range: " << glm::to_string(totalDiffuseLighting) << std::endl;
 
             return totalDiffuseLighting;
         }
+        else {
 
-        totalLighting += diffusePortion * totalDiffuseLighting;
+            glm::vec3 globalIllum = globalPhotonMap->getIrradiance(PHOTON_GATHER_NUM, PHOTON_GATHER_RANGE, pointHit, -ray.direction, glm::normalize(normalHit), material);
+
+            glm::vec3 matColour = material->getColour();
+            glm::vec3 totalDiffuseLighting = blend(globalIllum+ambient, matColour);
+
+            // Add each individual light contribution
+            for (Light * light : lights) {
+
+                Ray shadowRay = Ray(pointHit, light->position);
+                Intersect shadowIntersect = root->castRay(shadowRay);
+                glm::vec3 pointToLight = light->position - pointHit;
+                double lightDistance = glm::length(pointToLight);
+
+                // Apply lighting if the shadow ray doesn't hit anything or the closest thing the shadow ray hits 
+                // TODO: turn shadows back on, also make them work better with transparent objects
+                if (!shadowIntersect.isHit || shadowIntersect.distanceHit >= lightDistance) {
+                    // surfaceNormal, lightDirection, lightIntensity, lightDistance, lightFalloff, viewDirection, u, v, bitmap, and bumpmap textures
+                    totalDiffuseLighting += material->getLighting(glm::normalize(normalHit), 
+                                                                glm::normalize(pointToLight), light->colour, lightDistance, light->falloff, 
+                                                                -ray.direction, 
+                                                                textureU, textureV, bitmap, bumpmap);
+                }
+            }
+
+            totalLighting += diffusePortion * totalDiffuseLighting;
+        }
+
     }
 
     return totalLighting;
