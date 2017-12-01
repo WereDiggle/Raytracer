@@ -22,7 +22,7 @@ tile = gr.bitmap("tile.png",10,10)
 number_cells = gr.bitmap("number_cells.png",1,1)
 
 spider_bumps = gr.bumpmap("spider_tank.png",1.0,1.0,2000)
-tile_bumps = gr.bumpmap("tile.png", 10, 10, 2000)
+tile_bumps = gr.bumpmap("tile.png", 10, 10, 20)
 stars_bumps = gr.bumpmap("stars.png", 1, 1, 2000)
 spiral_bumps = gr.bumpmap("spiral.png", 10, 10, 2000)
 rough_bumps = gr.bumpmap("rough.png", 1, 1, 2000)

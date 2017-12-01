@@ -103,6 +103,6 @@ ambientLight = {0.1, 0.1, 0.1}
 
 lights = {white_light_top}
 
-gr.render(scene_root, 'texture_maps_hi_res.png', 1920, 1080,
+gr.render(scene_root, 'texture_maps_hi_res.png', 1920, 1920,
 	  {-50, 0, 99}, {100, -50, -100}, {0, 1, 0}, 90,
 	  ambientLight, lights)
