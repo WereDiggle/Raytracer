@@ -198,13 +198,13 @@ water_surface:set_material(cyan)
 water_surface:set_transparency(1, 1.3)
 water_surface:set_reflectiveness(0);
 water_surface:set_diffuse(0.1)
---water_surface:set_bumpmap(waves)
+water_surface:set_bumpmap(waves)
 scene_root:add_child(water_surface)
 
 -- duck
 yellow_rubber = gr.material({1.0, 1.0, 0.0}, {0.2,0.2,0.2}, 10)
 
-duck = gr.sphere('Scout_the_duck', 'duck.obj')
+duck = gr.mesh('Scout_the_duck', 'duck.obj')
 duck:scale(10,10,10)
 duck:rotate('y', 135)
 duck:translate(0, -45, -50)
@@ -221,7 +221,7 @@ white_light_close = gr.light({-20, -30, -40}, {1, 1, 1}, {1, 0, 0})
 
 ambientLight = {0.1, 0.1, 0.1}
 
-lights = {white_light_center, white_light_right, white_light_front}
+lights = {white_light_left, white_light_right, white_light_front}
 
 camera_origin = {0, 50, 50}
 camera_dest = {0, -45, -50}
@@ -235,5 +235,9 @@ gr.render(scene_root, 'bath_256_256.png', 256, 256,
 	  ambientLight, lights)
 
 gr.render(scene_root, 'bath_512_512.png', 512, 512,
+	  camera_origin, camera_dest, {0, 1, 0}, 90,
+	  ambientLight, lights)
+
+gr.render(scene_root, 'bath_512_512.png', 1920, 1920,
 	  camera_origin, camera_dest, {0, 1, 0}, 90,
 	  ambientLight, lights)
