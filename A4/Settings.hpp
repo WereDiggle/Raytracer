@@ -16,7 +16,7 @@
 #define PHOTON_GATHER_RANGE 4.0
 
 // Max recursion depth for ray casting
-#define MAX_DEPTH 10
+#define MAX_DEPTH 20
 
 // Stop raycast recursion if the colour contribution is less than this
 #define MIN_CONTRIBUTION 0.01

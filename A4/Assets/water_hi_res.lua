@@ -99,22 +99,22 @@ ambientLight = {0.1, 0.1, 0.1}
 
 lights = {white_light_left}
 
-gr.render(scene_root, 'water_waves_20.png', 256, 256,
+gr.render(scene_root, 'water_waves_20_hi_res.png', 1920, 1080,
 	  {0, 50, 90}, {0, -100, -100}, {0, 1, 0}, 100,
 	  ambientLight, lights)
 
 water_surface:set_bumpmap(waves_40)
-gr.render(scene_root, 'water_waves_40.png', 256, 256,
+gr.render(scene_root, 'water_waves_40_hi_res.png', 1920, 1080,
 	  {0, 50, 90}, {0, -100, -100}, {0, 1, 0}, 100,
 	  ambientLight, lights)
 
 water_surface:set_bumpmap(waves_80)
-gr.render(scene_root, 'water_waves_80.png', 256, 256,
+gr.render(scene_root, 'water_waves_80_hi_res.png', 1920, 1080,
 	  {0, 50, 90}, {0, -100, -100}, {0, 1, 0}, 100,
 	  ambientLight, lights)
 
 water_surface:set_bumpmap(waves_160)
-gr.render(scene_root, 'water_waves_160.png', 256, 256,
+gr.render(scene_root, 'water_waves_160_hi_res.png', 1920, 1080,
 	  {0, 50, 90}, {0, -100, -100}, {0, 1, 0}, 100,
 	  ambientLight, lights)
 
@@ -123,13 +123,13 @@ water_surface:set_diffuse(1)
 water_surface:set_reflectiveness(0)
 water_surface:set_transparency(0, 1)
 
-gr.render(scene_root, 'water_left_light.png', 256, 256,
+gr.render(scene_root, 'water_left_light_hi_res.png', 1920, 1080,
 	  {0, 50, 90}, {0, -100, -100}, {0, 1, 0}, 100,
 	  ambientLight, lights)
 
 
 lights = {white_light_right}
 
-gr.render(scene_root, 'water_right_light.png', 256, 256,
+gr.render(scene_root, 'water_right_light_hi_res.png', 1920, 1080,
 	  {0, 50, 90}, {0, -100, -100}, {0, 1, 0}, 100,
 	  ambientLight, lights)
