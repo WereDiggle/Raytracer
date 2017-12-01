@@ -77,6 +77,37 @@ Intersect SceneNode::castRay(const Ray & ray) {
 	return rayIntersect.transformIntersect(trans);
 }
 
+Intersect SceneNode::castShadowRay(const Ray & ray, const glm::vec3 & light) {
+
+	Ray lightRay = Ray(light, ray.origin);
+	lightRay = lightRay.transformRay(invtrans);
+	Ray transformedRay = ray.transformRay(invtrans);
+
+	double distanceToLight = glm::distance(transformedRay.origin, lightRay.origin);
+
+	// remember that checkIntersection is virtual, so it should call the derived checkIntersection if possible
+	Intersect rayIntersect = checkIntersection(transformedRay);
+
+	double totalTransparency = 1.0;
+	if (rayIntersect.isHit && rayIntersect.distanceHit <= distanceToLight) {
+		totalTransparency -= (1-rayIntersect.transparency);
+	}
+
+	// recurse through all children, casting transformed rays at all of them
+	// We want to sum up all transparency values between the shadow and the light
+	for (SceneNode * childNode : children) {
+		Intersect curRayIntersect = childNode->castShadowRay(transformedRay, lightRay.origin);
+		if (curRayIntersect.isHit && curRayIntersect.distanceHit <= distanceToLight) {
+			totalTransparency -= (1-curRayIntersect.transparency);
+			rayIntersect = curRayIntersect;
+		}
+	}
+
+	rayIntersect.transparency = totalTransparency;
+
+	return rayIntersect.transformIntersect(trans);
+}
+
 Intersect SceneNode::castDoubleSidedRay(const Ray & ray) {
 
 	Ray transformedRay = ray.transformRay(invtrans);
@@ -98,7 +129,6 @@ Intersect SceneNode::castDoubleSidedRay(const Ray & ray) {
 
 }
 
-// ray casting for a shadow, we only need to know whether it hits a surface, not the closest surface it hits
 Intersect SceneNode::castOnceRay(const Ray & ray) {
 	Ray transformedRay = ray.transformRay(invtrans);
 

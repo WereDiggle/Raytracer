@@ -27,6 +27,9 @@ public:
     // Cast a ray, returning the closest intersection where the normal of the surface faces opposite the ray direction
     virtual Intersect castRay(const Ray & ray);
 
+    // Cast a ray for shadow calculations, Sums up the non-transparency of every object on the way to the light
+    virtual Intersect castShadowRay(const Ray & ray, const glm::vec3 & light);
+
     // Cast a ray, returning if it hits any object along the path, not necessarily the closest. 
     virtual Intersect castOnceRay(const Ray & ray);
 

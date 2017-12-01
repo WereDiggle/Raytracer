@@ -149,26 +149,28 @@ glm::vec3 Intersect::getLighting(const glm::vec3 & ambient, const std::list<Ligh
 
             glm::vec3 globalIllum = globalPhotonMap->getIrradiance(PHOTON_GATHER_NUM, PHOTON_GATHER_RANGE, pointHit, -ray.direction, glm::normalize(normalHit), material);
 
-            glm::vec3 matColour = material->getColour();
-            glm::vec3 totalDiffuseLighting = blend(globalIllum+ambient, matColour);
+            glm::vec3 totalDiffuseLighting = blend(globalIllum+ambient, blend(material->getColour(), bitmap->getColour(textureU, textureV)));
 
             // Add each individual light contribution
             for (Light * light : lights) {
 
                 Ray shadowRay = Ray(pointHit, light->position);
-                Intersect shadowIntersect = root->castRay(shadowRay);
+                Intersect shadowIntersect = root->castShadowRay(shadowRay, light->position);
                 glm::vec3 pointToLight = light->position - pointHit;
                 double lightDistance = glm::length(pointToLight);
 
                 // Apply lighting if the shadow ray doesn't hit anything or the closest thing the shadow ray hits 
-                // TODO: turn shadows back on, also make them work better with transparent objects
+                // TODO: this only works for one transparent object
+                double lightingPercentage = shadowIntersect.transparency; 
                 if (!shadowIntersect.isHit || shadowIntersect.distanceHit >= lightDistance) {
-                    // surfaceNormal, lightDirection, lightIntensity, lightDistance, lightFalloff, viewDirection, u, v, bitmap, and bumpmap textures
-                    totalDiffuseLighting += material->getLighting(glm::normalize(normalHit), 
-                                                                glm::normalize(pointToLight), light->colour, lightDistance, light->falloff, 
-                                                                -ray.direction, 
-                                                                textureU, textureV, bitmap, bumpmap);
+                    lightingPercentage = 1.0;
                 }
+
+                // surfaceNormal, lightDirection, lightIntensity, lightDistance, lightFalloff, viewDirection, u, v, bitmap, and bumpmap textures
+                totalDiffuseLighting += lightingPercentage * material->getLighting(glm::normalize(normalHit), 
+                                                                                    glm::normalize(pointToLight), light->colour, lightDistance, light->falloff, 
+                                                                                    -ray.direction, 
+                                                                                    textureU, textureV, bitmap, bumpmap);
             }
 
             totalLighting += diffusePortion * totalDiffuseLighting;
