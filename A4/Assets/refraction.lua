@@ -129,7 +129,7 @@ ambientLight = {0.1, 0.1, 0.1}
 
 lights = {white_light_top}
 
-gr.render(scene_root, 'refraction_1_05.png', 256, 256,
+gr.render(scene_root, 'refraction_1_05_hi_res.png', 1920, 1080,
 	  {0, -50, 99}, {0, -50, -100}, {0, 1, 0}, 90,
 	  ambientLight, lights)
 
@@ -139,7 +139,7 @@ top_left_sphere:set_transparency(1, 1.1)
 bottom_left_sphere:set_transparency(1, 1.1)
 front_sphere:set_transparency(1, 1.1)
 
-gr.render(scene_root, 'refraction_1_1.png', 256, 256,
+gr.render(scene_root, 'refraction_1_1_hi_res.png', 1920, 1080,
 	  {0, -50, 99}, {0, -50, -100}, {0, 1, 0}, 90,
 	  ambientLight, lights)
 
@@ -149,7 +149,7 @@ top_left_sphere:set_transparency(1, 1.2)
 bottom_left_sphere:set_transparency(1, 1.2)
 front_sphere:set_transparency(1, 1.2)
 
-gr.render(scene_root, 'refraction_1_2.png', 256, 256,
+gr.render(scene_root, 'refraction_1_2_hi_res.png', 1920, 1080,
 	  {0, -50, 99}, {0, -50, -100}, {0, 1, 0}, 90,
 	  ambientLight, lights)
 
@@ -159,7 +159,7 @@ top_left_sphere:set_transparency(1, 1.3)
 bottom_left_sphere:set_transparency(1, 1.3)
 front_sphere:set_transparency(1, 1.3)
 
-gr.render(scene_root, 'refraction_1_3.png', 256, 256,
+gr.render(scene_root, 'refraction_1_3_hi_res.png', 1920, 1080,
 	  {0, -50, 99}, {0, -50, -100}, {0, 1, 0}, 90,
 	  ambientLight, lights)
 
@@ -169,7 +169,7 @@ top_left_sphere:set_transparency(1, 1.4)
 bottom_left_sphere:set_transparency(1, 1.4)
 front_sphere:set_transparency(1, 1.4)
 
-gr.render(scene_root, 'refraction_1_4.png', 256, 256,
+gr.render(scene_root, 'refraction_1_4_hi_res.png', 1920, 1080,
 	  {0, -50, 99}, {0, -50, -100}, {0, 1, 0}, 90,
 	  ambientLight, lights)
 
@@ -179,7 +179,7 @@ top_left_sphere:set_transparency(1, 1.5)
 bottom_left_sphere:set_transparency(1, 1.5)
 front_sphere:set_transparency(1, 1.5)
 
-gr.render(scene_root, 'refraction_1_5.png', 256, 256,
+gr.render(scene_root, 'refraction_1_5_hi_res.png', 1920, 1080,
 	  {0, -50, 99}, {0, -50, -100}, {0, 1, 0}, 90,
 	  ambientLight, lights)
 
@@ -189,7 +189,7 @@ top_left_sphere:set_transparency(1, 1.6)
 bottom_left_sphere:set_transparency(1, 1.6)
 front_sphere:set_transparency(1, 1.6)
 
-gr.render(scene_root, 'refraction_1_6.png', 256, 256,
+gr.render(scene_root, 'refraction_1_6_hi_res.png', 1920, 1080,
 	  {0, -50, 99}, {0, -50, -100}, {0, 1, 0}, 90,
 	  ambientLight, lights)
 
@@ -199,7 +199,7 @@ top_left_sphere:set_transparency(1, 1.7)
 bottom_left_sphere:set_transparency(1, 1.7)
 front_sphere:set_transparency(1, 1.7)
 
-gr.render(scene_root, 'refraction_1_7.png', 256, 256,
+gr.render(scene_root, 'refraction_1_7_hi_res.png', 1920, 1080,
 	  {0, -50, 99}, {0, -50, -100}, {0, 1, 0}, 90,
 	  ambientLight, lights)
 
@@ -209,6 +209,6 @@ top_left_sphere:set_transparency(1, 1.8)
 bottom_left_sphere:set_transparency(1, 1.8)
 front_sphere:set_transparency(1, 1.8)
 
-gr.render(scene_root, 'refraction_1_8.png', 256, 256,
+gr.render(scene_root, 'refraction_1_8_hi_res.png', 1920, 1080,
 	  {0, -50, 99}, {0, -50, -100}, {0, 1, 0}, 90,
 	  ambientLight, lights)
