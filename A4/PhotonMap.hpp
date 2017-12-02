@@ -122,6 +122,9 @@ public:
     // Find up to k closest photons within range of point
     std::vector<Photon*> nearestNeighbours(int k, double range, const glm::vec3 & point);
 
+    // How many photons are stored inside
+    int size();
+
 };
 
 // Handles all emitting, storing, and gathering of photon info
@@ -142,12 +145,22 @@ public:
     // Find all points within range distance of given point
     std::vector<Photon*> getPhotonsAroundPoint(double range, const glm::vec3 & point);
 
+    std::vector<Photon*> getCausticPhotonsAroundPoint(double range, const glm::vec3 & point);
+
     // Find up to numPhotons of the closest photons to point within a maximum range of maxRange
     std::vector<Photon*> getPhotonsAroundPoint(int k, double range, const glm::vec3 & point);
 
+    std::vector<Photon*> getCausticPhotonsAroundPoint(int k, double range, const glm::vec3 & point);
+
     glm::vec3 getFluxAroundPoint(double range, const glm::vec3 & point);
 
+    glm::vec3 getCausticFluxAroundPoint(double range, const glm::vec3 & point);
+
     glm::vec3 getFluxAroundPoint(int k, double range, const glm::vec3 & point);
+
+    glm::vec3 getCausticFluxAroundPoint(int k, double range, const glm::vec3 & point);
     
     glm::vec3 getIrradiance(int k, double range, const glm::vec3 & point, const glm::vec3 & viewDirection, const glm::vec3 & surfaceNormal, Material * material);
+
+    glm::vec3 getCausticIrradiance(int k, double range, const glm::vec3 & point, const glm::vec3 & viewDirection, const glm::vec3 & surfaceNormal, Material * material);
 };

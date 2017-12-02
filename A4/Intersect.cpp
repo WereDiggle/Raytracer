@@ -38,9 +38,11 @@ Ray Intersect::getRefractionRay() {
 
 Ray Intersect::getDiffuseReflectionRay() {
 
+    // TODO: I don't think this actually is uniformly distributed along a sphere
+    /*
     // theta in [0, 2PI]
     double theta = static_cast <double> (rand()) / static_cast <double> (RAND_MAX);
-    theta *= 2*glm::pi<double>();
+    theta = theta*2*glm::pi<double>();
 
     // phi in [-1, 1]
     double phi = static_cast <double> (rand()) / static_cast <double> (RAND_MAX);
@@ -48,9 +50,28 @@ Ray Intersect::getDiffuseReflectionRay() {
 
     double temp = glm::sqrt(1-phi*phi);
     glm::vec3 randDirection = glm::normalize(glm::vec3(temp*glm::cos(theta), temp*glm::cos(theta), phi));
+    */
+
+    glm::vec3 randDirection = glm::vec3(0);
+
+    // RAND between [-1,1]
+    while (glm::length(randDirection) < 0.0001) {
+
+        double randX = static_cast <double> (rand()) / static_cast <double> (RAND_MAX);
+        double randY = static_cast <double> (rand()) / static_cast <double> (RAND_MAX);
+        double randZ = static_cast <double> (rand()) / static_cast <double> (RAND_MAX);
+        randX = 2*randX-1;
+        randY = 2*randY-1;
+        randZ = 2*randZ-1;
+
+        randDirection = glm::vec3(randX, randY, randZ);
+    }
+
+    randDirection = glm::normalize(randDirection);
 
     // completely random direction, check the dot product, if negative, flip the vector, by flip, I mean negate, it's random
-    if (glm::dot(normalHit, randDirection) <= 0) {
+    double normalDirectionDot = glm::dot(normalHit, randDirection);
+    if (normalDirectionDot < 0.0) {
         randDirection = -randDirection;
     }
 
@@ -116,10 +137,7 @@ glm::vec3 Intersect::getLighting(const glm::vec3 & ambient, const std::list<Ligh
         Ray refractionRay;
         if (getRefractionRay(refractionRay)) {
             // Refraction happened
-            //std::cout << "original ray direction: " << glm::to_string(ray.direction) << std::endl;
-            //std::cout << "refracted ray direction: " << glm::to_string(refractionRay.direction) << std::endl;
             Intersect refractionIntersect = root->castRay(refractionRay);
-            //std::cout << "refracted ray hits: " << glm::to_string(refractionIntersect.pointHit) << std::endl;
             totalLighting += transparencyPortion * refractionIntersect.getLighting(ambient, lights, root, depth + 1, contribution * transparencyPortion);
         }
         else {
@@ -128,7 +146,6 @@ glm::vec3 Intersect::getLighting(const glm::vec3 & ambient, const std::list<Ligh
         }
     }
     if (reflectivenessPortion > 0 && depth < MAX_DEPTH && contribution > MIN_CONTRIBUTION) {
-        //std::cout << "reflection ray" << std::endl;
         Ray reflectionRay = getReflectionRay();
         // root->castRay will not recurse, that all has to happen here, in getLighting
         Intersect reflectionIntersect = root->castRay(reflectionRay);
@@ -136,46 +153,35 @@ glm::vec3 Intersect::getLighting(const glm::vec3 & ambient, const std::list<Ligh
     }
     if (diffusePortion > 0) {
 
-        // DEBUG CODE FOR PHOTONS
-        if (PHOTONS_ONLY) {
-            // Grab 10 photons in sphere around pointHit
-            glm::vec3 totalDiffuseLighting = globalPhotonMap->getFluxAroundPoint(PHOTON_GATHER_NUM, PHOTON_GATHER_RANGE, pointHit);
-
-            //std::cout << "photon flux within range: " << glm::to_string(totalDiffuseLighting) << std::endl;
-
-            return totalDiffuseLighting;
-        }
-        else {
-
+        glm::vec3 totalDiffuseLighting = glm::vec3(0);
+        if (PHOTONS_GLOBAL) {
             glm::vec3 globalIllum = globalPhotonMap->getIrradiance(PHOTON_GATHER_NUM, PHOTON_GATHER_RANGE, pointHit, -ray.direction, glm::normalize(normalHit), material);
-
-            glm::vec3 totalDiffuseLighting = blend(globalIllum+ambient, blend(material->getColour(), bitmap->getColour(textureU, textureV)));
+            totalDiffuseLighting += blend(globalIllum+ambient, blend(material->getColour(), bitmap->getColour(textureU, textureV)));
+        }
+        if (PHOTONS_CAUSTIC) {
+            glm::vec3 causticIllum = globalPhotonMap->getCausticIrradiance(PHOTON_GATHER_NUM, PHOTON_GATHER_RANGE, pointHit, -ray.direction, glm::normalize(normalHit), material);
+            totalDiffuseLighting += blend(causticIllum+ambient, blend(material->getColour(), bitmap->getColour(textureU, textureV)));
+        }
+        if (DIRECT_LIGHTING) {
 
             // Add each individual light contribution
             for (Light * light : lights) {
 
                 Ray shadowRay = Ray(pointHit, light->position);
-                Intersect shadowIntersect = root->castShadowRay(shadowRay, light->position);
+                Intersect shadowIntersect = root->castRay(shadowRay);
                 glm::vec3 pointToLight = light->position - pointHit;
                 double lightDistance = glm::length(pointToLight);
 
                 // Apply lighting if the shadow ray doesn't hit anything or the closest thing the shadow ray hits 
-                // TODO: this only works for one transparent object
-                double lightingPercentage = shadowIntersect.transparency; 
                 if (!shadowIntersect.isHit || shadowIntersect.distanceHit >= lightDistance) {
-                    lightingPercentage = 1.0;
+                    // surfaceNormal, lightDirection, lightIntensity, lightDistance, lightFalloff, viewDirection, u, v, bitmap, and bumpmap textures
+                    totalDiffuseLighting += material->getLighting(glm::normalize(normalHit), glm::normalize(pointToLight), light->colour, lightDistance, light->falloff, -ray.direction, textureU, textureV, bitmap, bumpmap);
                 }
 
-                // surfaceNormal, lightDirection, lightIntensity, lightDistance, lightFalloff, viewDirection, u, v, bitmap, and bumpmap textures
-                totalDiffuseLighting += lightingPercentage * material->getLighting(glm::normalize(normalHit), 
-                                                                                    glm::normalize(pointToLight), light->colour, lightDistance, light->falloff, 
-                                                                                    -ray.direction, 
-                                                                                    textureU, textureV, bitmap, bumpmap);
             }
-
-            totalLighting += diffusePortion * totalDiffuseLighting;
         }
 
+        totalLighting += diffusePortion * totalDiffuseLighting;
     }
 
     return totalLighting;
