@@ -36,6 +36,7 @@ back_plane:translate(0,0,-100)
 back_plane:set_material(wall_mat)
 back_plane:set_bitmap(noise)
 back_plane:set_bumpmap(tile)
+back_plane:set_reflectiveness(0.1)
 scene_root:add_child(back_plane)
 
 -- gonna make the ceiling and front reflective as a hack to have photons go where the camera's pointing
@@ -87,6 +88,7 @@ right_plane:translate(100,0,0)
 right_plane:set_material(flatWhite)
 right_plane:set_bitmap(noise)
 right_plane:set_bumpmap(tile)
+right_plane:set_reflectiveness(0.1)
 scene_root:add_child(right_plane)
 
 -- poster
@@ -149,14 +151,14 @@ scene_root:add_child(bath_top_right)
 
 bath_inner_back = gr.plane('bath_inner_back')
 bath_inner_back:translate(-0.5, -0.5, 0)
-bath_inner_back:scale(160, 60, 1)
+bath_inner_back:scale(161, 60, 1)
 bath_inner_back:translate(0,-70,-80)
 bath_mod(bath_inner_back)
 scene_root:add_child(bath_inner_back)
 
 bath_inner_front = gr.plane('bath_inner_front')
 bath_inner_front:translate(-0.5, -0.5, 0)
-bath_inner_front:scale(160, 60, 1)
+bath_inner_front:scale(161, 60, 1)
 bath_inner_front:rotate('y', 180)
 bath_inner_front:translate(0,-70,-20)
 bath_mod(bath_inner_front)
@@ -164,7 +166,7 @@ scene_root:add_child(bath_inner_front)
 
 bath_inner_left = gr.plane('bath_inner_left')
 bath_inner_left:translate(-0.5, -0.5, 0)
-bath_inner_left:scale(60, 60, 1)
+bath_inner_left:scale(61, 60, 1)
 bath_inner_left:rotate('y', 90)
 bath_inner_left:translate(-80,-70,-50)
 bath_mod(bath_inner_left)
@@ -172,7 +174,7 @@ scene_root:add_child(bath_inner_left)
 
 bath_inner_right = gr.plane('bath_inner_right')
 bath_inner_right:translate(-0.5, -0.5, 0)
-bath_inner_right:scale(60, 60, 1)
+bath_inner_right:scale(61, 60, 1)
 bath_inner_right:rotate('y', -90)
 bath_inner_right:translate(80,-70,-50)
 bath_mod(bath_inner_right)
@@ -195,7 +197,7 @@ water_surface:scale(160, 60, 1)
 water_surface:rotate('x', -90)
 water_surface:translate(0,-45,-50)
 water_surface:set_material(cyan)
-water_surface:set_transparency(0.9, 1.3)
+water_surface:set_transparency(1, 1.3)
 water_surface:set_reflectiveness(0.15);
 water_surface:set_diffuse(0.05)
 water_surface:set_bumpmap(waves)
@@ -211,20 +213,74 @@ duck:translate(0, -45, -50)
 duck:set_material(yellow_rubber)
 scene_root:add_child(duck)
 
+-- boat
+
+red_plastic = gr.material({1.0, 0.0, 0.0}, {0.9,0.9,0.9}, 10)
+
+boat = gr.mesh('toy_boat', 'boat.obj')
+boat:scale(5,5,5)
+boat:translate(70, -35, -90)
+boat:set_material(red_plastic)
+scene_root:add_child(boat)
+
+-- faucet
+
+metal = gr.material({0.2, 0.2, 0.2}, {1,1,1}, 10)
+
+faucet = gr.cube('faucet')
+faucet:translate(-0.5, -0.5, -0.5)
+faucet:scale(50,10,10)
+faucet:translate(85, -35, -50)
+faucet:set_material(metal)
+faucet:set_reflectiveness(0.5)
+scene_root:add_child(faucet)
+
+knob_1 = gr.cube('knob_1')
+knob_1:translate(-0.5, -0.5, -0.5)
+knob_1:scale(8,10,8)
+knob_1:translate(88, -35, -30)
+knob_1:set_material(metal)
+knob_1:set_reflectiveness(0.5)
+scene_root:add_child(knob_1)
+
+handle_1 = gr.sphere('handle_1')
+handle_1:scale(14,3,3)
+handle_1:translate(78, -32, -30)
+handle_1:set_material(metal)
+handle_1:set_reflectiveness(0.5)
+scene_root:add_child(handle_1)
+
+knob_2 = gr.cube('knob_2')
+knob_2:translate(-0.5, -0.5, -0.5)
+knob_2:scale(8,10,8)
+knob_2:translate(88, -35, -70)
+knob_2:set_material(metal)
+knob_2:set_reflectiveness(0.5)
+scene_root:add_child(knob_2)
+
+handle_2 = gr.sphere('handle_2')
+handle_2:scale(14,3,3)
+handle_2:translate(78, -32, -70)
+handle_2:set_material(metal)
+handle_2:set_reflectiveness(0.5)
+scene_root:add_child(handle_2)
+
+
 white_light_left = gr.light({-90, 90, -90}, {0.5, 0.5, 0.5}, {1, 0, 0})
 white_light_right = gr.light({90, 90, -90}, {0.5, 0.5, 0.5}, {1, 0, 0})
 white_light_front = gr.light({0, 90, 90}, {0.5, 0.5, 0.5}, {1, 0, 0})
 white_light_center = gr.light({0, 0, 0}, {1, 1, 1}, {1, 0, 0})
+white_light_front_left = gr.light({-50, 90, 30}, {0.8, 0.8, 0.8}, {1, 0, 0})
 
 white_light_close = gr.light({-20, -30, -40}, {1, 1, 1}, {1, 0, 0})
 
 
-ambientLight = {0.1, 0.1, 0.1}
+ambientLight = {0.2, 0.2, 0.2}
 
-lights = {white_light_left, white_light_right, white_light_front}
+lights = {white_light_front_left}
 
-camera_origin = {0, 50, 50}
-camera_dest = {0, -45, -50}
+camera_origin = {-50, 0, 10}
+camera_dest = {85, -45, -50}
 
 gr.render(scene_root, 'bath_128_128.png', 128, 128,
 	  camera_origin, camera_dest, {0, 1, 0}, 90,
@@ -237,7 +293,7 @@ gr.render(scene_root, 'bath_256_256.png', 256, 256,
 gr.render(scene_root, 'bath_512_512.png', 512, 512,
 	  camera_origin, camera_dest, {0, 1, 0}, 90,
 	  ambientLight, lights)
-    
+
 gr.render(scene_root, 'bath_1920_1920.png', 1920, 1920,
 	  camera_origin, camera_dest, {0, 1, 0}, 90,
 	  ambientLight, lights)
