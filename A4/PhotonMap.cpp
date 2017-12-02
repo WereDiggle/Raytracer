@@ -301,10 +301,25 @@ std::vector<Photon*> PhotonTree::nearestNeighbours(int k, double range, const gl
     std::vector<Photon*> nearestPhotons;
 
     if (k > 0 && range > 0.0) {
-        root->nearestNeighbours(nearestPhotons, k, range, point); 
+
+        // TODO: actually fix this
+        // It doesn't actually get the nearest photons
+        //root->nearestNeighbours(nearestPhotons, k, range, point); 
+
+        root->nearestNeighbours(nearestPhotons, range, point);
+
+        // Only want the k closest points
+        if (nearestPhotons.size() > k) {
+            std::nth_element(nearestPhotons.begin(), nearestPhotons.begin()+k-1, nearestPhotons.end(), lessThanDistance(point));
+            nearestPhotons.erase(nearestPhotons.begin()+k, nearestPhotons.end());
+        }
     }
 
     return nearestPhotons;
+}
+
+int PhotonTree::size() {
+    return photons.size();
 }
 
 PhotonMap::PhotonMap(int numPhotons)
@@ -390,7 +405,7 @@ void PhotonMap::emitLight(SceneNode * root, const std::list<Light *> & lights)
                 double diffuseReflectiveness;
 
                 // We want all photons to bounce at least once
-                if (numRecursions == 0) {
+                if (numRecursions < MIN_PHOTON_BOUNCE) {
                     diffuseReflectiveness = photonIntersect.diffuse;
                 }
                 else {
@@ -408,11 +423,12 @@ void PhotonMap::emitLight(SceneNode * root, const std::list<Light *> & lights)
                 else if (diffuseReflectiveness > 0.0 && prob <= photonIntersect.reflectiveness + photonIntersect.transparency + diffuseReflectiveness) {
                     // TODO: diffuse reflection
                     // Random direction for this photon that faces the same was as the normal, bump maps might do some weird stuff with this 
-                    photonIntersect = root->castRay(photonIntersect.getDiffuseReflectionRay());
+                    //photonIntersect = root->castRay(photonIntersect.getDiffuseReflectionRay());
+                    break;
                     isCaustic = false;
                 }
                 else {
-                    if (numRecursions == 0) {
+                    if (numRecursions < MIN_PHOTON_BOUNCE) {
                         std::cout << "This should not happen" << std::endl;
                     }
                     break;
@@ -477,21 +493,35 @@ void PhotonMap::emitLight(SceneNode * root, const std::list<Light *> & lights)
 }
 
 std::vector<Photon*> PhotonMap::getPhotonsAroundPoint(double range, const glm::vec3 & point) {
-    if (numPhotons <= 0) {
+    if (photonTree.size() <= 0) {
         return std::vector<Photon*>();
     }
     return photonTree.nearestNeighbours(range, point);
 }
 
+std::vector<Photon*> PhotonMap::getCausticPhotonsAroundPoint(double range, const glm::vec3 & point) {
+    if (causticPhotonTree.size() <= 0) {
+        return std::vector<Photon*>();
+    }
+    return causticPhotonTree.nearestNeighbours(range, point);
+}
+
 std::vector<Photon*> PhotonMap::getPhotonsAroundPoint(int k, double range, const glm::vec3 & point) {
-    if (numPhotons <= 0) {
+    if (photonTree.size() <= 0) {
         return std::vector<Photon*>();
     }
     return photonTree.nearestNeighbours(k, range, point);
 }
 
+std::vector<Photon*> PhotonMap::getCausticPhotonsAroundPoint(int k, double range, const glm::vec3 & point) {
+    if (causticPhotonTree.size() <= 0) {
+        return std::vector<Photon*>();
+    }
+    return causticPhotonTree.nearestNeighbours(k, range, point);
+}
+
 glm::vec3 PhotonMap::getFluxAroundPoint(double range, const glm::vec3 & point) {
-    if (numPhotons <= 0) {
+    if (photonTree.size() <= 0) {
         return glm::vec3(0);
     }
 
@@ -504,8 +534,22 @@ glm::vec3 PhotonMap::getFluxAroundPoint(double range, const glm::vec3 & point) {
     return totalFlux;
 }
 
+glm::vec3 PhotonMap::getCausticFluxAroundPoint(double range, const glm::vec3 & point) {
+    if (causticPhotonTree.size() <= 0) {
+        return glm::vec3(0);
+    }
+    
+    std::vector<Photon*> nearestPhotons = getCausticPhotonsAroundPoint(range, point);
+    glm::vec3 totalFlux = glm::vec3(0);
+    for (std::vector<Photon*>::iterator it = nearestPhotons.begin(); it != nearestPhotons.end(); ++it) {
+        totalFlux += (*it)->flux;
+    }
+
+    return totalFlux;
+}
+
 glm::vec3 PhotonMap::getFluxAroundPoint(int k, double range, const glm::vec3 & point) {
-    if (numPhotons <= 0) {
+    if (photonTree.size() <= 0) {
         return glm::vec3(0);
     }
     
@@ -518,8 +562,22 @@ glm::vec3 PhotonMap::getFluxAroundPoint(int k, double range, const glm::vec3 & p
     return totalFlux;
 }
 
+glm::vec3 PhotonMap::getCausticFluxAroundPoint(int k, double range, const glm::vec3 & point) {
+    if (causticPhotonTree.size() <= 0) {
+        return glm::vec3(0);
+    }
+    
+    std::vector<Photon*> nearestPhotons = getCausticPhotonsAroundPoint(k, range, point);
+    glm::vec3 totalFlux = glm::vec3(0);
+    for (std::vector<Photon*>::iterator it = nearestPhotons.begin(); it != nearestPhotons.end(); ++it) {
+        totalFlux += (*it)->flux;
+    }
+
+    return totalFlux;
+}
+
 glm::vec3 PhotonMap::getIrradiance(int k, double range, const glm::vec3 & point, const glm::vec3 & viewDirection, const glm::vec3 & surfaceNormal, Material * material) {
-    if (numPhotons <= 0) {
+    if (photonTree.size() <= 0) {
         return glm::vec3(0);
     }
     std::vector<Photon*> nearestPhotons = getPhotonsAroundPoint(k, range, point);
@@ -529,8 +587,8 @@ glm::vec3 PhotonMap::getIrradiance(int k, double range, const glm::vec3 & point,
     }
 
     // Surface area
-    std::nth_element(nearestPhotons.begin(), nearestPhotons.end()-1, nearestPhotons.end());
-    double radius = glm::max(glm::distance(point, (*(nearestPhotons.end()-1))->position), 0.5f);
+    std::nth_element(nearestPhotons.begin(), nearestPhotons.end()-1, nearestPhotons.end(), lessThanDistance(point));
+    double radius = glm::clamp(glm::distance(point, (*(nearestPhotons.end()-1))->position), 0.1f, (float) PHOTON_GATHER_RANGE);
     double circleArea = glm::pi<double>() * radius * radius;
 
     // Bidirectional reflectance distribution and photon flux
@@ -544,13 +602,46 @@ glm::vec3 PhotonMap::getIrradiance(int k, double range, const glm::vec3 & point,
     }
 
     glm::vec3 avgIrradiance = sumIrradiance/circleArea;
-    if (avgIrradiance.r >= 0.0f || avgIrradiance.g >= 0.0f || avgIrradiance.b >= 0.0f) {
-        std::cout << "Bright Irradiance" << std::endl;
-        std::cout << "circleArea: " << circleArea << std::endl;
-        std::cout << "sumIrradiance: " << glm::to_string(sumIrradiance) << std::endl;
-        std::cout << "numPhotons: " << nearestPhotons.size() << std::endl;
+    //if (nearestPhotons.size() < PHOTON_GATHER_NUM) {
+    //    std::cout << "dark spot" << std::endl;
+    //    std::cout << "sum Irradiance " << glm::to_string(sumIrradiance) << std::endl; 
+    //    std::cout << "circleArea " << circleArea << std::endl;
+    //    std::cout << "numPhotons " << nearestPhotons.size() << std::endl;
+    //}
+
+    return avgIrradiance;
+
+}
+
+glm::vec3 PhotonMap::getCausticIrradiance(int k, double range, const glm::vec3 & point, const glm::vec3 & viewDirection, const glm::vec3 & surfaceNormal, Material * material) {
+    if (causticPhotonTree.size() <= 0) {
+        return glm::vec3(0);
+    }
+    std::vector<Photon*> nearestPhotons = getCausticPhotonsAroundPoint(k, range, point);
+
+    if (nearestPhotons.size() <= 0) {
+        return glm::vec3(0);
     }
 
-    return sumIrradiance/circleArea;
+    // Surface area
+    std::nth_element(nearestPhotons.begin(), nearestPhotons.end()-1, nearestPhotons.end(), lessThanDistance(point));
+    double radius = glm::clamp(glm::distance(point, (*(nearestPhotons.end()-1))->position), 0.1f, (float) PHOTON_GATHER_RANGE);
+    double circleArea = glm::pi<double>() * radius * radius;
+
+    // Bidirectional reflectance distribution and photon flux
+    glm::vec3 sumIrradiance;
+    for (std::vector<Photon*>::iterator it = nearestPhotons.begin(); it != nearestPhotons.end(); ++it) {
+        // TODO: we're just multiplying by the flux of the photon for now. 
+        // Not sure if I should take the distance of the photon from the point or the incident into account
+        double diffuseBRDF = glm::clamp(glm::dot(surfaceNormal, (*it)->incident), 0.0f, 1.0f);
+
+        double distanceWeight = ((radius - glm::distance(point, (*it)->position))/radius) * CAUSTIC_SHARPNESS;
+
+        sumIrradiance += diffuseBRDF * (*it)->flux * distanceWeight;
+    }
+
+    glm::vec3 avgIrradiance = sumIrradiance/circleArea;
+
+    return avgIrradiance;
 
 }
