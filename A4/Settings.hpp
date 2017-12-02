@@ -4,13 +4,13 @@
 #define SUPER_SAMPLING 1
 
 // Defines how many photons to use
-#define NUM_PHOTONS 100000
+#define NUM_PHOTONS 250000
 
 // Defines how much to scale the power of a light for photon mapping
-#define PHOTON_LIGHT_SCALE 100000
+#define PHOTON_LIGHT_SCALE 40000
 
 // Defines how many photons get gathered around a point
-#define PHOTON_GATHER_NUM 20
+#define PHOTON_GATHER_NUM 40
 
 // Defines the max range for photon gather
 #define PHOTON_GATHER_RANGE 5.0
@@ -19,7 +19,11 @@
 #define MIN_PHOTON_BOUNCE 3
 
 // How sharp caustics are
-#define CAUSTIC_SHARPNESS 2
+#define CAUSTIC_SHARPNESS 1
+
+// More photons than this are required for caustic calculations, otherwise, we ignore
+// This is to avoid random bright spots not even close to the main body of caustics
+#define MIN_CAUSTIC_PHOTONS 2
 
 // Max recursion depth for ray casting
 #define MAX_DEPTH 20
@@ -28,10 +32,10 @@
 #define MIN_CONTRIBUTION 0.01
 
 // Whether to use photon mapping global lighting
-#define PHOTONS_GLOBAL true
+#define PHOTONS_GLOBAL true 
 
 // Whether to use photon mapping caustic lighting
-#define PHOTONS_CAUSTIC false 
+#define PHOTONS_CAUSTIC true 
 
 // Whether to use direct lighting
-#define DIRECT_LIGHTING false
+#define DIRECT_LIGHTING true 

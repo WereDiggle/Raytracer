@@ -396,7 +396,12 @@ void PhotonMap::emitLight(SceneNode * root, const std::list<Light *> & lights)
             // reflectiveness, diffuse, and trasparency are probabilities that sum to 1.0
             // We'll just default to diffuse
 
+            // Photon is considered to be for caustics if it never reflects off a diffuse surface
+            // Only reflective or transparency surfaces.
+            // Assumes that there is at least one bounce
             bool isCaustic = false;
+            bool fromDirectLight = true;
+
             for (int numRecursions=0; photonIntersect.isHit && numRecursions<MAX_DEPTH; ++numRecursions) {
 
                 double prob = static_cast <double> (rand()) / static_cast <double> (RAND_MAX);
@@ -404,8 +409,9 @@ void PhotonMap::emitLight(SceneNode * root, const std::list<Light *> & lights)
 
                 double diffuseReflectiveness;
 
-                // We want all photons to bounce at least once
-                if (numRecursions < MIN_PHOTON_BOUNCE) {
+                // We want all photons to bounce at least MIN_PHOTON_BOUNCE times if they're just
+                // going from diffuse surface to diffuse surface
+                if (numRecursions < MIN_PHOTON_BOUNCE && !isCaustic) {
                     diffuseReflectiveness = photonIntersect.diffuse;
                 }
                 else {
@@ -414,22 +420,18 @@ void PhotonMap::emitLight(SceneNode * root, const std::list<Light *> & lights)
 
                 if (photonIntersect.reflectiveness > 0.0 && prob <= photonIntersect.reflectiveness) {
                     photonIntersect = root->castRay(photonIntersect.getReflectionRay());
-                    isCaustic = true;
+                    isCaustic = fromDirectLight;
                 }
                 else if (photonIntersect.transparency > 0.0 && prob <= photonIntersect.reflectiveness + photonIntersect.transparency) {
                     photonIntersect = root->castRay(photonIntersect.getRefractionRay());
-                    isCaustic = true;
+                    isCaustic = fromDirectLight;
                 }
                 else if (diffuseReflectiveness > 0.0 && prob <= photonIntersect.reflectiveness + photonIntersect.transparency + diffuseReflectiveness) {
-                    // TODO: diffuse reflection
                     // Random direction for this photon that faces the same was as the normal, bump maps might do some weird stuff with this 
                     photonIntersect = root->castRay(photonIntersect.getDiffuseReflectionRay());
-                    isCaustic = false;
+                    fromDirectLight = false;
                 }
                 else {
-                    if (numRecursions < MIN_PHOTON_BOUNCE) {
-                        std::cout << "This should not happen" << std::endl;
-                    }
                     break;
                 }
             }
@@ -618,7 +620,8 @@ glm::vec3 PhotonMap::getCausticIrradiance(int k, double range, const glm::vec3 &
     }
     std::vector<Photon*> nearestPhotons = getCausticPhotonsAroundPoint(k, range, point);
 
-    if (nearestPhotons.size() <= 0) {
+    // We're ignoring one offs
+    if (nearestPhotons.size() <= MIN_CAUSTIC_PHOTONS) {
         return glm::vec3(0);
     }
 
