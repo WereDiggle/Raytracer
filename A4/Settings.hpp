@@ -16,7 +16,7 @@
 #define PHOTON_GATHER_RANGE 5.0
 
 // Defines the minimum number of times a photon will bounce around
-#define MIN_PHOTON_BOUNCE 0
+#define MIN_PHOTON_BOUNCE 3
 
 // How sharp caustics are
 #define CAUSTIC_SHARPNESS 2

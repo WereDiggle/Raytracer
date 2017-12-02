@@ -423,8 +423,7 @@ void PhotonMap::emitLight(SceneNode * root, const std::list<Light *> & lights)
                 else if (diffuseReflectiveness > 0.0 && prob <= photonIntersect.reflectiveness + photonIntersect.transparency + diffuseReflectiveness) {
                     // TODO: diffuse reflection
                     // Random direction for this photon that faces the same was as the normal, bump maps might do some weird stuff with this 
-                    //photonIntersect = root->castRay(photonIntersect.getDiffuseReflectionRay());
-                    break;
+                    photonIntersect = root->castRay(photonIntersect.getDiffuseReflectionRay());
                     isCaustic = false;
                 }
                 else {

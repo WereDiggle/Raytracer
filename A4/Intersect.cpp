@@ -38,9 +38,11 @@ Ray Intersect::getRefractionRay() {
 
 Ray Intersect::getDiffuseReflectionRay() {
 
+    // TODO: I don't think this actually is uniformly distributed along a sphere
+    /*
     // theta in [0, 2PI]
     double theta = static_cast <double> (rand()) / static_cast <double> (RAND_MAX);
-    theta *= 2*glm::pi<double>();
+    theta = theta*2*glm::pi<double>();
 
     // phi in [-1, 1]
     double phi = static_cast <double> (rand()) / static_cast <double> (RAND_MAX);
@@ -48,6 +50,24 @@ Ray Intersect::getDiffuseReflectionRay() {
 
     double temp = glm::sqrt(1-phi*phi);
     glm::vec3 randDirection = glm::normalize(glm::vec3(temp*glm::cos(theta), temp*glm::cos(theta), phi));
+    */
+
+    glm::vec3 randDirection = glm::vec3(0);
+
+    // RAND between [-1,1]
+    while (glm::length(randDirection) < 0.0001) {
+
+        double randX = static_cast <double> (rand()) / static_cast <double> (RAND_MAX);
+        double randY = static_cast <double> (rand()) / static_cast <double> (RAND_MAX);
+        double randZ = static_cast <double> (rand()) / static_cast <double> (RAND_MAX);
+        randX = 2*randX-1;
+        randY = 2*randY-1;
+        randZ = 2*randZ-1;
+
+        randDirection = glm::vec3(randX, randY, randZ);
+    }
+
+    randDirection = glm::normalize(randDirection);
 
     // completely random direction, check the dot product, if negative, flip the vector, by flip, I mean negate, it's random
     double normalDirectionDot = glm::dot(normalHit, randDirection);
