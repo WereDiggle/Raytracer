@@ -199,7 +199,7 @@ water_surface:translate(0,-45,-50)
 water_surface:set_material(cyan)
 water_surface:set_transparency(1, 1.3)
 water_surface:set_reflectiveness(0.15);
-water_surface:set_diffuse(0.05)
+water_surface:set_diffuse(0)
 water_surface:set_bumpmap(waves)
 scene_root:add_child(water_surface)
 
@@ -270,30 +270,31 @@ white_light_left = gr.light({-90, 90, -90}, {0.5, 0.5, 0.5}, {1, 0, 0})
 white_light_right = gr.light({90, 90, -90}, {0.5, 0.5, 0.5}, {1, 0, 0})
 white_light_front = gr.light({0, 90, 90}, {0.5, 0.5, 0.5}, {1, 0, 0})
 white_light_center = gr.light({0, 0, 0}, {1, 1, 1}, {1, 0, 0})
-white_light_front_left = gr.light({-50, 90, 30}, {0.8, 0.8, 0.8}, {1, 0, 0})
+white_light_front_left = gr.light({-50, 90, 30}, {1.5, 1.5, 1.5}, {1, 0, 0})
 
 white_light_close = gr.light({-20, -30, -40}, {1, 1, 1}, {1, 0, 0})
 
 
-ambientLight = {0.2, 0.2, 0.2}
+ambientLight = {0, 0, 0}
 
 lights = {white_light_front_left}
 
-camera_origin = {-50, 0, 10}
-camera_dest = {85, -45, -50}
+camera_origin = {-50, 20, 10}
+camera_dest = {10, -45, -50}
+fov = 80
 
 gr.render(scene_root, 'bath_128_128.png', 128, 128,
-	  camera_origin, camera_dest, {0, 1, 0}, 90,
+	  camera_origin, camera_dest, {0, 1, 0}, fov,
 	  ambientLight, lights)
 
 gr.render(scene_root, 'bath_256_256.png', 256, 256,
-	  camera_origin, camera_dest, {0, 1, 0}, 90,
+	  camera_origin, camera_dest, {0, 1, 0}, fov,
 	  ambientLight, lights)
 
 gr.render(scene_root, 'bath_512_512.png', 512, 512,
-	  camera_origin, camera_dest, {0, 1, 0}, 90,
+	  camera_origin, camera_dest, {0, 1, 0}, fov,
 	  ambientLight, lights)
 
 gr.render(scene_root, 'bath_1920_1920.png', 1920, 1920,
-	  camera_origin, camera_dest, {0, 1, 0}, 90,
+	  camera_origin, camera_dest, {0, 1, 0}, fov,
 	  ambientLight, lights)

@@ -75,6 +75,15 @@ PhotonNode::PhotonNode(std::vector<Photon>::iterator first, std::vector<Photon>:
     }
 }
 
+PhotonNode::~PhotonNode() {
+    if (lesserNode != nullptr) {
+        delete lesserNode;
+    }
+    if (greaterNode != nullptr) {
+        delete greaterNode;
+    }
+}
+
 // TODO: test 
 void PhotonNode::nearestNeighbours(std::vector<Photon*> & nearestPhotons, double range, const glm::vec3 & point, char dimension) {
 
@@ -271,6 +280,12 @@ Photon* PhotonNode::nearestNeighbour(const glm::vec3 & point, char dimension) {
 
 PhotonTree::PhotonTree()
     : root(nullptr), min(glm::vec3(0)), max(glm::vec3(0)) {}
+
+PhotonTree::~PhotonTree() {
+    if (root != nullptr) {
+        delete root;
+    }
+}
 
 void PhotonTree::buildTree(std::vector<Photon> newPhotons, const glm::vec3 & min, const glm::vec3 & max) {
     if (newPhotons.size() == 0) {

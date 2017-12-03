@@ -172,12 +172,15 @@ glm::vec3 Intersect::getLighting(const glm::vec3 & ambient, const std::list<Ligh
                 glm::vec3 pointToLight = light->position - pointHit;
                 double lightDistance = glm::length(pointToLight);
 
+                glm::vec3 totalDirectLighting = glm::vec3(0);
+
                 // Apply lighting if the shadow ray doesn't hit anything or the closest thing the shadow ray hits 
                 if (!shadowIntersect.isHit || shadowIntersect.distanceHit >= lightDistance) {
                     // surfaceNormal, lightDirection, lightIntensity, lightDistance, lightFalloff, viewDirection, u, v, bitmap, and bumpmap textures
-                    totalDiffuseLighting += material->getLighting(glm::normalize(normalHit), glm::normalize(pointToLight), light->colour, lightDistance, light->falloff, -ray.direction, textureU, textureV, bitmap, bumpmap);
+                    totalDirectLighting += material->getLighting(glm::normalize(normalHit), glm::normalize(pointToLight), light->colour, lightDistance, light->falloff, -ray.direction, textureU, textureV, bitmap, bumpmap);
                 }
 
+                totalDiffuseLighting += totalDirectLighting * DIRECT_LIGHT_SCALE;
             }
         }
 

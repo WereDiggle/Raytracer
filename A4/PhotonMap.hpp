@@ -87,8 +87,7 @@ public:
 
     Photon* nearestNeighbour(const glm::vec3 & point, char dimension = 'x');
 
-    // TODO: implement
-    //~PhotonNode();
+    ~PhotonNode();
 
 };
 
@@ -113,8 +112,7 @@ public:
 
     void buildTree(std::vector<Photon> newPhotons, const glm::vec3 & min, const glm::vec3 & max);
 
-    // TODO: implement
-    //~PhotonTree();
+    ~PhotonTree();
 
     // Find all points within range distance of given point
     std::vector<Photon*> nearestNeighbours(double range, const glm::vec3 & point);
