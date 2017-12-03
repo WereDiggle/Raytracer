@@ -4,13 +4,13 @@
 #define SUPER_SAMPLING 1
 
 // Defines how many photons to use
-#define NUM_PHOTONS 250000
+#define NUM_PHOTONS 500000
 
 // Defines how much to scale the power of a light for photon mapping
 #define PHOTON_LIGHT_SCALE 40000
 
 // Defines how many photons get gathered around a point
-#define PHOTON_GATHER_NUM 40
+#define PHOTON_GATHER_NUM 60
 
 // Defines the max range for photon gather
 #define PHOTON_GATHER_RANGE 5.0
